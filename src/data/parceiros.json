@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "nome": "SuperSim",
+    "link": "https://susim.co/wwjLtRkN81wwsLSCGK9aHQ==",
+    "img": "/parceiros/supersim.png",
+    "beneficios": "Libera negativados",
+    "selo": "⚡ Até R$ 2.500"
+  },
+  {
+    "id": 2,
+    "nome": "Santander Conta + Cartão",
+    "link": "https://bit.ly/4jdUsO0",
+    "img": "/parceiros/santander.png",
+    "beneficios": "Conta + cartão grátis",
+    "selo": "🎯 Limite sob análise"
+  },
+  {
+    "id": 3,
+    "nome": "Ourocard BB",
+    "link": "https://apretailer.com.br/click/674a05ba2bfa8139e12612e2/185834/307759/subaccount",
+    "img": "/parceiros/ourocard.png",
+    "beneficios": "Cartão internacional",
+    "selo": "💳 1º ano sem anuidade"
+  },
+  {
+    "id": 4,
+    "nome": "Facio Salário",
+    "link": "https://bit.ly/3utvJSG",
+    "img": "/parceiros/facio.png",
+    "beneficios": "Antecipação de salário",
+    "selo": "✅ Dinheiro em minutos"
+  },
+  {
+    "id": 5,
+    "nome": "Acordo Certo",
+    "link": "https://bit.ly/4f9eMOv",
+    "img": "/parceiros/acordocerto.png",
+    "beneficios": "Renegocie dívidas",
+    "selo": "🧹 Limpe seu nome"
+  },
+  {
+    "id": 6,
+    "nome": "Bom pra Crédito",
+    "link": "https://apretailer.com.br/click/654e2cf42bfa813d7e724393/148693/307759/subaccount",
+    "img": "/parceiros/bompracredito.png",
+    "beneficios": "Marketplace de empréstimo",
+    "selo": "📊 30+ bancos"
+  },
+  {
+    "id": 7,
+    "nome": "Brasilcard",
+    "link": "https://apretailer.com.br/click/67ec2eb62bfa8179a731986e/185189/307759/subaccount",
+    "img": "/parceiros/brasilcard.png",
+    "beneficios": "Cartão com cashback",
+    "selo": "💰 Até 2 % de volta"
+  },
+  {
+    "id": 8,
+    "nome": "Bolsa Família Empréstimo",
+    "link": "https://api.whatsapp.com/send?phone=5548999499062&text=Ol%C3%A1%2C%20vim%20atrav%C3%A9s%20do%20canal%20do%20Tirra%20e%20quero%20saber%20mais%20sobre%20o%20Empr%C3%A9stimo%20Bolsa%20Fam%C3%ADlia!",
+    "img": "/parceiros/novohorizontebolsafamilia.png",
+    "beneficios": "Para beneficiários do BF",
+    "selo": "👨‍👩‍👧‍👦 Taxas baixas"
+  },
+  {
+    "id": 9,
+    "nome": "Antecipação FGTS",
+    "link": "https://api.whatsapp.com/send?phone=5548991267069&text=Ol%C3%A1%2C%20vim%20atrav%C3%A9s%20do%20canal%20do%20Tirra%20e%20quero%20saber%20mais%20sobre%20a%20antecipa%C3%A7%C3%A3o%20do%20FGTS!",
+    "img": "/parceiros/novohorizontefgts.png",
+    "beneficios": "Use seu FGTS como garantia",
+    "selo": "🏦 Até 5 anos"
+  },
+  {
+    "id": 10,
+    "nome": "PicPay Limite Garantido",
+    "link": "https://picpay.onelink.me/kAIe/hrfzvmlc",
+    "img": "/parceiros/picpay.png",
+    "beneficios": "Limite caução 100 %",
+    "selo": "🔒 Seguro e rápido"
+  }
+]
