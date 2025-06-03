@@ -1,110 +1,90 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #000000;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* ───────────────── Paleta de Cores & Tokens ─────────────────────────── */
+@layer base {
   :root {
-    --background: #ffffff;
+    --background: #000000;
     --foreground: #000000;
+
+    --money-50:  #ecfdf5;
+    --money-100: #d1fae5;
+    --money-200: #a7f3d0;
+    --money-500: #22c55e;
+
+    --shadow: rgba(34,197,94,0.14);
+    --shadow-hover: rgba(34,197,94,0.22);
+    --shadow-active: rgba(34,197,94,0.28);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #ffffff;
+      --foreground: #000000;
+    }
+  }
+
+  body {
+    @apply bg-[color:var(--background)] text-[color:var(--foreground)] font-sans antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}.input{ @apply border rounded px-3 py-2 w-full }
-.btn-primary{ @apply bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 }
-/* === SLIDER GRANDE – trilha branca + thumb verde ================= */
-.range-slider {
-  appearance: none;            /* zera accent-color nativo */
-  -webkit-appearance: none;
-  width: 100%;
-  height: 12px;                /* ⚫ espessura da trilha    */
-  background: #ff9d00;         /* trilha branca            */
-  border-radius: 6px;
-  cursor: pointer;
-}
+/* ───────────────── Componentes utilitários ───────────────────────────── */
+@layer components {
+  .input {
+    @apply w-full rounded border px-3 py-2;
+  }
 
-.range-slider:focus {
-  outline: none;
-}
+  .btn-primary {
+    @apply w-full rounded bg-[color:var(--money-500)] px-4 py-2 font-semibold text-white hover:bg-green-700 active:scale-95 focus:outline-none;
+  }
 
-/* Chrome / Safari thumb */
-.range-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 26px;                 /* ⚫ tamanho do thumb       */
-  height: 26px;
-  background: #22c55e;         /* verde-500                */
-  border: 3px solid #22c55e;
-  border-radius: 50%;
-  transition: transform 0.1s;
-}
-
-.range-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-/* Firefox thumb + track */
-.range-slider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  background: #22c55e;
-  border: none;
-  border-radius: 50%;
-}
-
-.range-slider::-moz-range-track {
-  height: 12px;
-  background: #33ff00;
-  border-radius: 12px;
-}
-/* ----------  RANGE COM DUAS CORES  ---------- */
-.range-slider {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 12px;
-  background: linear-gradient(
+  .range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    @apply rounded-md cursor-pointer;
+    background: linear-gradient(
       to right,
-      #22c55e 0%,
-      #22c55e var(--percent, 50%),
-      rgb(118, 118, 118) var(--percent, 50%),
-      #7b7b7b 100%
+      var(--money-500) 0%,
+      var(--money-500) var(--percent, 50%),
+      #777 var(--percent, 50%),
+      #777 100%
     );
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
+  }
 
-.range-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 26px;
-  height: 26px;
-  background: #22c55e;
-  border: 3px solid #22c55e;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.range-slider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  background: #22c55e;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-}
-.range-slider::-moz-range-track {
-  height: 12px;
-  background: transparent; /* escondemos a trilha padrão do Firefox */
+  .range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--money-500);
+    border: 3px solid var(--money-500);
+  }
+
+  .range-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--money-500);
+    border: none;
+  }
+
+  .range-slider::-moz-range-track {
+    height: 12px;
+    background: transparent;
+  }
+
+  .perspective     { perspective: 1200px; }
+  .preserve-3d     { transform-style: preserve-3d; }
+  .rotate-y-180    { transform: rotateY(180deg); }
+  .backface-hidden { backface-visibility: hidden; }
+
+  .card-face {
+    @apply absolute inset-0 flex flex-col items-center justify-between rounded-xl bg-white p-6 ring-1 ring-gray-200 backface-hidden;
+    box-shadow: 0 4px 14px var(--shadow);
+  }
 }
