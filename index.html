@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TirraCred - Soluções Financeiras Completas para Você</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Fundo verde claro */
+        }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1579621970795-87f24d73d3f1?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        /* Estilos para o slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1fae5; /* Verde mais claro */
+            border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #10b981; /* Verde principal */
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+         input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1fae5;
+            border-radius: 5px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: none;
+        }
+        /* Animações */
+        .fade-in { animation: fadeIn 0.8s ease-in-out forwards; opacity: 0; }
+        .fade-in-delay-1 { animation-delay: 0.2s; }
+        .fade-in-delay-2 { animation-delay: 0.4s; }
+        .fade-in-delay-3 { animation-delay: 0.6s; }
+        
+        .slide-in-up { animation: slideInUp 0.6s ease-out forwards; opacity: 0; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-container {
+            display: none;
+        }
+        .page-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        /* Animação do carrossel de logos */
+        .logo-carousel {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            height: 100px;
+        }
+        .logo-carousel-track {
+            display: flex;
+            width: calc(200px * 16); /* 2x o número de logos para loop infinito */
+            animation: scroll 40s linear infinite;
+        }
+        .logo-carousel-track:hover {
+            animation-play-state: paused;
+        }
+        .logo-carousel-item {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-200px * 8)); } /* Metade da largura total */
+        }
+    </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+    <!-- Alerta Topo -->
+    <div class="bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
+        Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
+                        <img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/logo.png-7c05e7ff-fb3b-4b32-ae89-57efea63a136" alt="TirraCred Logo" class="h-8 w-auto">
+                    </a>
+                </div>
+                <nav class="hidden md:flex md:space-x-8">
+                    <a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
+                    <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
+                    <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
+                    <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
+                </nav>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a href="javascript:void(0)" onclick="showPage('login-page')" class="px-4 py-2 text-sm font-medium text-green-600 bg-white border border-green-600 rounded-lg hover:bg-green-50 transition-colors">Acessar</a>
+                    <a href="javascript:void(0)" onclick="showPage('conta-page')" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Criar Conta</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+            <a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
+            <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
+            <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
+            <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
+            <div class="px-4 py-3 border-t">
+                <a href="javascript:void(0)" onclick="showPage('login-page')" class="block w-full text-center px-4 py-2 text-base font-medium text-green-600 bg-white border border-green-600 rounded-lg hover:bg-green-50 mb-2">Acessar</a>
+                <a href="javascript:void(0)" onclick="showPage('conta-page')" class="block w-full text-center px-4 py-2 text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">Criar Conta</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo da Página Inicial -->
+    <div id="page-home" class="page-container active">
+        <main>
+            <!-- Hero e Simulador -->
+            <section class="hero-bg text-white py-16 sm:py-24">
+                <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="text-center lg:text-left">
+                        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight animate-fade-in">Compare e contrate o produto financeiro certo para você.</h1>
+                        <p class="text-lg md:text-xl text-gray-300 max-w-xl lg:max-w-none animate-fade-in fade-in-delay-1">Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.</p>
+                    </div>
+                    <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2">
+                        <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
+                        
+                        <form id="leadFormHome" class="space-y-6">
+                            <!-- Loan Slider -->
+                            <div>
+                                <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">R$ 500</span>
+                                    <span id="valor-display-home" class="text-xl font-bold text-green-600">R$ 1.000</span>
+                                    <span class="text-gray-500 text-sm">R$ 50.000</span>
+                                </div>
+                                <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Parcelas -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">12x</button>
+                                    <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">24x</button>
+                                    <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">36x</button>
+                                </div>
+                                <input type="hidden" name="parcelas" id="parcelasHome" value="12">
+                            </div>
+                            
+                            <!-- Negativado -->
+                            <div>
+                               <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                    <span class="ml-3 text-gray-700 font-medium">Possui nome negativado?</span>
+                                </label>
+                                <p id="negativado-message" class="text-sm text-green-700 mt-1 hidden">Ainda há chances de conseguir!</p>
+                            </div>
+
+                            <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                                Continuar
+                            </button>
+
+                            <!-- Campos do Formulário (inicialmente ocultos) -->
+                            <div id="form-fields-home" class="hidden space-y-4">
+                                 <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <div class="flex items-start">
+                                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="#" class="underline hover:text-green-600">Termos de Uso</a> e a <a href="#" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                                 </div>
+                                 <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                                    Ver Recomendações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção Filtros (Compara Online Style) -->
+            <section id="home-filters" class="py-20 bg-white">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        <!-- Filtros -->
+                        <aside class="lg:col-span-1 bg-gray-50 p-6 rounded-xl border">
+                            <h3 class="text-xl font-semibold mb-6">Encontre sua oferta</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3">Tipo de Produto</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center"><input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 focus:ring-green-500"> <span class="ml-2">Todos</span></label>
+                                        <label class="flex items-center"><input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 focus:ring-green-500"> <span class="ml-2">Empréstimos</span></label>
+                                        <label class="flex items-center"><input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 focus:ring-green-500"> <span class="ml-2">Cartões</span></label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-3">Perfil</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center"><input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> <span class="ml-2">Para Negativados</span></label>
+                                        <label class="flex items-center"><input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"> <span class="ml-2">Score Baixo</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                        <!-- Lista de Produtos -->
+                        <div class="lg:col-span-3">
+                            <div id="product-list" class="space-y-6">
+                                <!-- Produtos serão inseridos aqui via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção Renegociação -->
+            <section class="py-16 bg-gray-800 text-white">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 class="text-3xl font-bold mb-4">Negocie suas dívidas agora com até 99% de desconto</h2>
+                    <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">Consulte seu CPF gratuitamente e veja as ofertas para limpar seu nome.</p>
+                    <div class="max-w-md mx-auto">
+                        <form class="flex flex-col sm:flex-row gap-2" action="https://bit.ly/4f9eMOv" target="_blank">
+                            <input type="text" placeholder="Digite seu CPF" class="flex-grow p-3 rounded-md text-gray-800 outline-none focus:ring-2 focus:ring-green-500" required>
+                            <button type="submit" class="bg-green-500 text-white font-bold px-8 py-3 rounded-md hover:bg-green-600 transition-transform hover:scale-105">
+                                Consultar CPF
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Seção de Parceiros -->
+            <section class="py-12 bg-white">
+                <div class="container mx-auto px-4">
+                    <h3 class="text-center text-gray-500 font-semibold mb-6">Nossos parceiros</h3>
+                    <div class="logo-carousel">
+                        <div class="logo-carousel-track">
+                            <div class="logo-carousel-item"><img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-256.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2014/05/santander-logo-1.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/supersim.png-f26a3661-0f78-4023-9970-e5b265a41463" alt="Supersim" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2019/09/picpay-logo-0.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/bompracredito.png-5d3af59c-6f1b-4844-8d10-cf4a3ae1f9a8" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2014/04/itau-logo-1.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://www.bb.com.br/site/templates/img/logo-ourocard.svg" alt="Ourocard" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/facio.png-c5aa2777-92be-4b69-8968-0db441b8c4f2" alt="Facio" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <!-- Repete -->
+                             <div class="logo-carousel-item"><img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-256.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2014/05/santander-logo-1.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/supersim.png-f26a3661-0f78-4023-9970-e5b265a41463" alt="Supersim" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2019/09/picpay-logo-0.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/bompracredito.png-5d3af59c-6f1b-4844-8d10-cf4a3ae1f9a8" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://logodownload.org/wp-content/uploads/2014/04/itau-logo-1.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://www.bb.com.br/site/templates/img/logo-ourocard.svg" alt="Ourocard" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                            <div class="logo-carousel-item"><img src="https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/facio.png-c5aa2777-92be-4b69-8968-0db441b8c4f2" alt="Facio" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Página de Empréstimos -->
+    <div id="emprestimos-page" class="page-container">
+        <!-- Conteúdo da página de empréstimos -->
+    </div>
+
+    <!-- Página de Cartões -->
+    <div id="cartoes-page" class="page-container">
+         <!-- Conteúdo da página de cartões -->
+    </div>
+
+    <!-- Página de Dívidas -->
+    <div id="dividas-page" class="page-container">
+        <!-- Conteúdo da página de dívidas -->
+    </div>
+
+    <!-- Página do Blog -->
+    <div id="blog-page" class="page-container">
+        <section class="py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">Blog TirraCred: Sua Saúde Financeira em Dia</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Artigo Registrato -->
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                        <img src="https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=2070&auto=format&fit=crop" alt="Pessoa analisando um relatório financeiro" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-3">O que é o Registrato e como ele afeta seu crédito?</h3>
+                            <p class="text-gray-600 mb-4 flex-grow">Entenda como o sistema do Banco Central reúne suas informações financeiras e por que consultá-lo é crucial antes de pedir crédito.</p>
+                            <a href="javascript:void(0)" onclick="showPage('artigo-registrato-page')" class="font-semibold text-green-600 hover:text-green-700 mt-auto">Ler artigo completo &rarr;</a>
+                        </div>
+                    </div>
+                    <!-- Outros Artigos -->
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                         <img src="https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?q=80&w=2070&auto=format&fit=crop" alt="Gráfico de score subindo" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-3">Como Aumentar seu Score de Crédito em 5 Passos</h3>
+                            <p class="text-gray-600 mb-4 flex-grow">Descubra dicas práticas para melhorar sua pontuação e ter acesso a melhores condições de crédito no mercado.</p>
+                            <a href="#" class="font-semibold text-green-600 hover:text-green-700 mt-auto">Ler mais &rarr;</a>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                        <img src="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop" alt="Cartão de crédito sendo usado" class="w-full h-48 object-cover">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-semibold mb-3">Os Segredos para Conseguir um Bom Limite no Cartão</h3>
+                            <p class="text-gray-600 mb-4 flex-grow">Entenda o que os bancos analisam e como você pode se preparar para solicitar um cartão com limite alto.</p>
+                            <a href="#" class="font-semibold text-green-600 hover:text-green-700 mt-auto">Ler mais &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Página do Artigo sobre Registrato -->
+    <div id="artigo-registrato-page" class="page-container">
+        <article class="bg-white py-12">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+                <button onclick="showPage('blog-page')" class="mb-8 inline-flex items-center gap-1 text-green-600 font-semibold hover:underline">
+                    &larr; Voltar para o Blog
+                </button>
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Desvendando o Registrato: Sua Vida Financeira em um Só Lugar</h1>
+                <p class="text-lg text-gray-600 mb-8">Entenda o que é, para que serve e como o relatório do Banco Central pode ser seu maior aliado na busca por crédito e na organização das suas finanças.</p>
+                
+                <img src="https://images.unsplash.com/photo-1620714223084-86c9df355935?q=80&w=1974&auto=format&fit=crop" alt="Imagem gerada por IA de um cofre com relatórios financeiros" class="rounded-xl shadow-lg mb-8 w-full">
+
+                <div class="prose lg:prose-xl max-w-none text-gray-700">
+                    <p>Você já ouviu falar no Registrato? Se a resposta é não, prepare-se para conhecer uma das ferramentas mais poderosas e gratuitas para a sua saúde financeira. Criado pelo Banco Central do Brasil, o Registrato é um sistema que permite a qualquer cidadão consultar, de forma rápida e segura, todas as suas informações financeiras.</p>
+                    
+                    <h2 class="text-2xl font-bold mt-8 mb-4">O que é o Registrato?</h2>
+                    <p>O Registrato (Extrato do Registro de Informações no Banco Central) é um relatório completo que consolida seus relacionamentos com instituições financeiras. Nele, você encontra dados sobre:</p>
+                    <ul>
+                        <li><strong>Contas e Relacionamentos:</strong> Todas as contas bancárias, de investimento e de pagamento que você possui ou já possuiu.</li>
+                        <li><strong>Empréstimos e Financiamentos (SCR):</strong> O Sistema de Informações de Crédito (SCR) mostra seu histórico de empréstimos, financiamentos, limites de cartão de crédito e outras operações de crédito. É aqui que os bancos "enxergam" seu nível de endividamento.</li>
+                        <li><strong>Cheques sem Fundo:</strong> Consulta ao Cadastro de Emitentes de Cheques sem Fundos (CCF).</li>
+                        <li><strong>Chaves Pix:</strong> Todas as chaves Pix cadastradas em seu nome.</li>
+                    </ul>
+
+                    <img src="https://images.unsplash.com/photo-1633409361618-c73427e4e206?q=80&w=1974&auto=format&fit=crop" alt="Imagem gerada por IA de uma pessoa analisando dados em uma tela futurista" class="rounded-xl shadow-lg my-8 w-full">
+
+                    <h2 class="text-2xl font-bold mt-8 mb-4">Por que o Registrato é Tão Importante?</h2>
+                    <p>Consultar o Registrato periodicamente é um ato de autocuidado financeiro. Ele é crucial por vários motivos:</p>
+                    <ol>
+                        <li><strong>Visão Completa das Dívidas:</strong> Muitas vezes, esquecemos de uma dívida antiga ou de um cartão de crédito que não usamos mais. O relatório SCR dentro do Registrato mostra tudo, ajudando você a ter uma visão clara do seu endividamento total. É o primeiro passo para uma renegociação eficaz.</li>
+                        <li><strong>Segurança contra Fraudes:</strong> Descobriu uma conta ou um empréstimo que você não reconhece? Pode ser um sinal de fraude. O Registrato permite que você identifique atividades suspeitas em seu nome rapidamente.</li>
+                        <li><strong>Entender a Visão dos Bancos:</strong> Antes de aprovar um empréstimo ou um cartão, os bancos consultam o SCR. Ao ver seu próprio relatório, você entende exatamente o que eles veem, podendo se antecipar e corrigir possíveis problemas, como dívidas em atraso que você não lembrava.</li>
+                    </ol>
+
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg my-8">
+                        <p class="font-bold">Dica de Ouro:</p>
+                        <p>Antes de solicitar qualquer crédito, acesse seu Registrato. Verifique se existem pendências e, se houver, considere renegociá-las. Uma "faxina" no seu relatório aumenta drasticamente suas chances de aprovação e de conseguir taxas de juros melhores.</p>
+                    </div>
+
+                    <h2 class="text-2xl font-bold mt-8 mb-4">Como Acessar o Registrato?</h2>
+                    <p>O acesso é simples, gratuito e totalmente online. Você pode fazer login com sua conta Gov.br (nível prata ou ouro) ou diretamente pelo site do seu banco (internet banking).</p>
+                    <p>Não deixe sua vida financeira no escuro. Use o Registrato a seu favor, organize suas contas, renegocie suas dívidas com parceiros como o <a href="https://bit.ly/4f9eMOv" target="_blank" class="text-green-600 font-semibold hover:underline">Acordo Certo</a> e abra as portas para um futuro financeiro mais saudável e com mais crédito disponível para você.</p>
+                </div>
+            </div>
+        </article>
+    </div>
+
+
+    <!-- Página de Login -->
+    <div id="login-page" class="page-container">
+         <section class="py-20 flex items-center justify-center">
+            <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+                 <h2 class="text-2xl font-bold text-center mb-6">Acessar Conta</h2>
+                 <form class="space-y-4">
+                     <input type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <input type="password" placeholder="Senha" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <button type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-green-700">Entrar</button>
+                 </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Página de Criar Conta -->
+    <div id="conta-page" class="page-container">
+        <section class="py-20 flex items-center justify-center">
+            <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+                 <h2 class="text-2xl font-bold text-center mb-6">Criar Nova Conta</h2>
+                 <form id="registerForm" class="space-y-4">
+                     <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <input name="whatsapp" placeholder="WhatsApp" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <input name="password" type="password" placeholder="Crie uma senha" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                     <div class="flex items-start">
+                        <input id="marketing-consent" name="marketing_consent" type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                        <label for="marketing-consent" class="ml-2 text-sm text-gray-600">Eu aceito receber e-mails com ofertas e novidades da TirraCred.</label>
+                     </div>
+                     <button type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-green-700">Criar Conta</button>
+                 </form>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Página de Resultados -->
+    <div id="resultados-page" class="page-container">
+         <main class="mx-auto max-w-6xl space-y-6 p-6">
+            <div id="loading-results" class="flex min-h-[60vh] items-center justify-center">
+                <p class="animate-pulse text-gray-500 text-2xl">Carregando as melhores ofertas para você...</p>
+            </div>
+            <div id="results-content" class="hidden">
+                 <button onclick="showPage('page-home')" class="sticky top-4 inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700 shadow hover:bg-gray-200">
+                     ← Voltar
+                 </button>
+                 <div id="results-message" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg my-6 hidden"></div>
+                 <h2 class="text-center text-2xl font-bold">
+                     Confira o que você pode pedir
+                 </h2>
+                 <div id="results-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                     <!-- Cards de parceiros serão inseridos aqui pelo JS -->
+                 </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="bg-green-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">Para Você</h3>
+                    <ul>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo Pessoal</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo para Negativado</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="hover:text-green-400">Cartão de Crédito</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('dividas-page')" class="hover:text-green-400">Renegociar Dívidas</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Links Úteis</h3>
+                    <ul>
+                        <li class="mb-2"><a href="#" class="hover:text-green-400">Sobre Nós</a></li>
+                        <li class="mb-2"><a href="#" class="hover:text-green-400">Termos de Uso</a></li>
+                        <li class="mb-2"><a href="#" class="hover:text-green-400">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Fale Conosco</h3>
+                    <p class="text-gray-400">atendimento@tirracred.com.br</p>
+                    <p class="text-gray-400">Atendimento das 9h às 18h</p>
+                </div>
+                 <div>
+                    <h3 class="font-semibold mb-4">Siga-nos</h3>
+                    <div class="flex space-x-4">
+                       <a href="#" class="text-gray-400 hover:text-white"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.28C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10 2.38,10.03C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.45,16.02 6.13,17.26 8.12,17.29C6.65,18.45 4.85,19.12 2.92,19.12C2.59,19.12 2.27,19.1 1.95,19.04C3.94,20.36 6.28,21.13 8.84,21.13C16,21.13 20.24,15.37 20.24,10.29C20.24,10.13 20.24,9.97 20.23,9.81C21.01,9.26 21.81,8.56 22.46,7.74C21.72,8.04 20.93,8.26 20.1,8.36C20.94,7.82 21.6,6.97 21.93,6H22.46Z" /></svg></a>
+                       <a href="#" class="text-gray-400 hover:text-white"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.32 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z" /></svg></a>
+                       <a href="#" class="text-gray-400 hover:text-white"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M7.07,18.28C7.5,17.38 8.5,16.5 10,16.5C11.5,16.5 12.5,17.38 12.93,18.28C12.2,18.76 11.39,19 10.5,19C9.61,19 8.8,18.76 8.07,18.28M10.5,15C9,15 7.5,13.5 7.5,12C7.5,10.5 9,9 10.5,9C12,9 13.5,10.5 13.5,12C13.5,13.5 12,15 10.5,15M16.93,18.28C17.5,17.38 18.5,16.5 20,16.5C21.5,16.5 22.5,17.38 22.93,18.28C22.2,18.76 21.39,19 20.5,19C19.61,19 18.8,18.76 18.07,18.28M20.5,15C19,15 17.5,13.5 17.5,12C17.5,10.5 19,9 20.5,9C22,9 23.5,10.5 23.5,12C23.5,13.5 22,15 20.5,15Z" /></svg></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <p class="text-xs text-gray-400 text-center">
+                    TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 31.600.280/0001-00.
+                    <br>
+                    As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
+                </p>
+                <p class="text-xs text-gray-500 text-center mt-2">© 2025 TirraCred. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pageContainers = document.querySelectorAll('.page-container');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            // --- Navegação entre Páginas ---
+            window.showPage = function(pageId) {
+                pageContainers.forEach(container => {
+                    container.classList.remove('active');
+                });
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    window.scrollTo(0, 0);
+                    mobileMenu.classList.add('hidden'); // Fecha menu mobile ao navegar
+                }
+            }
+
+            // --- Menu Mobile ---
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // --- Lógica do Formulário da Home ---
+            const leadFormHome = document.getElementById('leadFormHome');
+            const showFormBtn = document.getElementById('show-form-btn');
+            const formFieldsHome = document.getElementById('form-fields-home');
+            
+            showFormBtn.addEventListener('click', () => {
+                formFieldsHome.style.display = 'block';
+                formFieldsHome.classList.add('animate-fade-in');
+                showFormBtn.style.display = 'none';
+            });
+
+            leadFormHome.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submit-btn-home');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                
+                const leadData = Object.fromEntries(new FormData(e.target));
+                console.log('Dados do Lead Capturado:', leadData);
+                
+                // TODO: Enviar dados para a API
+                // fetch('/api/leads', { ... });
+
+                showPage('resultados-page');
+                const loadingResults = document.getElementById('loading-results');
+                const resultsContent = document.getElementById('results-content');
+                
+                loadingResults.style.display = 'flex';
+                resultsContent.style.display = 'none';
+
+                setTimeout(() => {
+                    loadingResults.style.display = 'none';
+                    resultsContent.style.display = 'block';
+                    populateResults(leadData);
+                }, 2000);
+            });
+
+             // --- Lógica do Formulário de Cadastro ---
+            const registerForm = document.getElementById('registerForm');
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const registerBtn = this.querySelector('button[type="submit"]');
+                registerBtn.disabled = true;
+                registerBtn.textContent = 'Cadastrando...';
+
+                const userData = Object.fromEntries(new FormData(e.target));
+                console.log('Dados de Cadastro:', userData);
+                
+                // TODO: Enviar dados para a API de cadastro
+                // fetch('/api/register', { ... }).then(() => {
+                //     alert('Conta criada com sucesso!');
+                //     showPage('login-page');
+                // });
+
+                 setTimeout(() => {
+                    alert('Conta criada com sucesso! Você será redirecionado para o login.');
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Criar Conta';
+                    showPage('login-page');
+                }, 1500);
+
+            });
+
+
+            // --- Simulador de Empréstimo (Home) ---
+            const valorSliderHome = document.getElementById('valorHome');
+            const valorDisplayHome = document.getElementById('valor-display-home');
+            const parcelasHiddenInputHome = document.getElementById('parcelasHome');
+            const parcelaBtnsHome = document.querySelectorAll('.parcela-btn-home');
+            const negativadoCheckboxHome = document.getElementById('negativado-checkbox-home');
+            const negativadoMessage = document.getElementById('negativado-message');
+            
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value);
+            }
+
+            valorSliderHome.addEventListener('input', (e) => {
+                valorDisplayHome.textContent = formatCurrency(e.target.value);
+            });
+
+            parcelaBtnsHome.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    parcelaBtnsHome.forEach(b => {
+                        b.classList.remove('bg-green-500', 'text-white');
+                        b.classList.add('bg-gray-200', 'text-gray-700');
+                    });
+                    btn.classList.add('bg-green-500', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+                    parcelasHiddenInputHome.value = btn.dataset.parcelas;
+                });
+            });
+            
+            negativadoCheckboxHome.addEventListener('change', () => {
+                if (negativadoCheckboxHome.checked) {
+                    negativadoMessage.classList.remove('hidden');
+                    negativadoMessage.classList.add('animate-fade-in');
+                } else {
+                    negativadoMessage.classList.add('hidden');
+                }
+            });
+
+            // --- Filtro de Cartões ---
+            const filters = document.querySelectorAll('#cartoes-page input[data-filter]');
+            const cardItems = Array.from(document.querySelectorAll('#cartoes-page .card-item'));
+
+            function applyCardFilters() {
+                const activeFilters = { anuidade: [], perfil: [], limite: [] };
+                filters.forEach(f => {
+                    if(f.checked) activeFilters[f.dataset.filter].push(f.value);
+                });
+
+                cardItems.forEach(card => {
+                    let show = true;
+                    for (const key in activeFilters) {
+                        if (activeFilters[key].length > 0 && !activeFilters[key].includes(card.dataset[key])) {
+                            show = false;
+                            break;
+                        }
+                    }
+                    card.style.display = show ? 'flex' : 'none';
+                });
+            }
+            filters.forEach(f => f.addEventListener('change', applyCardFilters));
+
+            // --- Lógica da Página de Resultados ---
+            const allPartners = [
+                { id: 1, nome: "SuperSim Empréstimo", link: "https://bit.ly/4jQk57T", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/supersim.png-f26a3661-0f78-4023-9970-e5b265a41463", beneficios: "Até R$2.500 em minutos", selo: "Para Score Baixo", tipo: "emprestimo", valorMax: 2500, negativado: true },
+                { id: 2, nome: "Mercado Pago", link: "https://apple.co/3FHoRGR", img: "https://http2.mlstatic.com/storage/official-stores-images/mercado-pago/MECAPAGO142_31012023-O.jpg", beneficios: "Ganhe até R$50 + Cashback", selo: "Conta e Cartão", tipo: "conta", valorMax: 50000, negativado: false },
+                { id: 3, nome: "Juros Baixos", link: "https://bit.ly/414zSbS", img: "https://jurosbaixos.com.br/assets/static/favicon.ce0531f.a7c14a5929df638b52c6ca3b16e6af9c.png", beneficios: "Marketplace de crédito completo", selo: "Compare Opções", tipo: "emprestimo", valorMax: 50000, negativado: true },
+                { id: 4, nome: "Facio - Antecipação Salário", link: "https://bit.ly/4l19g3V", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/facio.png-c5aa2777-92be-4b69-8968-0db441b8c4f2", beneficios: "Liberação fácil e segura", selo: "Antecipação", tipo: "emprestimo", valorMax: 10000, negativado: true },
+                { id: 5, nome: "Acordo Certo", link: "https://bit.ly/4f9eMOv", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/acordocerto.png-e89be726-dfc3-481d-9008-9ee13519b327", beneficios: "Limpe seu nome agora mesmo", selo: "Negociação de Dívidas", tipo: "divida", valorMax: 0, negativado: true },
+                { id: 6, nome: "Cartão Ourocard", link: "https://bit.ly/3HZaM8s", img: "https://www.bb.com.br/site/templates/img/logo-ourocard.svg", beneficios: "Aprova até com score médio", selo: "Banco do Brasil", tipo: "cartao", valorMax: 0, negativado: true },
+                { id: 7, nome: "Cartão Itaú Passaí Gold", link: "https://bit.ly/3Hh5Pr6", img: "https://www.itau.com.br/media/dam/m/115494815a51358d/original/passai_itaucard_gold.png", beneficios: "Descontos no Assaí", selo: "Itaú", tipo: "cartao", valorMax: 0, negativado: true },
+                { id: 8, nome: "Santander SX", link: "https://bit.ly/4jdUsO0", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/santander.png-b09a34e1-12ba-40ec-921e-c6fad58434ae", beneficios: "Conta + Cartão Free", selo: "Santander", tipo: "cartao", valorMax: 0, negativado: true },
+                { id: 9, nome: "Bolsa Família", link: "https://bit.ly/4moHS1h", img: "https://placehold.co/100x100/34d399/ffffff?text=Bolsa", beneficios: "Antecipe seu benefício", selo: "Governo", tipo: "emprestimo", valorMax: 5000, negativado: true },
+                { id: 10, nome: "Bom Pra Crédito", link: "https://bit.ly/3Y4yzJl", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/bompracredito.png-5d3af59c-6f1b-4844-8d10-cf4a3ae1f9a8", beneficios: "Até 50 mil para você", selo: "Compare", tipo: "emprestimo", valorMax: 50000, negativado: false },
+                { id: 11, nome: "Cartão Brasilcard", link: "https://bit.ly/3WJuKZb", img: "https://storage.googleapis.com/gemini-prod-us-east1-9556/uploaded/brasilcard.jpg-bd5f09fe-1e3f-4a49-9827-c1ec47a41154", beneficios: "Aprovação facilitada", selo: "Para Negativado", tipo: "cartao", valorMax: 0, negativado: true }
+            ];
+
+            function populateResults(leadData) {
+                const grid = document.getElementById('results-grid');
+                const messageBox = document.getElementById('results-message');
+                grid.innerHTML = '';
+                messageBox.classList.add('hidden');
+
+                const valor = parseInt(leadData.valor, 10);
+                const isNegativado = leadData.negativado === 'on';
+
+                let recommendedPartners = [];
+                
+                // Sempre indicar Facio
+                recommendedPartners.push(allPartners.find(p => p.id === 4));
+
+                if (isNegativado) {
+                    messageBox.innerHTML = `<p class="font-semibold">Você está negativado?</p><p>Sabemos que pode ser difícil conseguir crédito, mas não impossível! Recomendamos fortemente que você tente <a href="https://bit.ly/4f9eMOv" target="_blank" class="font-bold underline">renegociar suas dívidas primeiro</a>. Enquanto isso, aqui estão algumas opções com maior chance de aprovação para seu perfil:</p>`;
+                    messageBox.classList.remove('hidden');
+                    
+                    // Adiciona opções para negativados
+                    recommendedPartners.push(...allPartners.filter(p => p.id === 1 || p.id === 11 || p.id === 5 || p.tipo === 'cartao'));
+                
+                } else if (valor >= 50000) {
+                     messageBox.innerHTML = `<p class="font-semibold">Buscando um valor alto?</p><p>Para valores como ${formatCurrency(valor)}, estas são as melhores opções. Lembre-se que todos os cartões de crédito também estão disponíveis para você!</p>`;
+                     messageBox.classList.remove('hidden');
+                     recommendedPartners.push(...allPartners.filter(p => p.id === 3 || p.id === 10 || p.id === 2 || p.tipo === 'cartao'));
+                } else {
+                    // Lógica padrão para não negativados e valores menores
+                    recommendedPartners.push(...allPartners.filter(p => !p.negativado || p.valorMax >= valor));
+                }
+
+                // Remove duplicatas
+                recommendedPartners = [...new Map(recommendedPartners.map(item => [item['id'], item])).values()];
+                
+                if (recommendedPartners.length === 0) {
+                     grid.innerHTML = `<p class="col-span-full text-center text-gray-600">Nenhuma oferta encontrada para seu perfil no momento. Tente novamente mais tarde.</p>`;
+                     return;
+                }
+
+                recommendedPartners.forEach(p => {
+                    const cardHTML = `
+                        <div class="bg-white rounded-2xl border border-gray-200 shadow-md p-4 flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:scale-105">
+                            <div class="relative w-full">
+                                <span class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-xl">${p.selo}</span>
+                                <img src="${p.img}" alt="${p.nome}" class="h-24 mx-auto my-4 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/94a3b8?text=Logo';">
+                            </div>
+                            <h3 class="text-lg font-bold mt-2">${p.nome}</h3>
+                            <p class="text-sm text-green-600 font-medium my-2 flex-grow">${p.beneficios}</p>
+                            <a href="${p.link}" target="_blank" class="w-full mt-auto bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition-colors">Pedir</a>
+                        </div>
+                    `;
+                    grid.innerHTML += cardHTML;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
