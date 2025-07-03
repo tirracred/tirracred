@@ -1,75 +1,107 @@
 // netlify/functions/capturar-lead.js
+// -----------------------------------------------------------------------------
+// Função serverless (Netlify) para capturar leads e gravar na tabela "leads" do
+// Supabase. Agora persiste **todos** os campos que chegam do front‑end e faz
+// validação adequada para evitar erros 502/500.
+// -----------------------------------------------------------------------------
 
-// Importa o cliente Supabase compartilhado do arquivo de utilitários.
 const supabase = require('./utils/supabase');
 
-// Define os cabeçalhos CORS para permitir requisições do seu frontend.
 const headers = {
-  'Access-Control-Allow-Origin': '*', // Em produção, restrinja ao seu domínio: 'https://seu-site.com'
+  'Access-Control-Allow-Origin': '*',            // 🔒 Ajuste para o seu domínio em produção
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
 };
 
-exports.handler = async function(event) {
-  // Trata a requisição pré-verificação (preflight) do CORS enviada pelos navegadores.
+exports.handler = async function (event) {
+  // 1) Pré‑flight CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204, // No Content
-      headers,
-      body: ''
-    };
+    return { statusCode: 204, headers, body: '' };
   }
 
-  // Permite apenas o método POST para esta função.
+  // 2) Apenas POST é permitido
   if (event.httpMethod !== 'POST') {
     return {
-      statusCode: 405, // Method Not Allowed
+      statusCode: 405,
       headers,
       body: JSON.stringify({ error: 'Método não permitido.' })
     };
   }
 
   try {
-    // Analisa os dados enviados no corpo da requisição.
-    const { nome, email, whatsapp } = JSON.parse(event.body);
+    // 3) Parse do JSON recebido
+    const body = JSON.parse(event.body || '{}');
+    const {
+      nome,
+      cpf,
+      whatsapp,
+      email,
+      renda,       // pode vir string ou number
+      valor,       // obrig. number
+      parcelas,    // obrig. number
+      negativado,  // boolean opcional
+      consent      // boolean opcional
+    } = body;
 
-    // Valida se os campos necessários foram fornecidos.
-    if (!nome || !email) {
+    // 4) Validação mínima de obrigatórios
+    const missing = [];
+    if (!nome) missing.push('nome');
+    if (!cpf) missing.push('cpf');
+    if (!whatsapp) missing.push('whatsapp');
+    if (!email) missing.push('email');
+    if (valor === undefined) missing.push('valor');
+    if (parcelas === undefined) missing.push('parcelas');
+
+    if (missing.length) {
       return {
-        statusCode: 422, // Unprocessable Entity
+        statusCode: 422,
         headers,
-        body: JSON.stringify({ error: 'Os campos nome e e-mail são obrigatórios.' })
+        body: JSON.stringify({
+          error: `Campos obrigatórios ausentes: ${missing.join(', ')}.`
+        })
       };
     }
 
-    // Insere os dados na tabela 'leads' do Supabase.
-    const { nome, cpf, whatsapp, email, renda, valor, negativado, parcelas } = JSON.parse(event.body);
-    const { error } = await supabase.from('leads').insert({ 
-    nome, cpf, whatsapp, email, renda, valor, negativado, parcelas 
-});
+    // 5) Conversão de tipos (garantir consistência no banco)
+    const rendaNumber = renda !== undefined ? Number(renda) : null;
+    const valorNumber = Number(valor);
+    const parcelasNumber = Number(parcelas);
 
-    // Se o Supabase retornar um erro, lança-o para ser capturado pelo bloco catch.
+    // 6) Inserção no Supabase
+    const { error } = await supabase.from('leads').insert({
+      nome,
+      cpf,
+      whatsapp,
+      email,
+      renda: rendaNumber,
+      valor: valorNumber,
+      parcelas: parcelasNumber,
+      negativado: !!negativado,
+      consent: !!consent
+    });
+
     if (error) {
-      throw error;
+      console.error('Erro Supabase:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Erro ao salvar lead no banco.' })
+      };
     }
 
-    // Retorna uma resposta de sucesso.
+    // 7) Sucesso
     return {
-      statusCode: 200,
+      statusCode: 201,           // Created
       headers,
       body: JSON.stringify({ message: 'Lead capturado com sucesso!' })
     };
-
-  } catch (error) {
-    // Loga o erro para depuração nos logs da função Netlify.
-    console.error('Erro ao capturar lead:', error);
-
-    // Retorna uma resposta de erro genérica para o cliente.
+  } catch (err) {
+    console.error('Erro inesperado:', err);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: `Erro interno do servidor: ${error.message}` })
+      body: JSON.stringify({ error: 'Erro interno do servidor.' })
     };
   }
 };
