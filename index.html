@@ -456,7 +456,86 @@
                         </div>
                     </div>
                 </aside>
+<script>
+                    document.addEventListener('DOMContentLoaded',()=>{
+                        /* 1. Painel Off‑Canvas (inalterado) */
+                        const filterBtn=document.getElementById('filter-button');
+                        const filterPanel=document.getElementById('filter-panel');
+                        const closeBtn=document.getElementById('filter-close');
+                        const overlay=document.createElement('div');
+                        overlay.id='filter-overlay';
+                        Object.assign(overlay.style,{position:'fixed',inset:'0',backgroundColor:'rgba(0,0,0,.5)',zIndex:'40',opacity:'0',pointerEvents:'none',transition:'opacity .3s'});
+                        document.body.appendChild(overlay);
+                        function openPanel(){filterPanel.classList.remove('translate-x-full');overlay.style.opacity='1';overlay.style.pointerEvents='auto';document.body.style.overflow='hidden'}
+                        function closePanel(){filterPanel.classList.add('translate-x-full');overlay.style.opacity='0';overlay.style.pointerEvents='none';document.body.style.overflow=''}
+                        filterBtn&&filterBtn.addEventListener('click',openPanel);
+                        closeBtn&&closeBtn.addEventListener('click',closePanel);
+                        overlay.addEventListener('click',closePanel);
 
+                        /* 2. Filtragem + Paginação */
+                        const filterInputs=document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+                        const productCards=[...document.querySelectorAll('#product-list .product-card')];
+                        const itemsPerPage=8; // <= mostra 8 produtos por página
+                        let currentPage=1;
+                        let filteredCards=[];
+
+                        function applyFilters(){
+                        const selectedType=document.querySelector('input[name="product_type"]:checked').value;
+                        const selectedProfiles=[...document.querySelectorAll('input[data-filter="perfil"]:checked')].map(cb=>cb.value);
+                        filteredCards=[];
+                        productCards.forEach(card=>{
+                            const typeMatch=selectedType==='all'||card.dataset.tipo===selectedType;
+                            const cardProfiles=(card.dataset.perfil||'').split(' ');
+                            const profileMatch=selectedProfiles.length===0||selectedProfiles.every(p=>cardProfiles.includes(p));
+                            if(typeMatch&&profileMatch){filteredCards.push(card);}else{card.style.display='none';}
+                        });
+                        currentPage=1;
+                        renderPage();
+                        renderPagination();
+                        if(window.innerWidth<1024)closePanel();
+                        }
+
+                        function renderPage(){
+                        const start=(currentPage-1)*itemsPerPage;
+                        const end=start+itemsPerPage;
+                        filteredCards.forEach((card,i)=>{
+                            if(i>=start&&i<end){card.style.display='block';setTimeout(()=>{card.style.opacity='1';card.style.transform='scale(1)'},10);}else{card.style.opacity='0';card.style.transform='scale(.95)';setTimeout(()=>card.style.display='none',200);}
+                        });
+                        }
+
+                        function goToPage(p){const total=Math.ceil(filteredCards.length/itemsPerPage);if(p<1||p>total||p===currentPage)return;currentPage=p;renderPage();renderPagination();}
+
+                        function renderPagination(){
+                        const container=document.getElementById('pagination');
+                        container.innerHTML='';
+                        const total=Math.ceil(filteredCards.length/itemsPerPage);
+                        if(total<=1)return;
+                        const prev=document.createElement('button');
+                        prev.textContent='Anterior';
+                        prev.disabled=currentPage===1;
+                        prev.className='px-3 py-1 rounded-lg text-sm font-medium border '+(prev.disabled?'text-gray-400 border-gray-300':'text-gray-700 border-gray-300 hover:bg-gray-100');
+                        prev.onclick=()=>goToPage(currentPage-1);
+                        container.appendChild(prev);
+                        for(let i=1;i<=total;i++){
+                            const btn=document.createElement('button');
+                            btn.textContent=i;
+                            btn.className=i===currentPage?'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white':'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
+                            btn.onclick=()=>goToPage(i);
+                            container.appendChild(btn);
+                        }
+                        const next=document.createElement('button');
+                        next.textContent='Próximo';
+                        next.disabled=currentPage===total;
+                        next.className='px-3 py-1 rounded-lg text-sm font-medium border '+(next.disabled?'text-gray-400 border-gray-300':'text-gray-700 border-gray-300 hover:bg-gray-100');
+                        next.onclick=()=>goToPage(currentPage+1);
+                        container.appendChild(next);
+                        }
+
+                        // inicialização
+                        filterInputs.forEach(i=>i.addEventListener('change',applyFilters));
+                        applyFilters();
+                    });
+                    </script>
                 <!-- Lista de Produtos -->
                  
                 <div class="lg:col-span-3">
@@ -808,59 +887,7 @@
             </div>
         </div>
     </section>
- <!-- PRODUTO: Cartão Picpay Limite Garantido -->
-                        <div class="product-card" data-tipo="cartao" data-perfil="score-baixo, negativado, autonomo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3">
-                                            <img src="public/picpay.png" alt="Cartão Ourocard Fácil" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x100/e2e8f0/4a5568?text=Ourocard+Fácil';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Ourocard Fácil</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Sem anuidade e com LIMITE GARANTIDO.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Muito fácil de APROVAR, bom para score baixo e negativados.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Cartão virtual e benefícios da bandeira Mastercard.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://picpay.onelink.me/kAIe/hrfzvmlc" target="_blank" class="btn-primary text-center">Peça Agora</a>
-                                                    <a href="https://picpay.onelink.me/kAIe/hrfzvmlc" target="_blank" class="btn-secondary text-center">Conhecer</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    
-
-
-
-
+ 
 
   <script>
 document.addEventListener('DOMContentLoaded', () => {
