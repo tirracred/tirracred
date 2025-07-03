@@ -1362,15 +1362,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Lógica dos Formulários ---
     leadForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const btn = document.getElementById('submit-btn-home');
-  btn.disabled = true;
 
-  // feedback imediato
+  const btn = document.getElementById('submit-btn-home');
+  if (!btn) return;
+
+  // Guarda o texto original para restaurar depois
   const originalText = btn.textContent;
-  btn.textContent = 'Processando…';
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
 
   const rawData = Object.fromEntries(new FormData(e.target));
-  const payload = {
+  const leadData = {
     ...rawData,
     valor: Number(rawData.valor),
     parcelas: Number(rawData.parcelas),
@@ -1382,26 +1384,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch('/api/capturar-lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(leadData)
     });
 
     if (!res.ok) {
-      const { error } = await res.json();
-      throw new Error(error || 'Erro no servidor');
+      const { error } = await res.json().catch(() => ({}));
+      throw new Error(error || 'Erro inesperado. Tente novamente mais tarde.');
     }
 
-    // Sucesso ► mensagem mais amigável
-    toast('Tudo certo! Agora vamos encontrar as melhores ofertas para você…', 'success');
-
-    // Avança para a próxima etapa da UX
-    showResults(payload);
+    // Sucesso: vai direto para a tela de resultados (sem alertas de “lead”)   
+    showResults(leadData);
   } catch (err) {
-    toast(`Ops! ${err.message}`, 'error');
+    // Mensagem genérica – o cliente não vê detalhes internos
+    alert(`Não foi possível concluir sua solicitação. ${err.message}`);
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
   }
 });
+
 
     // Formulário de Registo
     registerForm?.addEventListener('submit', async (e) => {
