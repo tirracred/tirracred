@@ -235,15 +235,6 @@
                                 </label>
                                 <p id="negativado-message" class="text-sm text-green-700 mt-1 hidden">Ainda há chances de conseguir!</p>
                             </div>
-                             <!-- Nome Limpo -->
-                            <div class="flex flex-col">
-                            <label class="inline-flex items-center cursor-pointer select-none">
-                            <input type="checkbox" id="nomelimpo-checkbox" name="nome_limpo" class="peer h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" />
-                            <span class="ml-3 font-medium text-gray-700 peer-checked:text-green-600 transition-colors">Está com o nome limpo?</span>
-                            </label>
-                            <p id="nomelimpo-msg" class="hidden text-sm font-medium text-green-600 mt-1">Mais chances de ser aprovado!</p>
-                            </div>
-                            </div>
 
                             <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
                                 Continuar
@@ -470,6 +461,49 @@
                 <div class="lg:col-span-3">
                     <div id="product-list" class="space-y-6">
 
+
+                        <!-- PRODUTO: Empréstimo Facio -->
+                        <div class="product-card" data-tipo="emprestimo" data-perfil="score-baixo autonomo">
+                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                                <div class="flex flex-col lg:flex-row gap-6">
+                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
+                                        <div class="p-3 border rounded-lg bg-gray-50">
+                                            <img src="public/facio.png" alt="Logo Facio" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Facio';">
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                            <div class="flex-grow">
+                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Antecipação Salarial</span>
+                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Facio</h4>
+                                                <ul class="space-y-2 text-gray-600 mb-4">
+                                                    <li class="flex items-start">
+                                                        <span class="text-green-600 mr-2">✓</span>
+                                                        <span><strong class="text-green-700"></strong>Antecipe seu salário em 2 minutos via PIX.</span>
+                                                        <span><strong class="text-green-700">Garantido para Negativados e Score BAIXO!</strong></span>
+                                                    </li>
+                                                    <li class="flex items-start">
+                                                        <span class="text-green-600 mr-2">✓</span>
+                                                        <span>Sem consulta ao SPC/Serasa.</span>
+                                                    </li>
+                                                    <li class="flex items-start">
+                                                        <span class="text-green-600 mr-2">✓</span>
+                                                        <span>Contratação simples e rápida pelo app.</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div class="product-actions">
+                                                    <a href="https://bit.ly/4l19g3V" target="_blank" class="btn-primary text-center">Receber Agora</a>
+                                                    <a href="https://bit.ly/4l19g3V" target="_blank" class="btn-secondary text-center">Mais Info</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- PRODUTO: Empréstimo Supersim -->
                         <div class="product-card" data-tipo="emprestimo" data-perfil="negativado score-baixo autonomo">
                             <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
@@ -552,47 +586,7 @@
                             </div>
                         </div>
 
-                        <!-- PRODUTO: Empréstimo Facio -->
-                        <div class="product-card" data-tipo="emprestimo" data-perfil="score-baixo autonomo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3 border rounded-lg bg-gray-50">
-                                            <img src="public/facio.png" alt="Logo Facio" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Facio';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Antecipação Salarial</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Facio</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Antecipe seu salário em 2 minutos via PIX.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Sem consulta ao SPC/Serasa.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Contratação simples e rápida pelo app.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/4l19g3V" target="_blank" class="btn-primary text-center">Receber Agora</a>
-                                                    <a href="https://bit.ly/4l19g3V" target="_blank" class="btn-secondary text-center">Mais Info</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        
                         <!-- PRODUTO: Cartão Itaú Passaí Gold -->
                         <div class="product-card" data-tipo="cartao" data-perfil="negativado score-baixo">
                             <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
@@ -686,8 +680,7 @@
                                     <div class="flex-grow">
                                         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                             <div class="flex-grow">
-                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Empréstimo Pessoal</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Cartão Brasilcard</h4>
+                                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Cartão Brasilcard</h4>
                                                 <ul class="space-y-2 text-gray-600 mb-4">
                                                     <li class="flex items-start">
                                                         <span class="text-green-600 mr-2">✓</span>
@@ -706,7 +699,7 @@
                                             <div class="flex-shrink-0">
                                                 <div class="product-actions">
                                                     <a href="https://bit.ly/3WJuKZb" target="_blank" class="btn-primary text-center">Peça Agora</a>
-                                                    <a href="https://bit.ly/3WJuKZb" target="_blank" class="btn-secondary text-center">Condições</a>
+                                                    <a href="https://bit.ly/3Y4yzJl" target="_blank" class="btn-secondary text-center">Condições</a>
                                                 </div>
                                             </div>
                                         </div>
