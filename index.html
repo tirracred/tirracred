@@ -387,73 +387,81 @@
 
     
 
-   <!-- Seção Filtros (Compara Online Style) -->
-<!-- Botão para abrir filtros no Mobile (visível apenas em telas pequenas) -->
-<div class="lg:hidden mb-6">
-    <button id="filter-button" class="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-        Filtrar Resultados
-    </button>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-    <!-- Filtros (Painel Off-canvas em Mobile, Sidebar em Desktop) -->
-    <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
-        <div class="h-full flex flex-col">
-            <!-- Cabeçalho do Painel Mobile com Título e Botão de Fechar -->
-            <div class="flex items-center justify-between border-b p-4 lg:hidden">
-                <h3 class="text-xl font-semibold text-gray-900">Filtros</h3>
-                <button id="filter-close" class="text-gray-500 hover:text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+     <!-- Seção Filtros (Compara Online Style) -->
+    <section id="home-filters" class="py-4 sm:py-8">
+        <div class="container mx-auto px-4">
+            
+            <!-- Botão para abrir filtros no Mobile (visível apenas em telas pequenas) -->
+            <div class="lg:hidden mb-6">
+                <button id="filter-button" class="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    Filtrar Resultados
                 </button>
             </div>
 
-            <!-- Conteúdo dos Filtros (com scroll se necessário no mobile) -->
-            <div class="p-6 overflow-y-auto">
-                <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre sua busca</h3>
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Todos</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Empréstimos</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Cartões de Crédito</span>
-                            </label>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                
+                <!-- Filtros (Painel Off-canvas em Mobile, Sidebar em Desktop) -->
+                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
+                    
+                    <div class="h-full flex flex-col">
+                        <!-- Cabeçalho do Painel Mobile com Título e Botão de Fechar -->
+                        <div class="flex items-center justify-between border-b p-4 lg:hidden">
+                            <h3 class="text-xl font-semibold text-gray-900">Filtros</h3>
+                            <button id="filter-close" class="text-gray-500 hover:text-gray-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+
+                        <!-- Conteúdo dos Filtros (com scroll se necessário no mobile) -->
+                        <div class="p-6 overflow-y-auto">
+                            <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre sua busca</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Todos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Empréstimos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Cartões de Crédito</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div>
+                                    <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Para Negativados</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Score Baixo</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Autônomo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <hr>
-                    <div>
-                        <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
-                        <div class="space-y-2">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Para Negativados</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Score Baixo</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                <span class="ml-2 text-gray-600">Autônomo</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
+                </aside>
+
+                <div class="lg:col-span-3">
+                <!-- Navegação de páginas (topo da lista) -->
+                <div id="pagination-top" class="flex justify-center gap-2 mb-4"></div>
 
                 <!-- Lista de Produtos -->
-                 
                 <div class="lg:col-span-3">
                     <div id="product-list" class="space-y-6">
 
@@ -806,83 +814,225 @@
  
 
   <script>
-document.addEventListener('DOMContentLoaded',()=>{
-    /* 1. Painel Off‑Canvas (inalterado) */
-    const filterBtn=document.getElementById('filter-button');
-    const filterPanel=document.getElementById('filter-panel');
-    const closeBtn=document.getElementById('filter-close');
-    const overlay=document.createElement('div');
-    overlay.id='filter-overlay';
-    Object.assign(overlay.style,{position:'fixed',inset:'0',backgroundColor:'rgba(0,0,0,.5)',zIndex:'40',opacity:'0',pointerEvents:'none',transition:'opacity .3s'});
+document.addEventListener('DOMContentLoaded', () => {
+    /* ===================================================
+     * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
+     * =================================================== */
+    const filterBtn   = document.getElementById('filter-button');
+    const filterPanel = document.getElementById('filter-panel');
+    const closeBtn    = document.getElementById('filter-close');
+
+    // Cria o overlay de fundo dinamicamente
+    const overlay = document.createElement('div');
+    overlay.id = 'filter-overlay';
+    Object.assign(overlay.style, {
+        position: 'fixed',
+        inset: '0',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: '40',
+        opacity: '0',
+        pointerEvents: 'none',
+        transition: 'opacity .3s ease-in-out'
+    });
     document.body.appendChild(overlay);
-    function openPanel(){filterPanel.classList.remove('translate-x-full');overlay.style.opacity='1';overlay.style.pointerEvents='auto';document.body.style.overflow='hidden'}
-    function closePanel(){filterPanel.classList.add('translate-x-full');overlay.style.opacity='0';overlay.style.pointerEvents='none';document.body.style.overflow=''}
-    filterBtn&&filterBtn.addEventListener('click',openPanel);
-    closeBtn&&closeBtn.addEventListener('click',closePanel);
-    overlay.addEventListener('click',closePanel);
 
-    /* 2. Filtragem + Paginação */
-    const filterInputs=document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-    const productCards=[...document.querySelectorAll('#product-list .product-card')];
-    const itemsPerPage=8; // <= mostra 8 produtos por página
-    let currentPage=1;
-    let filteredCards=[];
+    // Funções para abrir/fechar o painel de filtros
+    function openPanel() {
+        if (!filterPanel) return;
+        filterPanel.classList.remove('translate-x-full');
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+        document.body.style.overflow = 'hidden';
+    }
+    function closePanel() {
+        if (!filterPanel) return;
+        filterPanel.classList.add('translate-x-full');
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        document.body.style.overflow = '';
+    }
+    if (filterBtn) filterBtn.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', closePanel);
 
-    function applyFilters(){
-        const selectedType=document.querySelector('input[name="product_type"]:checked').value;
-        const selectedProfiles=[...document.querySelectorAll('input[data-filter="perfil"]:checked')].map(cb=>cb.value);
-        filteredCards=[];
-        productCards.forEach(card=>{
-            const typeMatch=selectedType==='all'||card.dataset.tipo===selectedType;
-            const cardProfiles=(card.dataset.perfil||'').split(' ');
-            const profileMatch=selectedProfiles.length===0||selectedProfiles.every(p=>cardProfiles.includes(p));
-            if(typeMatch&&profileMatch){filteredCards.push(card);}else{card.style.display='none';}
+    /* ===================================================
+     * 2. LÓGICA DE FILTRAGEM & PAGINAÇÃO DINÂMICA
+     * =================================================== */
+    const filterInputs  = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+    const productCards  = document.querySelectorAll('#product-list .product-card');
+    const itemsPerPage  = 6;
+    let currentPage     = 1;
+    let filteredCards   = [];
+
+      function applyFilters() {
+        const selectedType     = document.querySelector('input[name="product_type"]:checked').value;
+        const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
+
+        filteredCards = [];
+        let visibleCount = 0;
+        productCards.forEach(card => {
+            const typeMatch    = (selectedType === 'all') || (card.dataset.tipo === selectedType);
+            const cardProfiles = (card.dataset.perfil || '').split(' ');
+            const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => cardProfiles.includes(p));
+
+            if (typeMatch && profileMatch) {
+                // Card corresponde aos filtros
+                visibleCount++;
+                filteredCards.push(card);
+                if (visibleCount <= itemsPerPage) {
+                    // Mostrar o card (dentro do limite da página atual)
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity   = '1';
+                        card.style.transform = 'scale(1)';
+                    }, 10);
+                } else {
+                    // Ocultar cards além do limite da primeira página
+                    card.style.opacity   = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => { card.style.display = 'none'; }, 300);
+                }
+            } else {
+                // Ocultar cards que não correspondem aos filtros
+                card.style.opacity   = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => { card.style.display = 'none'; }, 300);
+            }
         });
-        currentPage=1;
-        renderPage();
+
+        // Reinicia na primeira página e atualiza os botões de paginação
+        currentPage = 1;
         renderPagination();
-        if(window.innerWidth<1024)closePanel();
-    }
 
-    function renderPage(){
-        const start=(currentPage-1)*itemsPerPage;
-        const end=start+itemsPerPage;
-        filteredCards.forEach((card,i)=>{
-            if(i>=start&&i<end){card.style.display='block';setTimeout(()=>{card.style.opacity='1';card.style.transform='scale(1)'},10);}else{card.style.opacity='0';card.style.transform='scale(.95)';setTimeout(()=>card.style.display='none',200);}
-        });
-    }
-
-    function goToPage(p){const total=Math.ceil(filteredCards.length/itemsPerPage);if(p<1||p>total||p===currentPage)return;currentPage=p;renderPage();renderPagination();}
-
-    function renderPagination(){
-        const container=document.getElementById('pagination');
-        container.innerHTML='';
-        const total=Math.ceil(filteredCards.length/itemsPerPage);
-        if(total<=1)return;
-        const prev=document.createElement('button');
-        prev.textContent='Anterior';
-        prev.disabled=currentPage===1;
-        prev.className='px-3 py-1 rounded-lg text-sm font-medium border '+(prev.disabled?'text-gray-400 border-gray-300':'text-gray-700 border-gray-300 hover:bg-gray-100');
-        prev.onclick=()=>goToPage(currentPage-1);
-        container.appendChild(prev);
-        for(let i=1;i<=total;i++){
-            const btn=document.createElement('button');
-            btn.textContent=i;
-            btn.className=i===currentPage?'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white':'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
-            btn.onclick=()=>goToPage(i);
-            container.appendChild(btn);
+        // Em telas menores, fecha o painel de filtros após aplicar
+        if (window.innerWidth < 1024) {
+            closePanel();
         }
-        const next=document.createElement('button');
-        next.textContent='Próximo';
-        next.disabled=currentPage===total;
-        next.className='px-3 py-1 rounded-lg text-sm font-medium border '+(next.disabled?'text-gray-400 border-gray-300':'text-gray-700 border-gray-300 hover:bg-gray-100');
-        next.onclick=()=>goToPage(currentPage+1);
-        container.appendChild(next);
     }
 
-    // inicialização
-    filterInputs.forEach(i=>i.addEventListener('change',applyFilters));
-    applyFilters();
+    // Função para trocar de página com transição suave
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+        if (page < 1 || page > totalPages || page === currentPage) return;
+
+        // Determina os índices dos itens da página atual
+        const startIndexOld    = (currentPage - 1) * itemsPerPage;
+        const endIndexOld      = Math.min(startIndexOld + itemsPerPage, filteredCards.length);
+        const currentPageCards = filteredCards.slice(startIndexOld, endIndexOld);
+
+        // Determina os índices dos itens da nova página
+        const startIndexNew = (page - 1) * itemsPerPage;
+        const endIndexNew   = Math.min(startIndexNew + itemsPerPage, filteredCards.length);
+        const newPageCards  = filteredCards.slice(startIndexNew, endIndexNew);
+
+        // Fade-out: oculta gradualmente os cards da página atual
+        currentPageCards.forEach(card => {
+            card.style.opacity   = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => { card.style.display = 'none'; }, 300);
+        });
+
+        // Fade-in: exibe os cards da nova página após a saída dos atuais
+        setTimeout(() => {
+            newPageCards.forEach(card => {
+                card.style.display  = 'block';
+                card.style.opacity   = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.opacity   = '1';
+                    card.style.transform = 'scale(1)';
+                }, 10);
+            });
+            currentPage = page;
+            renderPagination();
+        }, 300);
+    }
+
+    // Função para criar/atualizar os controles de paginação nos dois contêineres
+    function renderPagination() {
+        const totalProducts = filteredCards.length;
+        const totalPages    = Math.ceil(totalProducts / itemsPerPage);
+        const containerTop    = document.getElementById('pagination-top');
+        const containerBottom = document.getElementById('pagination-bottom');
+        // Limpa paginação antiga
+        containerTop.innerHTML = '';
+        containerBottom.innerHTML = '';
+
+        if (totalPages <= 1) {
+            // Não exibe paginação se há 0 ou 1 página de resultados
+            return;
+        }
+
+        // Botão "Anterior"
+        const prevDisabled = (currentPage === 1);
+        const prevClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' + 
+                             (prevDisabled ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
+                                           : 'text-gray-700 border-gray-300 hover:bg-gray-100');
+        const prevTopBtn = document.createElement('button');
+        prevTopBtn.innerText = 'Anterior';
+        prevTopBtn.className = prevClass;
+        prevTopBtn.disabled  = prevDisabled;
+        prevTopBtn.addEventListener('click', () => {
+            if (currentPage > 1) goToPage(currentPage - 1);
+        });
+        // Clonar botão "Anterior" para o container de baixo (e reatribuir o evento)
+        const prevBottomBtn = prevTopBtn.cloneNode(true);
+        prevBottomBtn.disabled = prevDisabled;
+        prevBottomBtn.addEventListener('click', () => {
+            if (currentPage > 1) goToPage(currentPage - 1);
+        });
+
+        containerTop.appendChild(prevTopBtn);
+        containerBottom.appendChild(prevBottomBtn);
+
+        // Botões de número de página
+        for (let p = 1; p <= totalPages; p++) {
+            const isCurrent = (p === currentPage);
+            const pageClass = isCurrent 
+                ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white' 
+                : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
+            // Botão para container do topo
+            const pageTopBtn = document.createElement('button');
+            pageTopBtn.innerText = p;
+            pageTopBtn.className = pageClass;
+            if (!isCurrent) {
+                pageTopBtn.addEventListener('click', () => goToPage(p));
+            }
+            // Botão para container de baixo
+            const pageBottomBtn = pageTopBtn.cloneNode(true);
+            if (!isCurrent) {
+                pageBottomBtn.addEventListener('click', () => goToPage(p));
+            }
+            containerTop.appendChild(pageTopBtn);
+            containerBottom.appendChild(pageBottomBtn);
+        }
+
+        // Botão "Próximo"
+        const nextDisabled = (currentPage === totalPages);
+        const nextClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' + 
+                             (nextDisabled ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
+                                           : 'text-gray-700 border-gray-300 hover:bg-gray-100');
+        const nextTopBtn = document.createElement('button');
+        nextTopBtn.innerText = 'Próximo';
+        nextTopBtn.className = nextClass;
+        nextTopBtn.disabled  = nextDisabled;
+        nextTopBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) goToPage(currentPage + 1);
+        });
+        // Clonar botão "Próximo" para o container de baixo
+        const nextBottomBtn = nextTopBtn.cloneNode(true);
+        nextBottomBtn.disabled = nextDisabled;
+        nextBottomBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) goToPage(currentPage + 1);
+        });
+
+        containerTop.appendChild(nextTopBtn);
+        containerBottom.appendChild(nextBottomBtn);
+    }
+
+    // Eventos dos filtros e inicialização
+    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
+    applyFilters();  // Aplica filtros (e paginação) na carga inicial
 });
 </script>
 
