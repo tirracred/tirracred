@@ -32,7 +32,7 @@ exports.handler = async function(event) {
 
   try {
     // Analisa os dados enviados no corpo da requisição.
-    const { nome, email } = JSON.parse(event.body);
+    const { nome, email, whatsapp } = JSON.parse(event.body);
 
     // Valida se os campos necessários foram fornecidos.
     if (!nome || !email) {
@@ -44,7 +44,10 @@ exports.handler = async function(event) {
     }
 
     // Insere os dados na tabela 'leads' do Supabase.
-    const { error } = await supabase.from('leads').insert({ nome, email });
+    const { nome, cpf, whatsapp, email, renda, valor, negativado, parcelas } = JSON.parse(event.body);
+    const { error } = await supabase.from('leads').insert({ 
+    nome, cpf, whatsapp, email, renda, valor, negativado, parcelas 
+});
 
     // Se o Supabase retornar um erro, lança-o para ser capturado pelo bloco catch.
     if (error) {
