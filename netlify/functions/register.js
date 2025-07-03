@@ -1,75 +1,71 @@
-// netlify/functions/register.js
-const { createClient } = require('@supabase/supabase-js');
+const supabase = require('./utils/supabase');
 
 const headers = {
-  'Access-Control-Allow-Origin': '*', // Em produção, use seu domínio
+  'Access-Control-Allow-Origin': '*', // Em produção, restrinja ao seu domínio
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
 };
 
 exports.handler = async function(event) {
+  // Trata requisições OPTIONS (preflight)
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
-  }
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ message: 'Método não permitido.' }) };
-  }
-
-  // Inicializa o cliente Supabase (usando chave de serviço)
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) {
-    return { 
-      statusCode: 500, 
-      headers, 
-      body: JSON.stringify({ message: 'As variáveis de ambiente do Supabase não estão configuradas no Netlify.' }) 
+    return {
+      statusCode: 204,
+      headers,
+      body: ''
     };
   }
-  const supabase = createClient(supabaseUrl, serviceRoleKey, { 
-    auth: { persistSession: false, autoRefreshToken: false } 
-  });
+
+  if (event.httpMethod !== 'POST') {
+    return { 
+      statusCode: 405, 
+      headers,
+      body: JSON.stringify({ error: 'Método não permitido.' }) 
+    };
+  }
 
   try {
     const { nome, email, password, cpf, whatsapp, marketing_consent } = JSON.parse(event.body);
 
-    // Validação de campos obrigatórios
+    // Valida dados essenciais
     if (!email || !password) {
-      return { 
-        statusCode: 422, 
-        headers, 
-        body: JSON.stringify({ message: 'Email e senha são obrigatórios.' }) 
+      return {
+        statusCode: 422,
+        headers,
+        body: JSON.stringify({ error: 'Email e senha são obrigatórios.' })
       };
     }
 
-    // Cria o usuário no Supabase Auth, adicionando metadados do perfil
+    // Tenta registrar um novo usuário no Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        // Adiciona metadados ao usuário que serão salvos na tabela auth.users
         data: { 
-          full_name: nome,
-          cpf,
-          whatsapp,
+          full_name: nome, 
+          cpf, 
+          whatsapp, 
           marketing_consent 
         }
       }
     });
+
     if (error) {
-      // Retorna erro (por ex., email já cadastrado)
+      // Se houver um erro do Supabase (ex: email já existe), retorna o erro.
       return { 
-        statusCode: 400, 
-        headers, 
-        body: JSON.stringify({ message: error.message }) 
+        statusCode: 400, // Bad Request
+        headers,
+        body: JSON.stringify({ error: error.message }) 
       };
     }
 
-    // Sucesso – usuário criado
     return { 
-      statusCode: 201, 
-      headers, 
+      statusCode: 201, // Created
+      headers,
       body: JSON.stringify({ 
-        message: 'Utilizador criado com sucesso!',
+        message: "Utilizador criado com sucesso!", 
         user: data.user 
       }) 
     };
@@ -78,8 +74,8 @@ exports.handler = async function(event) {
     console.error('Erro no registro:', error);
     return { 
       statusCode: 500, 
-      headers, 
-      body: JSON.stringify({ message: `Erro interno do servidor: ${error.message}` }) 
+      headers,
+      body: JSON.stringify({ error: `Erro interno do servidor: ${error.message}` }) 
     };
   }
 };
