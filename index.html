@@ -1361,36 +1361,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica dos Formulários ---
     leadForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submit-btn-home');
-        btn.disabled = true;
-        btn.textContent = 'A enviar...';
-        
-        const rawData = Object.fromEntries(new FormData(e.target));
-        const leadData = {
-            ...rawData,
-            valor: Number(rawData.valor),
-            parcelas: Number(rawData.parcelas),
-            negativado: rawData.negativado === 'on',
-            consent: rawData.consent === 'on'
-        };
-        
-        try {
-            const res = await fetch('/api/capturar-lead', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(leadData)
-            });
-            if (!res.ok) throw new Error((await res.json()).message || 'Erro no servidor.');
-            alert('Lead capturado com sucesso!');
-            showResults(leadData);
-        } catch (err) {
-            alert(`Erro: ${err.message}`);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Ver Recomendações';
-        }
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn-home');
+  btn.disabled = true;
+
+  // feedback imediato
+  const originalText = btn.textContent;
+  btn.textContent = 'Processando…';
+
+  const rawData = Object.fromEntries(new FormData(e.target));
+  const payload = {
+    ...rawData,
+    valor: Number(rawData.valor),
+    parcelas: Number(rawData.parcelas),
+    negativado: rawData.negativado === 'on',
+    consent: rawData.consent === 'on'
+  };
+
+  try {
+    const res = await fetch('/api/capturar-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
+
+    if (!res.ok) {
+      const { error } = await res.json();
+      throw new Error(error || 'Erro no servidor');
+    }
+
+    // Sucesso ► mensagem mais amigável
+    toast('Tudo certo! Agora vamos encontrar as melhores ofertas para você…', 'success');
+
+    // Avança para a próxima etapa da UX
+    showResults(payload);
+  } catch (err) {
+    toast(`Ops! ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+});
 
     // Formulário de Registo
     registerForm?.addEventListener('submit', async (e) => {
