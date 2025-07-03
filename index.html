@@ -235,12 +235,14 @@
                                 </label>
                                 <p id="negativado-message" class="text-sm text-green-700 mt-1 hidden">Ainda há chances de conseguir!</p>
                             </div>
-                            <div>
-                               <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="Estou com o Nome Limpo!" id="nomelimpo-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                    <span class="ml-3 text-gray-700 font-medium">Está com o Nome Limpo?</span>
-                                </label>
-                                <p id="negativado-message" class="text-sm text-green-700 mt-1 hidden">Ainda mais chances de ser aprovado!</p>
+                             <!-- Nome Limpo -->
+                            <div class="flex flex-col">
+                            <label class="inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="nomelimpo-checkbox" name="nome_limpo" class="peer h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                            <span class="ml-3 font-medium text-gray-700 peer-checked:text-green-600 transition-colors">Está com o nome limpo?</span>
+                            </label>
+                            <p id="nomelimpo-msg" class="hidden text-sm font-medium text-green-600 mt-1">Mais chances de ser aprovado!</p>
+                            </div>
                             </div>
 
                             <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
