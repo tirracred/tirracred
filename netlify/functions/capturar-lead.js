@@ -1,30 +1,45 @@
 // netlify/functions/capturar-lead.js
 const supabase = require('./utils/supabase');
 
+// Cabeçalhos CORS compartilhados para todas as respostas
 const headers = {
-  'Access-Control-Allow-Origin': '*', 
+  'Access-Control-Allow-Origin': '*',  // Em produção, ajuste para o domínio do seu site
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
 };
 
 exports.handler = async function(event) {
-  // Suporte a preflight CORS
+  // Tratamento da preflight request (CORS)
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return {
+      statusCode: 204,
+      headers,
+      body: ''
+    };
   }
 
-  // Permite apenas POST
+  // Permite apenas método POST
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido.' }) };
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Método não permitido.' })
+    };
   }
 
   try {
-    // Parse uma vez só o corpo da requisição
+    // Parse do corpo da requisição JSON
     const data = JSON.parse(event.body);
-    const { nome, cpf, whatsapp, email, renda, valor, negativado, parcelas } = data;
+    const { nome, email } = data;
+    const cpf = data.cpf || null;
+    const whatsapp = data.whatsapp || null;
+    let rendaMensal = data.renda;
+    let valorDesejado = data.valor;
+    let negativado = data.negativado;
+    let parcelas = data.parcelas;
 
-    // Validação de campos obrigatórios
+    // Validação dos campos obrigatórios
     if (!nome || !email) {
       return {
         statusCode: 422,
@@ -33,32 +48,41 @@ exports.handler = async function(event) {
       };
     }
 
-    // (Opcional) Conversões de tipo para evitar erros de tipo no banco
-    let negativadoBool = negativado;
-    if (typeof negativadoBool === 'string') {
-      negativadoBool = negativadoBool.toLowerCase() === 'true';  // "true"/"false" -> boolean
+    // Conversão de tipos dos campos opcionais
+    if (typeof negativado !== 'boolean') {
+      // Trata strings "true"/"on" ou booleanos truthy/falsy
+      negativado = (negativado === true || negativado === 'true' || negativado === 'on');
     }
-    let rendaNum = (typeof renda === 'string' && renda !== '') ? Number(renda) : renda;
-    let valorNum = (typeof valor === 'string' && valor !== '') ? Number(valor) : valor;
-    let parcelasNum = (typeof parcelas === 'string' && parcelas !== '') ? parseInt(parcelas) : parcelas;
+    if (rendaMensal !== undefined && rendaMensal !== null) {
+      rendaMensal = Number(rendaMensal);
+      if (isNaN(rendaMensal)) rendaMensal = null;
+    }
+    if (valorDesejado !== undefined && valorDesejado !== null) {
+      valorDesejado = Number(valorDesejado);
+      if (isNaN(valorDesejado)) valorDesejado = null;
+    }
+    if (parcelas !== undefined && parcelas !== null) {
+      parcelas = Number(parcelas);
+      if (isNaN(parcelas)) parcelas = null;
+    }
 
-    // Insere os dados na tabela 'leads'
-    const { error } = await supabase.from('leads').insert({
+    // Monta o objeto com nomes de coluna corretos
+    const newLead = {
       nome,
-      cpf,
-      whatsapp,
       email,
-      renda: rendaNum,
-      valor: valorNum,
-      negativado: negativadoBool,
-      parcelas: parcelasNum
-    });
+      ...(cpf ? { cpf } : {}),
+      ...(whatsapp ? { whatsapp } : {}),
+      ...(rendaMensal !== undefined ? { renda_mensal: rendaMensal } : {}),
+      ...(valorDesejado !== undefined ? { valor_desejado: valorDesejado } : {}),
+      ...(negativado !== undefined ? { negativado } : {}),
+      ...(parcelas !== undefined ? { parcelas } : {})
+    };
 
-    if (error) {
-      throw error;  // se ocorrer erro na inserção, cai no catch
-    }
+    // Insere na tabela 'leads'
+    const { error } = await supabase.from('leads').insert(newLead);
+    if (error) throw error;  // Lança erro para cair no catch em caso de falha
 
-    // Sucesso na inserção
+    // Sucesso
     return {
       statusCode: 200,
       headers,
