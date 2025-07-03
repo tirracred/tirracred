@@ -1,0 +1,41 @@
+# Arquivo de configuração principal para a Netlify.
+# Este arquivo deve estar na raiz do seu projeto.
+
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/:splat"
+status = 200
+force = true
+
+# Seção de configuração do build.
+[build]
+  # Define o diretório onde as suas Netlify Functions estão localizadas.
+  # No seu caso, a pasta é "netlify/functions".
+  # A Netlify irá procurar por arquivos.js ou.ts neste diretório e implantá-los.
+  functions = "netlify/functions"
+
+  # Define o diretório que será publicado na CDN da Netlify.
+  # Se o seu index.html e outros recursos públicos (imagens, CSS) estão na raiz,
+  # use "/". Se estiverem numa pasta como "public" ou "dist", ajuste aqui.
+  publish = "/"
+
+# Seção de configuração de redirecionamentos e reescritas.
+# Esta é a correção crucial para o seu problema.
+[[redirects]]
+  # O 'from' define o padrão de URL que o navegador do usuário requisita.
+  # "/api/*" captura qualquer chamada para um endpoint que comece com /api/.
+  from = "/api/*"
+
+  # O 'to' define para onde a Netlify deve encaminhar a requisição internamente.
+  # "/.netlify/functions/:splat" é o caminho padrão para as funções.
+  # O ':splat' insere aqui o que foi capturado pelo '*' no 'from'.
+  # Exemplo: /api/login -> /.netlify/functions/login
+  to = "/.netlify/functions/:splat"
+
+  # O 'status = 200' transforma isto numa reescrita (rewrite/proxy) em vez de um redirecionamento (redirect).
+  # O navegador não vê a mudança de URL, fazendo com que a função atue como um backend.
+  status = 200
+
+  # O 'force = true' garante que esta regra seja executada mesmo que um arquivo
+  # com o mesmo nome exista no caminho (ex: uma pasta /api/ no seu projeto).
+  force = true
