@@ -458,56 +458,64 @@
                 </aside>
 
                 <!-- Lista de Produtos -->
-                <div class="lg:col-span-3">
-                    <div id="product-list" class="space-y-6">
+        <div class="lg:col-span-3">
+            <div id="product-list" class="space-y-6">
 
+        <!-- PRODUTO: Empréstimo Facio (corrigido e padronizado) -->
+        <div class="product-card" data-tipo="emprestimo" data-perfil="negativado score-baixo autonomo">
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
+                        <div class="p-3 border rounded-lg bg-gray-50">
+                            <img src="public/facio.png" alt="Logo Facio" class="w-32 h-auto object-contain"
+                                 onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Facio';" />
+                        </div>
+                    </div>
 
-                        <!-- PRODUTO: Empréstimo Facio (corrigido e padronizado) -->
-<div class="product-card" data-tipo="emprestimo" data-perfil="negativado score-baixo autonomo">
-  <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-    <div class="flex flex-col lg:flex-row gap-6">
-      <!-- Logo -->
-      <div class="flex-shrink-0 flex justify-center lg:justify-start">
-        <div class="p-3 border rounded-lg bg-gray-50">
-          <img src="public/facio.png" alt="Logo Facio" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Facio';" />
-        </div>
-      </div>
+                    <!-- Conteúdo -->
+                    <div class="flex-grow">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                            <!-- Texto -->
+                            <div class="flex-grow">
+                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Antecipação Salarial</span>
+                                <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Facio</h4>
+                                <ul class="space-y-2 text-gray-600 mb-4">
+                                    <li class="flex items-start">
+                                        <span class="text-green-600 mr-2">✓</span>
+                                        <span><strong class="text-green-700">Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong></span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-600 mr-2">✓</span>
+                                        <span>Sem consulta ao SPC/Serasa.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-600 mr-2">✓</span>
+                                        <span>Aprova <strong class="text-green-700">negativados</strong> e <strong class="text-green-700">score baixo</strong>.</span>
+                                    </li>
+                                </ul>
+                            </div>
 
-      <!-- Conteúdo -->
-      <div class="flex-grow">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <!-- Texto -->
-          <div class="flex-grow">
-            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Antecipação Salarial</span>
-            <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Facio</h4>
-            <ul class="space-y-2 text-gray-600 mb-4">
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span><strong class="text-green-700">Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong></span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span>Sem consulta ao SPC/Serasa.</span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span>Aprova <strong class="text-green-700">negativados</strong> e <strong class="text-green-700">score baixo</strong>.</span>
-              </li>
-            </li>
-          </div>
-
-          <!-- Ações -->
-          <div class="flex-shrink-0">
-            <div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col">
-              <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">Receber Agora</a>
-              <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">Mais Info</a>
+                            <!-- Ações -->
+                            <div class="flex-shrink-0">
+                                <div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col">
+                                    <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">Receber Agora</a>
+                                    <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">Mais Info</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
+
+        <!-- ...demais .product-card continuam aqui... -->
+
+    </div> <!-- fim da div id="product-list" -->
+
+    <!-- Container de paginação -->
+    <div id="pagination" class="mt-6 flex justify-center space-x-2"></div>
+</div> <!-- fim da div lg:col-span-3 -->
 <!-- PRODUTO: Empréstimo Juros Baixos -->
                         <div class="product-card" data-tipo="emprestimo" data-perfil="autonomo, negativado, score-baixo">
                             <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
@@ -861,102 +869,193 @@
 
 
 
-  <!-- Script de Filtragem Atualizado -->
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        /* ===================================================
-         * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
-         * =================================================== */
-        const filterBtn   = document.getElementById('filter-button');
-        const filterPanel = document.getElementById('filter-panel');
-        const closeBtn    = document.getElementById('filter-close');
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+    /* ===================================================
+     * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
+     * =================================================== */
+    const filterBtn   = document.getElementById('filter-button');
+    const filterPanel = document.getElementById('filter-panel');
+    const closeBtn    = document.getElementById('filter-close');
 
-        // Cria o overlay de fundo dinamicamente
-        const overlay = document.createElement('div');
-        overlay.id = 'filter-overlay';
-        Object.assign(overlay.style, {
-            position: 'fixed',
-            inset: '0',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: '40', // Um z-index menor que o painel
-            opacity: '0',
-            pointerEvents: 'none',
-            transition: 'opacity .3s ease-in-out'
-        });
-        document.body.appendChild(overlay);
+    // Cria o overlay de fundo dinamicamente
+    const overlay = document.createElement('div');
+    overlay.id = 'filter-overlay';
+    Object.assign(overlay.style, {
+        position: 'fixed',
+        inset: '0',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: '40',
+        opacity: '0',
+        pointerEvents: 'none',
+        transition: 'opacity .3s ease-in-out'
+    });
+    document.body.appendChild(overlay);
 
-        // Função para ABRIR o painel de filtros
-        function openPanel() {
-            if (!filterPanel) return;
-            filterPanel.classList.remove('translate-x-full');
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'auto';
-            document.body.style.overflow = 'hidden'; // Impede o scroll da página
-        }
+    // Funções para abrir/fechar o painel de filtros
+    function openPanel() {
+        if (!filterPanel) return;
+        filterPanel.classList.remove('translate-x-full');
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+        document.body.style.overflow = 'hidden';
+    }
+    function closePanel() {
+        if (!filterPanel) return;
+        filterPanel.classList.add('translate-x-full');
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        document.body.style.overflow = '';
+    }
+    if (filterBtn) filterBtn.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', closePanel);
 
-        // Função para FECHAR o painel de filtros
-        function closePanel() {
-            if (!filterPanel) return;
-            filterPanel.classList.add('translate-x-full');
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-            document.body.style.overflow = ''; // Libera o scroll da página
-        }
+    /* ===================================================
+     * 2. LÓGICA DE FILTRAGEM & PAGINAÇÃO DINÂMICA
+     * =================================================== */
+    const filterInputs  = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+    const productCards  = document.querySelectorAll('#product-list .product-card');
+    const itemsPerPage  = 6;
+    let currentPage     = 1;
+    let filteredCards   = [];
 
-        // Eventos para abrir e fechar
-        if (filterBtn) filterBtn.addEventListener('click', openPanel);
-        if (closeBtn) closeBtn.addEventListener('click', closePanel);
-        overlay.addEventListener('click', closePanel);
+    function applyFilters() {
+        const selectedType     = document.querySelector('input[name="product_type"]:checked').value;
+        const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
 
-        /* ===================================================
-         * 2. LÓGICA DE FILTRAGEM (UNIFICADA)
-         * =================================================== */
-        const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-        const productCards = document.querySelectorAll('#product-list .product-card');
+        filteredCards = [];
+        let visibleCount = 0;
+        productCards.forEach(card => {
+            const typeMatch    = (selectedType === 'all') || (card.dataset.tipo === selectedType);
+            const cardProfiles = (card.dataset.perfil || '').split(' ');
+            const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => cardProfiles.includes(p));
 
-        function applyFilters() {
-            const selectedType = document.querySelector('input[name="product_type"]:checked').value;
-            const selectedProfiles = Array.from(
-                document.querySelectorAll('input[data-filter="perfil"]:checked')
-            ).map(cb => cb.value);
-
-            productCards.forEach(card => {
-                const typeMatch = selectedType === 'all' || selectedType === card.dataset.tipo;
-                const cardProfiles = (card.dataset.perfil || '').split(' ');
-                const profileMatch = selectedProfiles.length === 0 || selectedProfiles.every(p => cardProfiles.includes(p));
-
-                // Lógica para mostrar ou esconder o card
-                if (typeMatch && profileMatch) {
+            if (typeMatch && profileMatch) {
+                visibleCount++;
+                filteredCards.push(card);
+                if (visibleCount <= itemsPerPage) {
+                    // Mostrar o card (fade-in suave)
                     card.style.display = 'block';
                     setTimeout(() => {
-                        card.style.opacity = '1';
+                        card.style.opacity   = '1';
                         card.style.transform = 'scale(1)';
                     }, 10);
                 } else {
-                    card.style.opacity = '0';
+                    // Ocultar cards além do limite da primeira página
+                    card.style.opacity   = '0';
                     card.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
+                    setTimeout(() => { card.style.display = 'none'; }, 300);
                 }
-            });
-            
-            // --- MUDANÇA PRINCIPAL ---
-            // Se a tela for mobile (menor que 1024px), fecha o painel após aplicar o filtro.
-            if (window.innerWidth < 1024) {
-                closePanel();
+            } else {
+                // Ocultar cards que não correspondem aos filtros
+                card.style.opacity   = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => { card.style.display = 'none'; }, 300);
             }
+        });
+
+        // Reinicia na primeira página e atualiza os botões de paginação
+        currentPage = 1;
+        renderPagination();
+
+        // Em telas menores, fecha o painel de filtros após aplicar
+        if (window.innerWidth < 1024) {
+            closePanel();
+        }
+    }
+
+    // Função para trocar de página com animação
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+        if (page < 1 || page > totalPages || page === currentPage) return;
+
+        // Itens da página atual (que serão ocultados)
+        const startIndexOld   = (currentPage - 1) * itemsPerPage;
+        const endIndexOld     = Math.min(startIndexOld + itemsPerPage, filteredCards.length);
+        const currentPageCards = filteredCards.slice(startIndexOld, endIndexOld);
+
+        // Itens da nova página a serem exibidos
+        const startIndexNew = (page - 1) * itemsPerPage;
+        const endIndexNew   = Math.min(startIndexNew + itemsPerPage, filteredCards.length);
+        const newPageCards  = filteredCards.slice(startIndexNew, endIndexNew);
+
+        // Fade-out nos itens da página atual
+        currentPageCards.forEach(card => {
+            card.style.opacity   = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => { card.style.display = 'none'; }, 300);
+        });
+
+        // Fade-in nos itens da nova página após a saída dos atuais
+        setTimeout(() => {
+            newPageCards.forEach(card => {
+                card.style.display  = 'block';
+                card.style.opacity   = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.opacity   = '1';
+                    card.style.transform = 'scale(1)';
+                }, 10);
+            });
+            currentPage = page;
+            renderPagination();
+        }, 300);
+    }
+
+    // Função para criar/atualizar os botões de paginação
+    function renderPagination() {
+        const totalProducts = filteredCards.length;
+        const totalPages    = Math.ceil(totalProducts / itemsPerPage);
+        const container     = document.getElementById('pagination');
+        container.innerHTML = '';  // Limpa paginação antiga
+
+        if (totalPages <= 1) {
+            return;  // Não exibe paginação se há 0 ou 1 página
         }
 
-        // Adiciona o "escutador" de eventos aos inputs
-        filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-        
-        // Aplica o filtro no carregamento inicial para garantir o estado correto
-        applyFilters();
-    });
+        // Botão "Anterior"
+        const prevBtn = document.createElement('button');
+        prevBtn.innerText = 'Anterior';
+        prevBtn.className = 'px-3 py-1 rounded-lg text-sm font-medium border ' + 
+            (currentPage === 1 ? 'text-gray-400 border-gray-300 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100');
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) goToPage(currentPage - 1);
+        });
+        container.appendChild(prevBtn);
 
+        // Botões de página numerados
+        for (let p = 1; p <= totalPages; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.innerText = p;
+            pageBtn.className = (p === currentPage)
+                ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
+                : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
+            pageBtn.addEventListener('click', () => {
+                if (p !== currentPage) goToPage(p);
+            });
+            container.appendChild(pageBtn);
+        }
 
+        // Botão "Próximo"
+        const nextBtn = document.createElement('button');
+        nextBtn.innerText = 'Próximo';
+        nextBtn.className = 'px-3 py-1 rounded-lg text-sm font-medium border ' + 
+            (currentPage === totalPages ? 'text-gray-400 border-gray-300 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100');
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) goToPage(currentPage + 1);
+        });
+        container.appendChild(nextBtn);
+    }
+
+    // Eventos dos filtros e inicialização
+    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
+    applyFilters();  // aplica filtros (e paginação) na carga inicial
+});
 </script>
+
             
 
 
