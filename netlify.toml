@@ -7,6 +7,22 @@ to = "/.netlify/functions/:splat"
 status = 200
 force = true
 
+[build]
+  publish = "public" # pasta onde estão os arquivos estáticos (ex: index.html)
+  functions = "netlify/functions"  # pasta onde estão as funções serverless
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+  [[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+
 # Seção de configuração do build.
 [build]
   # Define o diretório onde as suas Netlify Functions estão localizadas.

@@ -1,72 +1,72 @@
-// netlify/functions/capturar-lead.js
+const { createClient } = require('@supabase/supabase-js');
 
-// Importa o cliente Supabase compartilhado do arquivo de utilitários.
-const supabase = require('./utils/supabase');
-
-// Define os cabeçalhos CORS para permitir requisições do seu frontend.
 const headers = {
-  'Access-Control-Allow-Origin': '*', // Em produção, restrinja ao seu domínio: 'https://seu-site.com'
+  'Access-Control-Allow-Origin': '*', // Em produção, use seu domínio aqui
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
 };
 
 exports.handler = async function(event) {
-  // Trata a requisição pré-verificação (preflight) do CORS enviada pelos navegadores.
+  // Suporte a preflight CORS
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204, // No Content
-      headers,
-      body: ''
-    };
+    return { statusCode: 204, headers, body: '' };
+  }
+  // Permite apenas POST
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ message: 'Método não permitido.' }) };
   }
 
-  // Permite apenas o método POST para esta função.
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405, // Method Not Allowed
-      headers,
-      body: JSON.stringify({ error: 'Método não permitido.' })
+  // Inicializa o cliente Supabase (usando chave de serviço)
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    return { 
+      statusCode: 500, 
+      headers, 
+      body: JSON.stringify({ message: 'As variáveis de ambiente do Supabase não estão configuradas no Netlify.' }) 
     };
   }
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { 
+    auth: { persistSession: false, autoRefreshToken: false } 
+  });
 
   try {
-    // Analisa os dados enviados no corpo da requisição.
     const { nome, email } = JSON.parse(event.body);
 
-    // Valida se os campos necessários foram fornecidos.
+    // Validação de campos obrigatórios
     if (!nome || !email) {
-      return {
-        statusCode: 422, // Unprocessable Entity
-        headers,
-        body: JSON.stringify({ error: 'Os campos nome e e-mail são obrigatórios.' })
+      return { 
+        statusCode: 422, 
+        headers, 
+        body: JSON.stringify({ message: 'Os campos nome e e-mail são obrigatórios.' }) 
       };
     }
 
-    // Insere os dados na tabela 'leads' do Supabase.
+    // Insere o lead no Supabase
     const { error } = await supabase.from('leads').insert({ nome, email });
-
-    // Se o Supabase retornar um erro, lança-o para ser capturado pelo bloco catch.
     if (error) {
-      throw error;
+      // Erro ao inserir (por exemplo, registro duplicado ou falha no banco)
+      return { 
+        statusCode: 400, 
+        headers, 
+        body: JSON.stringify({ message: error.message }) 
+      };
     }
 
-    // Retorna uma resposta de sucesso.
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ message: 'Lead capturado com sucesso!' })
+    // Sucesso
+    return { 
+      statusCode: 200, 
+      headers, 
+      body: JSON.stringify({ message: 'Lead capturado com sucesso!' }) 
     };
 
   } catch (error) {
-    // Loga o erro para depuração nos logs da função Netlify.
     console.error('Erro ao capturar lead:', error);
-
-    // Retorna uma resposta de erro genérica para o cliente.
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: `Erro interno do servidor: ${error.message}` })
+    return { 
+      statusCode: 500, 
+      headers, 
+      body: JSON.stringify({ message: `Erro interno do servidor: ${error.message}` }) 
     };
   }
 };
