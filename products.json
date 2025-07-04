@@ -1,0 +1,210 @@
+[
+  {
+    "id": "facio",
+    "nome": "Empréstimo Facio",
+    "tipo": "emprestimo",
+    "perfil": ["negativado", "score-baixo", "autonomo"],
+    "logo": "public/facio.png",
+    "tag": {
+      "texto": "Antecipação Salarial",
+      "cor": "green"
+    },
+    "beneficios": [
+      "<strong>Antecipe seu salário em até 2 minutos via PIX.</strong>",
+      "Sem consulta ao SPC/Serasa.",
+      "Aprova <strong>negativados</strong> e <strong>score baixo</strong>."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/4l19g3V",
+        "texto": "Receber Agora"
+      },
+      "secundario": {
+        "url": "https://bit.ly/4l19g3V",
+        "texto": "Mais Info"
+      }
+    }
+  },
+  {
+    "id": "juros-baixos",
+    "nome": "Bom Pra Crédito",
+    "tipo": "emprestimo",
+    "perfil": ["autonomo", "negativado", "score-baixo"],
+    "logo": "public/jurosbaixos.png",
+    "tag": {
+      "texto": "Empréstimo Pessoal",
+      "cor": "green"
+    },
+    "beneficios": [
+      "Encontre as melhores ofertas de crédito.",
+      "Aceita negativados e valores podem ser muito altos.",
+      "Processo 100% online, rápido e seguro."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/414zSbS",
+        "texto": "Comparar Ofertas"
+      },
+      "secundario": {
+        "url": "https://bit.ly/414zSbS",
+        "texto": "Simular"
+      }
+    }
+  },
+  {
+    "id": "supersim",
+    "nome": "Empréstimo Supersim",
+    "tipo": "emprestimo",
+    "perfil": ["negativado", "score-baixo", "autonomo"],
+    "logo": "public/supersim.png",
+    "tag": {
+      "texto": "Empréstimo Pessoal",
+      "cor": "green"
+    },
+    "beneficios": [
+      "<strong>Aprova negativados e score baixo.</strong>",
+      "Dinheiro na conta em até 30 minutos via PIX.",
+      "Empréstimo com garantia de celular para facilitar."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/4jQk57T",
+        "texto": "Simular Grátis"
+      },
+      "secundario": {
+        "url": "https://bit.ly/4jQk57T",
+        "texto": "Saiba Mais"
+      }
+    }
+  },
+  {
+    "id": "santander-sx",
+    "nome": "Santander SX",
+    "tipo": "cartao",
+    "perfil": ["score-baixo"],
+    "logo": "public/santander.png",
+    "tag": {
+      "texto": "Cartão de Crédito",
+      "cor": "red"
+    },
+    "beneficios": [
+      "Zere a anuidade gastando R$100 na fatura ou cadastrando chaves PIX.",
+      "Cartão online disponível antes do físico chegar.",
+      "Programa de pontos Esfera e descontos."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/4jdUsO0",
+        "texto": "Peça Agora"
+      },
+      "secundario": {
+        "url": "https://bit.ly/4jdUsO0",
+        "texto": "Ver Detalhes"
+      }
+    }
+  },
+  {
+    "id": "itau-passai",
+    "nome": "Itaú Passaí Gold",
+    "tipo": "cartao",
+    "perfil": ["negativado", "score-baixo"],
+    "logo": "public/itaupassai.png",
+    "tag": {
+      "texto": "Cartão de Crédito",
+      "cor": "red"
+    },
+    "beneficios": [
+      "Preço de atacado a partir de 1 unidade no Assaí.",
+      "Anuidade zero gastando R$ 1.000 em compras.",
+      "Benefícios da bandeira Visa Gold."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/3Hh5Pr6",
+        "texto": "Peça Agora"
+      },
+      "secundario": {
+        "url": "https://bit.ly/3Hh5Pr6",
+        "texto": "Condições"
+      }
+    }
+  },
+  {
+    "id": "bom-pra-credito",
+    "nome": "Bom Pra Crédito",
+    "tipo": "emprestimo",
+    "perfil": ["autonomo"],
+    "logo": "public/bompracredito.png",
+    "tag": {
+      "texto": "Empréstimo Pessoal",
+      "cor": "green"
+    },
+    "beneficios": [
+      "Compare ofertas de mais de 30 financeiras.",
+      "Encontre a melhor taxa de juros para seu perfil.",
+      "Processo 100% online, rápido e seguro."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/3Y4yzJl",
+        "texto": "Comparar Ofertas"
+      },
+      "secundario": {
+        "url": "https://bit.ly/3Y4yzJl",
+        "texto": "Simular"
+      }
+    }
+  },
+  {
+    "id": "brasilcard",
+    "nome": "Cartão Brasilcard",
+    "tipo": "cartao",
+    "perfil": ["autonomo", "score-baixo", "negativado"],
+    "logo": "public/brasilcard.png",
+    "tag": {
+      "texto": "Cartão de Crédito",
+      "cor": "red"
+    },
+    "beneficios": [
+      "Crédito aprovado em poucos minutos.",
+      "Aprovação mesmo para negativados.",
+      "Processo 100% online em até 2 minutos."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/3WJuKZb",
+        "texto": "Peça Agora"
+      },
+      "secundario": {
+        "url": "https://bit.ly/3WJuKZb",
+        "texto": "Condições"
+      }
+    }
+  },
+  {
+    "id": "ourocard-facil",
+    "nome": "Ourocard Fácil",
+    "tipo": "cartao",
+    "perfil": ["score-baixo"],
+    "logo": "public/ourocard.png",
+    "tag": {
+      "texto": "Cartão de Crédito",
+      "cor": "red"
+    },
+    "beneficios": [
+      "Sem anuidade acumulando R$100 em compras por mês.",
+      "Aprovação simplificada, bom para score baixo.",
+      "Cartão virtual e benefícios da bandeira Visa."
+    ],
+    "links": {
+      "principal": {
+        "url": "https://bit.ly/3HZaM8s",
+        "texto": "Peça Agora"
+      },
+      "secundario": {
+        "url": "https://bit.ly/3HZaM8s",
+        "texto": "Conhecer"
+      }
+    }
+  }
+]

@@ -387,676 +387,106 @@
 
     
 
-     <!-- Seção Filtros (Compara Online Style) -->
-    <section id="home-filters" class="py-4 sm:py-8">
+     <!-- Seção de Filtros e Produtos -->
+    <section id="produtos" class="py-16 lg:py-24 bg-gray-50">
         <div class="container mx-auto px-4">
             
-            <!-- Botão para abrir filtros no Mobile (visível apenas em telas pequenas) -->
-            <div class="lg:hidden mb-6">
-                <button id="filter-button" class="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    Filtrar Resultados
-                </button>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-gray-800">Encontre a melhor solução para você</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Filtre por tipo de produto e seu perfil para ver as opções mais adequadas.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
                 
-                <!-- Filtros (Painel Off-canvas em Mobile, Sidebar em Desktop) -->
-                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
-                    
-                    <div class="h-full flex flex-col">
-                        <!-- Cabeçalho do Painel Mobile com Título e Botão de Fechar -->
-                        <div class="flex items-center justify-between border-b p-4 lg:hidden">
-                            <h3 class="text-xl font-semibold text-gray-900">Filtros</h3>
-                            <button id="filter-close" class="text-gray-500 hover:text-gray-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
+                <!-- Coluna de Filtros -->
+                <aside class="lg:col-span-1">
+                    <form id="filter-form" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm sticky top-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Filtros</h3>
+                        
+                        <!-- Filtro por Tipo -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold text-gray-700 mb-3">Tipo de Produto</h4>
+                            <div class="flex flex-col space-y-2">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="tipo" value="todos" class="form-radio text-green-600" checked>
+                                    <span>Todos</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="tipo" value="emprestimo" class="form-radio text-green-600">
+                                    <span>Empréstimos</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="tipo" value="cartao" class="form-radio text-green-600">
+                                    <span>Cartões</span>
+                                </label>
+                            </div>
                         </div>
 
-                        <!-- Conteúdo dos Filtros (com scroll se necessário no mobile) -->
-                        <div class="p-6 overflow-y-auto">
-                            <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre sua busca</h3>
-                            <div class="space-y-6">
+                        <!-- Filtro por Perfil -->
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-4">Qual seu perfil?</h4>
+                            <div class="space-y-3">
                                 <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Todos</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Empréstimos</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Cartões de Crédito</span>
-                                        </label>
-                                    </div>
+                                    <input type="checkbox" name="perfil" value="negativado" id="perfil-negativado" class="hidden filter-checkbox">
+                                    <label for="perfil-negativado" class="flex items-center justify-between w-full p-3 text-gray-600 bg-white border-2 rounded-lg cursor-pointer transition-all duration-300 hover:bg-gray-100">
+                                        <span class="text-sm font-medium">Estou negativado</span>
+                                        <svg class="w-5 h-5 ml-3 text-green-600 transition-transform duration-300 transform scale-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </label>
                                 </div>
-                                <hr>
                                 <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Para Negativados</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Score Baixo</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Autônomo</span>
-                                        </label>
-                                    </div>
+                                    <input type="checkbox" name="perfil" value="score-baixo" id="perfil-score-baixo" class="hidden filter-checkbox">
+                                    <label for="perfil-score-baixo" class="flex items-center justify-between w-full p-3 text-gray-600 bg-white border-2 rounded-lg cursor-pointer transition-all duration-300 hover:bg-gray-100">
+                                        <span class="text-sm font-medium">Tenho score baixo</span>
+                                        <svg class="w-5 h-5 ml-3 text-green-600 transition-transform duration-300 transform scale-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" name="perfil" value="autonomo" id="perfil-autonomo" class="hidden filter-checkbox">
+                                    <label for="perfil-autonomo" class="flex items-center justify-between w-full p-3 text-gray-600 bg-white border-2 rounded-lg cursor-pointer transition-all duration-300 hover:bg-gray-100">
+                                        <span class="text-sm font-medium">Sou autônomo</span>
+                                        <svg class="w-5 h-5 ml-3 text-green-600 transition-transform duration-300 transform scale-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </aside>
 
+                <!-- Coluna da Lista de Produtos -->
                 <div class="lg:col-span-3">
-                <!-- Navegação de páginas (topo da lista) -->
-                <div id="pagination-top" class="flex justify-center gap-2 mb-4"></div>
-
-                <!-- Lista de Produtos -->
-                <div class="lg:col-span-3">
+                    <!-- O contêiner da lista de produtos será preenchido pelo JavaScript -->
                     <div id="product-list" class="space-y-6">
-
-                        <!-- PRODUTO: Empréstimo Facio (corrigido e padronizado) -->
-<div class="product-card" data-tipo="emprestimo" data-perfil="negativado score-baixo autonomo">
-  <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-    <div class="flex flex-col lg:flex-row gap-6">
-      <!-- Logo -->
-      <div class="flex-shrink-0 flex justify-center lg:justify-start">
-        <div class="p-3 border rounded-lg bg-gray-50">
-          <img src="public/facio.png" alt="Logo Facio" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Facio';" />
-        </div>
-      </div>
-
-      <!-- Conteúdo -->
-      <div class="flex-grow">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <!-- Texto -->
-          <div class="flex-grow">
-            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Antecipação Salarial</span>
-            <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Facio</h4>
-            <ul class="space-y-2 text-gray-600 mb-4">
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span><strong class="text-green-700">Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong></span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span>Sem consulta ao SPC/Serasa.</span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-green-600 mr-2">✓</span>
-                <span>Aprova <strong class="text-green-700">negativados</strong> e <strong class="text-green-700">score baixo</strong>.</span>
-              </li>
-            </li>
-          </div>
-
-          <!-- Ações -->
-          <div class="flex-shrink-0">
-            <div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col">
-              <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">Receber Agora</a>
-              <a href="https://bit.ly/4l19g3V" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">Mais Info</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- PRODUTO: Empréstimo Juros Baixos -->
-                        <div class="product-card" data-tipo="emprestimo" data-perfil="autonomo, negativado, score-baixo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3 border rounded-lg bg-gray-50">
-                                            <img src="public/jurosbaixos.png" alt="Logo Bom Pra Crédito" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x40/e2e8f0/4a5568?text=Bom+Pra+Crédito';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Empréstimo Pessoal</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Juros Baixos</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Encontre as melhores ofertas de crédito.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Aceita negativados e valores podem ser muito altos.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Processo 100% online, rápido e seguro.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/414zSbS" target="_blank" class="btn-primary text-center">Comparar Ofertas</a>
-                                                    <a href="https://bit.ly/414zSbS" target="_blank" class="btn-secondary text-center">Simular</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- PRODUTO: Empréstimo Supersim -->
-                        <div class="product-card" data-tipo="emprestimo" data-perfil="negativado score-baixo autonomo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3 border rounded-lg bg-gray-50">
-                                            <img src="public/supersim.png" alt="Logo Supersim" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Supersim';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Empréstimo Pessoal</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Empréstimo Supersim</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span><strong class="text-green-700">Aprova negativados e score baixo.</strong></span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Dinheiro na conta em até 30 minutos via PIX.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Empréstimo com garantia de celular para facilitar.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/4jQk57T" target="_blank" class="btn-primary text-center">Simular Grátis</a>
-                                                    <a href="https://bit.ly/4jQk57T" target="_blank" class="btn-secondary text-center">Saiba Mais</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- PRODUTO: Cartão Santander SX -->
-                        <div class="product-card" data-tipo="cartao" data-perfil="score-baixo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3">
-                                            <img src="public/santander.png" alt="Cartão Santander SX" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x100/e2e8f0/4a5568?text=Santander+SX';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Santander SX</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Zere a anuidade gastando R$100 na fatura ou cadastrando chaves PIX.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Cartão online disponível antes do físico chegar.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Programa de pontos Esfera e descontos.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/4jdUsO0" target="_blank" class="btn-primary text-center">Peça Agora</a>
-                                                    <a href="https://bit.ly/4jdUsO0" target="_blank" class="btn-secondary text-center">Ver Detalhes</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-                        <!-- PRODUTO: Cartão Itaú Passaí Gold -->
-                        <div class="product-card" data-tipo="cartao" data-perfil="negativado score-baixo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3">
-                                            <img src="public/itaupassai.png" alt="Cartão Itaú Passaí Gold" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x100/e2e8f0/4a5568?text=Itaú+Passaí';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Itaú Passaí Gold</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Preço de atacado a partir de 1 unidade no Assaí.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Anuidade zero gastando R$ 1.000 em compras.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Benefícios da bandeira Visa Gold.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/3Hh5Pr6" target="_blank" class="btn-primary text-center">Peça Agora</a>
-                                                    <a href="https://bit.ly/3Hh5Pr6" target="_blank" class="btn-secondary text-center">Condições</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- PRODUTO: Empréstimo Bom Pra Crédito -->
-                        <div class="product-card" data-tipo="emprestimo" data-perfil="autonomo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3 border rounded-lg bg-gray-50">
-                                            <img src="public/bompracredito.png" alt="Logo Bom Pra Crédito" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x40/e2e8f0/4a5568?text=Bom+Pra+Crédito';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Empréstimo Pessoal</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Bom Pra Crédito</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Compare ofertas de mais de 30 financeiras.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Encontre a melhor taxa de juros para seu perfil.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-green-600 mr-2">✓</span>
-                                                        <span>Processo 100% online, rápido e seguro.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/3Y4yzJl" target="_blank" class="btn-primary text-center">Comparar Ofertas</a>
-                                                    <a href="https://bit.ly/3Y4yzJl" target="_blank" class="btn-secondary text-center">Simular</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                           <!-- PRODUTO: Cartão Brasilcard (ajustado para layout e proporções iguais ao Ourocard Fácil) -->
-                        <div class="product-card" data-tipo="cartao" data-perfil="autonomo score-baixo negativado">
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                        <div class="flex flex-col lg:flex-row gap-6">
-                        <!-- Logo -->
-                        <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                        <div class="p-3">
-                        <img src="public/brasilcard.png" alt="Cartão Brasilcard" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x100/e2e8f0/4a5568?text=Brasilcard';" />
-                        </div>
-                        </div>
-
-                        <!-- Conteúdo -->
-                        <div class="flex-grow">
-                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                            <!-- Texto -->
-                            <div class="flex-grow">
-                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>
-                                <h4 class="text-xl font-bold text-gray-800 mb-3">Cartão Brasilcard</h4>
-                                <ul class="space-y-2 text-gray-600 mb-4">
-                                <li class="flex items-start">
-                                    <span class="text-red-600 mr-2">✓</span>
-                                    <span>Crédito aprovado em poucos minutos.</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-red-600 mr-2">✓</span>
-                                    <span>Aprovação mesmo para negativados.</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-red-600 mr-2">✓</span>
-                                    <span>Processo 100% online em até 2&nbsp;minutos.</span>
-                                </li>
-                                </ul>
-                            </div>
-
-                            <!-- Ações -->
-                            <div class="flex-shrink-0">
-                                <div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col">
-                                <a href="https://bit.ly/3WJuKZb" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">Peça Agora</a>
-                                <a href="https://bit.ly/3WJuKZb" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">Condições</a>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
+                        <!-- Os cards de produto serão inseridos aqui -->
                     </div>
 
-
-                        <!-- PRODUTO: Cartão Ourocard Fácil -->
-                        <div class="product-card" data-tipo="cartao" data-perfil="score-baixo">
-                            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                <div class="flex flex-col lg:flex-row gap-6">
-                                    <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                        <div class="p-3">
-                                            <img src="public/ourocard.png" alt="Cartão Ourocard Fácil" class="w-40 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/160x100/e2e8f0/4a5568?text=Ourocard+Fácil';">
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div class="flex-grow">
-                                                <span class="inline-block bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">Cartão de Crédito</span>
-                                                <h4 class="text-xl font-bold text-gray-800 mb-3">Ourocard Fácil</h4>
-                                                <ul class="space-y-2 text-gray-600 mb-4">
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Sem anuidade acumulando R$100 em compras por mês.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Aprovação simplificada, bom para score baixo.</span>
-                                                    </li>
-                                                    <li class="flex items-start">
-                                                        <span class="text-red-600 mr-2">✓</span>
-                                                        <span>Cartão virtual e benefícios da bandeira Visa.</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="product-actions">
-                                                    <a href="https://bit.ly/3HZaM8s" target="_blank" class="btn-primary text-center">Peça Agora</a>
-                                                    <a href="https://bit.ly/3HZaM8s" target="_blank" class="btn-secondary text-center">Conhecer</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    <!-- Indicador de Carregamento para Scroll Infinito -->
+                    <div id="loading-indicator" class="flex justify-center items-center py-8">
+                        <svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Mensagem de "Nenhum resultado encontrado" -->
+                    <div id="no-results" class="hidden text-center py-12 bg-white rounded-lg border">
+                        <h3 class="text-xl font-semibold text-gray-700">Nenhum resultado encontrado</h3>
+                        <p class="text-gray-500 mt-2">Tente ajustar os filtros para ver mais opções.</p>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-  <script>
+    <!-- Script principal -->
+    <script src="js/main.js"></script>
 
-    
-document.addEventListener('DOMContentLoaded', () => {
-    /* ===================================================
-     * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
-     * =================================================== */
-    const filterBtn   = document.getElementById('filter-button');
-    const filterPanel = document.getElementById('filter-panel');
-    const closeBtn    = document.getElementById('filter-close');
-
-    // Cria o overlay de fundo dinamicamente
-    const overlay = document.createElement('div');
-    overlay.id = 'filter-overlay';
-    Object.assign(overlay.style, {
-        position: 'fixed',
-        inset: '0',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: '40',
-        opacity: '0',
-        pointerEvents: 'none',
-        transition: 'opacity .3s ease-in-out'
-    });
-    document.body.appendChild(overlay);
-
-    // Funções para abrir/fechar o painel de filtros
-    function openPanel() {
-        if (!filterPanel) return;
-        filterPanel.classList.remove('translate-x-full');
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'hidden';
-    }
-    function closePanel() {
-        if (!filterPanel) return;
-        filterPanel.classList.add('translate-x-full');
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-        document.body.style.overflow = '';
-    }
-    if (filterBtn) filterBtn.addEventListener('click', openPanel);
-    if (closeBtn) closeBtn.addEventListener('click', closePanel);
-    overlay.addEventListener('click', closePanel);
-
-    /* ===================================================
-     * 2. CRIAR CONTAINER DE PAGINAÇÃO INFERIOR (SE NECESSÁRIO)
-     * =================================================== */
-    const paginationTop = document.getElementById('pagination-top');
-    if (paginationTop) {
-        let paginationBottom = document.getElementById('pagination-bottom');
-        if (!paginationBottom) {
-            paginationBottom = document.createElement('div');
-            paginationBottom.id = 'pagination-bottom';
-            paginationBottom.className = 'flex justify-center gap-2 mt-4';
-            paginationTop.parentNode.appendChild(paginationBottom);
-        }
-    }
-
-    /* ===================================================
-     * 3. LÓGICA DE FILTRAGEM & PAGINAÇÃO DINÂMICA
-     * =================================================== */
-    const filterInputs  = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-    const productCards  = document.querySelectorAll('#product-list .product-card');
-    const itemsPerPage  = 8;  // Exibir 8 produtos por página
-    let currentPage     = 1;
-    let filteredCards   = [];
-
-    function applyFilters() {
-        const selectedType     = document.querySelector('input[name="product_type"]:checked').value;
-        const selectedProfiles = Array.from(
-            document.querySelectorAll('input[data-filter="perfil"]:checked')
-        ).map(cb => cb.value);
-
-        filteredCards = [];
-        let visibleCount = 0;
-        productCards.forEach(card => {
-            const typeMatch    = (selectedType === 'all') || (card.dataset.tipo === selectedType);
-            const cardProfiles = (card.dataset.perfil || '').split(' ');
-            const profileMatch = (selectedProfiles.length === 0) ||
-                selectedProfiles.every(p => cardProfiles.includes(p));
-
-            if (typeMatch && profileMatch) {
-                // Card corresponde aos filtros
-                visibleCount++;
-                filteredCards.push(card);
-                if (visibleCount <= itemsPerPage) {
-                    // Mostrar o card na primeira página
-                    card.style.display = 'block';
-                    setTimeout(() => {
-                        card.style.opacity   = '1';
-                        card.style.transform = 'scale(1)';
-                    }, 10);
-                } else {
-                    // Ocultar cards além do limite da primeira página
-                    card.style.opacity   = '0';
-                    card.style.transform = 'scale(0.95)';
-                    setTimeout(() => { card.style.display = 'none'; }, 300);
-                }
-            } else {
-                // Ocultar cards que não correspondem aos filtros
-                card.style.opacity   = '0';
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => { card.style.display = 'none'; }, 300);
-            }
-        });
-
-        // Reinicia na primeira página e atualiza a paginação
-        currentPage = 1;
-        renderPagination();
-
-        // Em telas pequenas, fecha o painel de filtros após aplicar
-        if (window.innerWidth < 1024) {
-            closePanel();
-        }
-    }
-
-    // Função para trocar de página com transição suave
-    function goToPage(page) {
-        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
-        if (page < 1 || page > totalPages || page === currentPage) return;
-
-        // Índices dos itens da página atual
-        const startOld = (currentPage - 1) * itemsPerPage;
-        const endOld   = Math.min(startOld + itemsPerPage, filteredCards.length);
-        const oldCards = filteredCards.slice(startOld, endOld);
-
-        // Índices dos itens da nova página
-        const startNew = (page - 1) * itemsPerPage;
-        const endNew   = Math.min(startNew + itemsPerPage, filteredCards.length);
-        const newCards = filteredCards.slice(startNew, endNew);
-
-        // Fade-out: oculta gradualmente os cards da página atual
-        oldCards.forEach(card => {
-            card.style.opacity   = '0';
-            card.style.transform = 'scale(0.95)';
-            setTimeout(() => { card.style.display = 'none'; }, 300);
-        });
-
-        // Fade-in: exibe os cards da nova página após saída dos anteriores
-        setTimeout(() => {
-            newCards.forEach(card => {
-                card.style.display   = 'block';
-                card.style.opacity   = '0';
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.opacity   = '1';
-                    card.style.transform = 'scale(1)';
-                }, 10);
-            });
-            currentPage = page;
-            renderPagination();
-        }, 300);
-    }
-
-    // Função para criar/atualizar os controles de paginação
-    function renderPagination() {
-        const totalProducts = filteredCards.length;
-        const totalPages    = Math.ceil(totalProducts / itemsPerPage);
-        const containerTop    = document.getElementById('pagination-top');
-        const containerBottom = document.getElementById('pagination-bottom');
-
-        // Limpa paginação antiga se os containers existem
-        if (containerTop) containerTop.innerHTML = '';
-        if (containerBottom) containerBottom.innerHTML = '';
-
-        if (totalPages <= 1) {
-            // Não exibe paginação se há 0 ou 1 página
-            return;
-        }
-
-        // Botão "Anterior"
-        const prevDisabled = (currentPage === 1);
-        const prevClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' +
-                             (prevDisabled
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-300 hover:bg-gray-100');
-        const prevTopBtn = document.createElement('button');
-        prevTopBtn.innerText = 'Anterior';
-        prevTopBtn.className = prevClass;
-        prevTopBtn.disabled  = prevDisabled;
-        prevTopBtn.addEventListener('click', () => {
-            if (currentPage > 1) goToPage(currentPage - 1);
-        });
-        const prevBottomBtn = prevTopBtn.cloneNode(true);
-        if (prevBottomBtn) {
-            prevBottomBtn.disabled = prevDisabled;
-            prevBottomBtn.addEventListener('click', () => {
-                if (currentPage > 1) goToPage(currentPage - 1);
-            });
-        }
-
-        if (containerTop) containerTop.appendChild(prevTopBtn);
-        if (containerBottom) containerBottom.appendChild(prevBottomBtn);
-
-        // Botões de número de página
-        for (let p = 1; p <= totalPages; p++) {
-            const isCurrent = (p === currentPage);
-            const pageClass = isCurrent
-                ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-                : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
-
-            const pageTopBtn = document.createElement('button');
-            pageTopBtn.innerText = p;
-            pageTopBtn.className = pageClass;
-            if (!isCurrent) {
-                pageTopBtn.addEventListener('click', () => goToPage(p));
-            }
-            const pageBottomBtn = pageTopBtn.cloneNode(true);
-            if (!isCurrent) {
-                pageBottomBtn.addEventListener('click', () => goToPage(p));
-            }
-
-            if (containerTop) containerTop.appendChild(pageTopBtn);
-            if (containerBottom) containerBottom.appendChild(pageBottomBtn);
-        }
-
-        // Botão "Próximo"
-        const nextDisabled = (currentPage === totalPages);
-        const nextClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' +
-                             (nextDisabled
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-300 hover:bg-gray-100');
-        const nextTopBtn = document.createElement('button');
-        nextTopBtn.innerText = 'Próximo';
-        nextTopBtn.className = nextClass;
-        nextTopBtn.disabled  = nextDisabled;
-        nextTopBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) goToPage(currentPage + 1);
-        });
-        const nextBottomBtn = nextTopBtn.cloneNode(true);
-        if (nextBottomBtn) {
-            nextBottomBtn.disabled = nextDisabled;
-            nextBottomBtn.addEventListener('click', () => {
-                if (currentPage < totalPages) goToPage(currentPage + 1);
-            });
-        }
-
-        if (containerTop) containerTop.appendChild(nextTopBtn);
-        if (containerBottom) containerBottom.appendChild(nextBottomBtn);
-    }
-
-    // Eventos dos filtros e inicialização
-    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-    applyFilters();  // Aplica filtros (e paginação) na carga inicial
-});
-</script>
+</body>
             
 
 
