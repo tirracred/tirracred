@@ -415,46 +415,69 @@
 
                         <!-- Conteúdo dos Filtros (com scroll se necessário no mobile) -->
                         <div class="p-6 overflow-y-auto">
-                            <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre sua busca</h3>
-                            <div class="space-y-6">
-                                <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Todos</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Empréstimos</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Cartões de Crédito</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Para Negativados</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Score Baixo</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Autônomo</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre a sua busca</h3>
+    <div class="space-y-6">
+
+        <div>
+            <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
+            <div class="space-y-2">
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="all" checked...>
+                    <span class="ml-2 text-gray-600">Todos</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="emprestimo"...>
+                    <span class="ml-2 text-gray-600">Empréstimos</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="cartao"...>
+                    <span class="ml-2 text-gray-600">Cartões de Crédito</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="seguro" class="h-4 w-4...">
+                    <span class="ml-2 text-gray-600">Seguros</span>
+                </label>
+            </div>
+        </div>
+        <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="fgts" class="h-4 w-4...">
+                    <span class="ml-2 text-gray-600">FGTS</span>
+                </label>
+            </div>
+        </div>
+         <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="bolsafamilia" class="h-4 w-4...">
+                    <span class="ml-2 text-gray-600">Bolsa Família</span>
+                </label>
+            </div>
+        </div>
+
+        <hr>
+
+        <div>
+            <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
+            <div class="space-y-2">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="perfil" value="negativado"...>
+                    <span class="ml-2 text-gray-600">Para Negativados</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="perfil" value="score-baixo"...>
+                    <span class="ml-2 text-gray-600">Score Baixo</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="perfil" value="score-regular" class="h-4 w-4...">
+                    <span class="ml-2 text-gray-600">Score Regular</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="perfil" value="autonomo"...>
+                    <span class="ml-2 text-gray-600">Autónomo</span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+</div>
                 </aside>
 
                 <div class="lg:col-span-3">
