@@ -1597,7 +1597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileMenu?.classList.add('hidden');
     };
 
-    
+
     // --- Lógica de Formulários ---
 
     leadForm?.addEventListener('submit', (e) => {
@@ -1684,7 +1684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 4, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX', vantagens: ['Zere a anuidade gastando R$100 na fatura ou cadastrando chaves PIX.', 'Cartão online disponível antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
         { id: 5, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
         { id: 6, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-        { id: 7, tipo: ['cartao'], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['Crédito aprovado em poucos minutos.', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+        { id: 7, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['Crédito aprovado em poucos minutos.', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
         { id: 8, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
         
         // --- PÁGINA 2 (IDs 9 em diante) ---
@@ -1692,7 +1692,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
         { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Antecipe seu FGTS a partir de R$50.', 'Dinheiro na conta em até 30 minutos.'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
         { id: 13, tipo: ['seguro'], perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-        { id: 14, tipo: ['contas'], perfis: ['autonomo', 'score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: '#', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' }
+        { id: 14, tipo: ['contas','cartao'], perfis: ['autonomo', 'score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: '#', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' }
     ];
 
     const productState = {
