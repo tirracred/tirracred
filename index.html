@@ -154,7 +154,7 @@
     <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow-black/50">
+                <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow shadow-black/50">
                     <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
                         <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto">
                     </a>
@@ -1561,8 +1561,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </footer>
 
-    <script>
-document.addEventListener('DOMContentLoaded', () => {
+<script>
+
+    document.addEventListener('DOMContentLoaded', () => {
 
     // ===================================================
     // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
@@ -1574,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenu = document.getElementById('mobile-menu');
 
     const leadForm = document.getElementById('leadFormHome');
-
+    
     const registerForm = document.getElementById('registerForm');
     const loginForm = document.querySelector('#login-page form');
 
@@ -1591,19 +1592,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Lógica de Formulários ---
+    leadForm?.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Previne o envio padrão do formulário
+        
+        const submitBtn = document.getElementById('submit-btn-home');
+        const messageDiv = document.getElementById('form-message');
+        if (!submitBtn) return;
 
-    leadForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submit-btn-home');
-        if (!btn) return;
+        // Mostrar estado de carregamento
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Enviando...';
+        if (messageDiv) messageDiv.style.display = 'none';
 
-        const rawData = Object.fromEntries(new FormData(e.target));
-        const leadData = {
-            ...rawData,
-            valor: Number(rawData.valor),
-            negativado: rawData.negativado === 'on'
-        };
-        showResults(leadData);
+        try {
+            const formData = new FormData(leadForm);
+            const leadData = Object.fromEntries(formData.entries());
+
+            // Garantir que os tipos de dados estão corretos para o backend
+            leadData.valor = Number(leadData.valor) || 0;
+            leadData.renda = Number(leadData.renda) || 0;
+            leadData.parcelas = Number(leadData.parcelas) || 0;
+            leadData.negativado = formData.has('negativado'); // Converte para booleano
+
+            // Enviar os dados para a Netlify Function
+            const response = await fetch('/.netlify/functions/capturar-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                // Se a resposta não for OK (ex: erro 4xx, 5xx), lança um erro
+                throw new Error(result.error || 'Ocorreu um erro ao enviar seus dados.');
+            }
+
+            // Sucesso
+            if (messageDiv) {
+                messageDiv.textContent = 'Lead capturado com sucesso! Redirecionando...';
+                messageDiv.className = 'success';
+                messageDiv.style.display = 'block';
+            }
+            
+            // Chama a função para mostrar a página de resultados
+            showResults(leadData);
+
+        } catch (error) {
+            // Erro
+            if (messageDiv) {
+                messageDiv.textContent = error.message;
+                messageDiv.className = 'error';
+                messageDiv.style.display = 'block';
+            }
+            console.error("Erro ao capturar lead:", error);
+        } finally {
+            // Restaurar o botão ao estado original
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Ver Recomendações';
+        }
     });
 
     // --- Lógica da UI (Menu, Simulador, etc) ---
@@ -1666,13 +1713,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
     // --- Base de Dados de Produtos ---
-    // Todos os produtos estão em um único array para simplificar.
-    // A propriedade 'tipo' é um array para suportar múltiplas categorias.
+
 
     const allProducts = [
 
-        // --- PÁGINA 1 (IDs 1-8) ---
-        { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
+      
+    { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
         { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
         { id: 3, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
         { id: 4, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
@@ -1680,17 +1726,17 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 6, tipo: ['fgts', 'emprestimo'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', tagClass: 'blue', titulo: 'UP.P Empréstimo - FGTS', vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
         { id: 7, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX + Conta', vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
         { id: 8, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+
+
         { id: 9, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
-        
-        // --- PÁGINA 2 (IDs 9 em diante) ---
-        
         { id: 10, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
         { id: 11, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Empréstimo Bolsa Família', vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
         { id: 12, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+    
         { id: 13, tipo: ['emprestimocomgarantia'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/c4.jpg', tag: 'Empréstimo com Garantia', tagClass: 'blue', titulo: 'Empréstimo com Garantia Veicular', vantagens: ['<span class="text-green-700"> <strong> Utilize garantia para Aprovar o seu Empréstimo.</strong></span>', 'Libera Negativados.', 'Valores altos.'], link: 'https://adstartrack.com/click/684ae50f2bfa815a523fe122/186566/307759/subaccount', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-
     ];
- 
+
+
 
     const productState = {
         itemsPerPage: 8,
@@ -1757,7 +1803,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
         
         productState.filteredCards = allProducts.filter(card => {
-            // Lógica de filtro atualizada para checar se 'tipo' (array) inclui o tipo selecionado.
+
             const typeMatch = (selectedType === 'all') || card.tipo.includes(selectedType);
             const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => card.perfis.includes(p));
             return typeMatch && profileMatch;
