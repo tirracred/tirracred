@@ -430,6 +430,10 @@
                     <span class="ml-2 text-gray-600">Empréstimos</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="emprestimocomgarantia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                    <span class="ml-2 text-gray-600">Empréstimos com Garantia</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
                     <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                     <span class="ml-2 text-gray-600">Contas</span>
                 </label>
@@ -1677,11 +1681,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- PÁGINA 2 (IDs 9 em diante) ---
         { id: 9, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-        { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Empréstimo para <span class="text-green-700"> Beneficiários do Bolsa Família </span>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
-        { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"> Antecipe seu FGTS a partir de R$50.</span>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+        { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
+        { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
         { id: 13, tipo: ['seguro'], perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
         { id: 14, tipo: ['contas','cartao'], perfis: ['autonomo','negativado','score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: 'https://apartjsx.com/click/67cf89652bfa812bd22e7fd3/185381/307759/subaccount', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' },
-        { id: 15, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'UP.P Empréstimo FGTS', vantagens: ['<span class="text-green-700"> Conta corrente sem mensalidade.</span>', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: 'https://apretailer.com.br/click/6657960d2bfa815e2a469393/179925/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+        { id: 15, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'UP.P Empréstimo FGTS', vantagens: ['<span class="text-green-700"> <strong> Conta corrente sem mensalidade.</span></strong>', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: 'https://apretailer.com.br/click/6657960d2bfa815e2a469393/179925/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
     ];
 
     const productState = {
