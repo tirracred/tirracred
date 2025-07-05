@@ -1562,95 +1562,126 @@ document.addEventListener('DOMContentLoaded', () => {
     </footer>
 
 <script>
-
-    document.addEventListener('DOMContentLoaded', () => {
-
-    // ===================================================
-    // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
-    // ===================================================
-
-    // --- Variáveis e Seletores Globais ---
-    const pageContainers = document.querySelectorAll('.page-container');
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-
-    const leadForm = document.getElementById('leadFormHome');
     
-    const registerForm = document.getElementById('registerForm');
-    const loginForm = document.querySelector('#login-page form');
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SELETORES DE ELEMENTOS DA UI ---
+        const pageContainers = document.querySelectorAll('.page-container');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const leadForm = document.getElementById('leadFormHome');
+        const showFormBtn = document.getElementById('show-form-btn');
+        const formFieldsHome = document.getElementById('form-fields-home');
+        const valorSlider = document.getElementById('valorHome');
+        const valorDisplay = document.getElementById('valor-display-home');
+        const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
+        const parcelasInput = document.getElementById('parcelasHome');
+        const negCheck = document.getElementById('negativado-checkbox-home');
+        const negMsg = document.getElementById('negativado-message');
 
-    // --- Funções da App ---
-    window.showPage = (pageId) => {
-        pageContainers.forEach(container => container.classList.remove('active'));
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        mobileMenu?.classList.add('hidden');
-    };
-
-
-    // --- Lógica de Formulários ---
-    leadForm?.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Previne o envio padrão do formulário
-        
-        const submitBtn = document.getElementById('submit-btn-home');
-        const messageDiv = document.getElementById('form-message');
-        if (!submitBtn) return;
-
-        // Mostrar estado de carregamento
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Enviando...';
-        if (messageDiv) messageDiv.style.display = 'none';
-
-        try {
-            const formData = new FormData(leadForm);
-            const leadData = Object.fromEntries(formData.entries());
-
-            // Garantir que os tipos de dados estão corretos para o backend
-            leadData.valor = Number(leadData.valor) || 0;
-            leadData.renda = Number(leadData.renda) || 0;
-            leadData.parcelas = Number(leadData.parcelas) || 0;
-            leadData.negativado = formData.has('negativado'); // Converte para booleano
-
-            // Enviar os dados para a Netlify Function
-            const response = await fetch('/.netlify/functions/capturar-lead', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(leadData),
+        // --- FUNÇÕES GERAIS ---
+        // Função para mostrar/esconder as diferentes seções da página (como o blog)
+        window.showPage = (pageId) => {
+            pageContainers.forEach(container => {
+                container.classList.remove('active');
             });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                // Se a resposta não for OK (ex: erro 4xx, 5xx), lança um erro
-                throw new Error(result.error || 'Ocorreu um erro ao enviar seus dados.');
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+            mobileMenu?.classList.add('hidden');
+        };
 
-            // Sucesso
-            if (messageDiv) {
-                messageDiv.textContent = 'Lead capturado com sucesso! Redirecionando...';
-                messageDiv.className = 'success';
-                messageDiv.style.display = 'block';
+        // --- LÓGICA DA UI (INTERAÇÕES DA PÁGINA INICIAL) ---
+        // Controla o menu mobile
+        mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+
+        // Mostra o resto do formulário ao clicar em "Continuar"
+        showFormBtn?.addEventListener('click', () => {
+            if (formFieldsHome) {
+                formFieldsHome.style.display = 'block';
+                formFieldsHome.classList.add('animate-fade-in');
+                showFormBtn.style.display = 'none';
             }
+        });
+
+        // Atualiza o valor do slider
+        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
+        valorSlider?.addEventListener('input', e => {
+            if (valorDisplay) valorDisplay.textContent = fmt(e.target.value);
+        });
+
+        // Controla a seleção de parcelas
+        parcelaBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                parcelaBtns.forEach(b => {
+                    b.classList.replace('bg-green-500', 'bg-gray-200');
+                    b.classList.replace('text-white', 'text-gray-700');
+                });
+                btn.classList.replace('bg-gray-200', 'bg-green-500');
+                btn.classList.replace('text-gray-700', 'text-white');
+                if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
+            });
+        });
+
+        // Mostra a mensagem para negativado
+        negCheck?.addEventListener('change', () => {
+            if (negMsg) negMsg.classList.toggle('hidden', !negCheck.checked);
+        });
+        
+        // --- LÓGICA DE CAPTURA DE LEAD E REDIRECIONAMENTO ---
+        leadForm?.addEventListener('submit', async (e) => {
+            // 1. Previne o envio padrão para podermos capturar o lead primeiro.
+            e.preventDefault(); 
             
-            // Chama a função para mostrar a página de resultados
-            showResults(leadData);
+            const submitBtn = document.getElementById('submit-btn-home');
+            if (!submitBtn) return;
 
-        } catch (error) {
-            // Erro
-            if (messageDiv) {
-                messageDiv.textContent = error.message;
-                messageDiv.className = 'error';
-                messageDiv.style.display = 'block';
+            // Altera o botão para o estado de carregamento
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Enviando...';
+
+            const formData = new FormData(leadForm);
+            
+            try {
+                // 2. Envia os dados para a sua função Netlify para capturar o lead.
+                // Criamos um objeto simples para o backend, garantindo os tipos corretos.
+                const leadPayload = {
+                    nome: formData.get('nome'),
+                    cpf: formData.get('cpf'),
+                    whatsapp: formData.get('whatsapp'),
+                    email: formData.get('email'),
+                    valor: Number(formData.get('valor')) || 0,
+                    renda: Number(formData.get('renda')) || 0,
+                    parcelas: Number(formData.get('parcelas')) || 0,
+                    negativado: formData.has('negativado')
+                };
+
+                await fetch('/.netlify/functions/capturar-lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leadPayload),
+                });
+
+            } catch (error) {
+                console.error("Erro ao capturar lead:", error);
+                // Mesmo que a captura falhe, continuamos para a página de resultados para não prejudicar a experiência do usuário.
+            } finally {
+                // 3. Após a tentativa de captura, redireciona o usuário para a página de resultados.
+                // Criamos os parâmetros para a URL da página de resultados.
+                const params = new URLSearchParams({
+                    nome: formData.get('nome') || 'Cliente',
+                    valor: formData.get('valor') || '5000',
+                    negativado: formData.has('negativado')
+                });
+                
+                // O redirecionamento manual acontece aqui!
+                window.location.href = `./pages/resultados.html?${params.toString()}`;
             }
-            console.error("Erro ao capturar lead:", error);
-        } finally {
-            // Restaurar o botão ao estado original
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Ver Recomendações';
-        }
+        });
+        
+        // Garante que a página inicial seja exibida ao carregar
+        showPage('page-home');
     });
 
     // --- Lógica da UI (Menu, Simulador, etc) ---
