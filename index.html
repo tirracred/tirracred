@@ -430,7 +430,7 @@
                     <span class="ml-2 text-gray-600">Empréstimos</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                    <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                     <span class="ml-2 text-gray-600">Contas</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
@@ -471,7 +471,7 @@
                 </label>
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Autónomo</span>
+                    <span class="ml-2 text-gray-600">Autônomo</span>
                 </label>
             </div>
         </div>
@@ -1573,22 +1573,20 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 
     // ===================================================
-    // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Autenticação, Formulários)
+    // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
     // ===================================================
 
-    // --- Variáveis e Seletores Globais da App ---
-    let supabase;
+    // --- Variáveis e Seletores Globais ---
     const pageContainers = document.querySelectorAll('.page-container');
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    const authNavContainer = document.querySelector('.hidden.md\\:flex.items-center.space-x-2')?.parentElement;
-    let loggedOutNav;
-    let loggedInNav;
+    
     const leadForm = document.getElementById('leadFormHome');
+
     const registerForm = document.getElementById('registerForm');
     const loginForm = document.querySelector('#login-page form');
 
-    // --- Funções da App (Navegação e UI de Autenticação) ---
+    // --- Funções da App ---
     window.showPage = (pageId) => {
         pageContainers.forEach(container => container.classList.remove('active'));
         const targetPage = document.getElementById(pageId);
@@ -1599,82 +1597,21 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileMenu?.classList.add('hidden');
     };
 
-    const updateUserNav = (user) => {
-        if (!loggedOutNav || !loggedInNav) return;
-        if (user) {
-            loggedOutNav.style.display = 'none';
-            loggedInNav.style.display = 'flex';
-            loggedInNav.innerHTML = `
-                <span class="text-sm font-medium text-gray-700">Olá, ${user.email}</span>
-                <button id="logout-button" class="px-3 py-1 text-sm font-medium text-red-600 bg-white border border-red-500 rounded-lg hover:bg-red-50">Sair</button>
-            `;
-            document.getElementById('logout-button').addEventListener('click', async () => {
-                if (supabase) await supabase.auth.signOut();
-                window.location.reload();
-            });
-        } else {
-            loggedOutNav.style.display = 'flex';
-            loggedInNav.style.display = 'none';
-        }
-    };
-
-    // --- Inicialização do Supabase ---
-    const initializeApp = async () => {
-        if (authNavContainer) {
-            loggedOutNav = authNavContainer.querySelector('.hidden.md\\:flex.items-center.space-x-2');
-            loggedInNav = document.createElement('div');
-            loggedInNav.id = 'user-logged-in';
-            loggedInNav.className = 'hidden md:flex items-center space-x-4';
-            authNavContainer.appendChild(loggedInNav);
-        }
-        try {
-            if (!window.supabase) return console.error("Biblioteca Supabase não carregada.");
-            const { createClient } = window.supabase;
-            // Em um projeto real, as chaves viriam de um backend seguro.
-            // Substitua pelas suas chaves do Supabase se necessário.
-            const supabaseUrl = 'URL_DO_SEU_PROJETO_SUPABASE';
-            const supabaseAnonKey = 'SUA_CHAVE_ANON_SUPABASE';
-            supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-            supabase.auth.onAuthStateChange((_event, session) => {
-                updateUserNav(session?.user ?? null);
-            });
-            const { data: { session } } = await supabase.auth.getSession();
-            updateUserNav(session?.user ?? null);
-        } catch (error) {
-            console.error("Erro na inicialização do Supabase:", error);
-        }
-    };
-
+    
     // --- Lógica de Formulários ---
-    leadForm?.addEventListener('submit', async (e) => {
+    leadForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = document.getElementById('submit-btn-home');
         if (!btn) return;
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'A processar...';
+
         const rawData = Object.fromEntries(new FormData(e.target));
         const leadData = {
             ...rawData,
             valor: Number(rawData.valor),
-            parcelas: Number(rawData.parcelas),
-            negativado: rawData.negativado === 'on',
-            consent: rawData.consent === 'on'
+            negativado: rawData.negativado === 'on'
         };
-        try {
-            // Lógica para enviar o lead para o backend/Supabase aqui
-            console.log("Lead a ser enviado:", leadData);
-            showResults(leadData); // Mostra a página de resultados
-        } catch (err) {
-            alert(`Não foi possível concluir a sua solicitação. ${err.message}`);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
+        showResults(leadData);
     });
-
-    // Adicione aqui os listeners para registerForm e loginForm se necessário
 
     // --- Lógica da UI (Menu, Simulador, etc) ---
     mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
@@ -1698,7 +1635,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
     valorSlider?.addEventListener('input', e => { if (valorDisplay) valorDisplay.textContent = fmt(e.target.value); });
     parcelaBtns.forEach(btn => btn.addEventListener('click', () => {
-        parcelaBtns.forEach(b => b.classList.replace('bg-green-500', 'bg-gray-200') || b.classList.replace('text-white', 'text-gray-700'));
+        parcelaBtns.forEach(b => {
+            b.classList.replace('bg-green-500', 'bg-gray-200');
+            b.classList.replace('text-white', 'text-gray-700');
+        });
         btn.classList.replace('bg-gray-200', 'bg-green-500');
         btn.classList.replace('text-gray-700', 'text-white');
         if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
@@ -1707,66 +1647,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (negMsg) negMsg.classList.toggle('hidden', !negCheck.checked);
     });
 
-    // --- Lógica de Resultados dos Parceiros ---
-    const partners = [
-        { id: 1, nome: "SuperSim Empréstimo", link: "https://bit.ly/4jQk57T", img: "public/supersim.png", beneficios: "Até R$2.500 em minutos", selo: "Para Score Baixo", tipo: "emprestimo", valorMax: 2500, negativado: true },
-        { id: 2, nome: "Mercado Pago", link: "https://apple.co/3FHoRGR", img: "public/mpago.png", beneficios: "Ganhe até R$50 + Cashback", selo: "Conta e Cartão", tipo: "conta", valorMax: 50000, negativado: false },
-        { id: 3, nome: "Juros Baixos", link: "https://bit.ly/414zSbS", img: "public/jurosbaixos.png", beneficios: "Marketplace de crédito completo", selo: "Compare Opções", tipo: "emprestimo", valorMax: 50000, negativado: true },
-        { id: 4, nome: "Facio - Antecipação Salário", link: "https://bit.ly/4l19g3V", img: "public/facio.png", beneficios: "Liberação fácil e segura", selo: "Antecipação", tipo: "emprestimo", valorMax: 10000, negativado: true },
-        { id: 5, nome: "Acordo Certo", link: "https://bit.ly/4f9eMOv", img: "public/acordocerto.png", beneficios: "Limpe seu nome agora mesmo", selo: "Negociação de Dívidas", tipo: "divida", valorMax: 0, negativado: true },
-        { id: 6, nome: "Cartão Ourocard", link: "https://bit.ly/3HZaM8s", img: "public/ourocard.png", beneficios: "Aprova até com score médio", selo: "Banco do Brasil", tipo: "cartao", valorMax: 0, negativado: true },
-        { id: 7, nome: "Cartão Itaú Passaí Gold", link: "https://bit.ly/3Hh5Pr6", img: "public/itaupassai.png", beneficios: "Descontos no Assaí", selo: "Itaú", tipo: "cartao", valorMax: 0, negativado: true },
-        { id: 8, nome: "Santander SX", link: "https://bit.ly/4jdUsO0", img: "public/santander.png", beneficios: "Conta + Cartão Free", selo: "Santander", tipo: "cartao", valorMax: 0, negativado: true },
-        { id: 9, nome: "Bolsa Família", link: "https://bit.ly/4moHS1h", img: "novohorizontebolsafamilia.png", beneficios: "Antecipe seu benefício", selo: "Governo", tipo: "emprestimo", valorMax: 5000, negativado: true },
-        { id: 10, nome: "Bom Pra Crédito", link: "https://bit.ly/3Y4yzJl", img: "public/bompracredito.png", beneficios: "Até 50 mil para você", selo: "Compare", tipo: "emprestimo", valorMax: 50000, negativado: false },
-        { id: 11, nome: "Cartão Brasilcard", link: "https://bit.ly/3WJuKZb", img: "public/brasilcard.png", beneficios: "Aprovação facilitada", selo: "Para Negativado", tipo: "cartao", valorMax: 0, negativado: true }
-    ];
-    
-    const populateResults = (lead) => {
-        const grid = document.getElementById('results-grid');
-        const messageBox = document.getElementById('results-message');
-        if(!grid || !messageBox) return;
-
-        grid.innerHTML = '';
-        messageBox.classList.add('hidden');
-
-        const { valor, negativado } = lead;
-        let rec = [];
-        rec.push(partners.find(p => p.id === 4)); // Sempre indicar Facio
-
-        if (negativado) {
-            messageBox.innerHTML = `<p class="font-semibold">Você está negativado?</p><p>Sabemos que pode ser difícil conseguir crédito, mas não impossível! Recomendamos que tente <a href="https://bit.ly/4f9eMOv" target="_blank" class="font-bold underline">renegociar as suas dívidas</a>. Enquanto isso, aqui estão algumas opções:</p>`;
-            messageBox.classList.remove('hidden');
-            rec.push(...partners.filter(p => p.id === 1 || p.id === 11 || p.id === 5 || p.tipo === 'cartao'));
-        } else if (valor >= 50000) {
-            messageBox.innerHTML = `<p class="font-semibold">A procurar um valor alto?</p><p>Para ${fmt(valor)}, estas são as melhores opções. Todos os cartões de crédito também estão disponíveis!</p>`;
-            messageBox.classList.remove('hidden');
-            rec.push(...partners.filter(p => p.id === 3 || p.id === 10 || p.id === 2 || p.tipo === 'cartao'));
-        } else {
-            rec.push(...partners.filter(p => !p.negativado || p.valorMax >= valor));
-        }
-
-        rec = [...new Map(rec.map(item => [item.id, item])).values()]; // Remove duplicatas
-
-        if (rec.length === 0) {
-            grid.innerHTML = `<p class="col-span-full text-center text-gray-600">Nenhuma oferta encontrada para o seu perfil.</p>`;
-            return;
-        }
-
-        rec.forEach(p => {
-            grid.insertAdjacentHTML('beforeend', `
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-md p-4 flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:scale-105">
-                    <div class="relative w-full">
-                        <span class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-xl">${p.selo}</span>
-                        <img src="${p.img}" alt="${p.nome}" class="h-24 mx-auto my-4 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/100x100/e2e8f0/94a3b8?text=Logo';">
-                    </div>
-                    <h3 class="text-lg font-bold mt-2">${p.nome}</h3>
-                    <p class="text-sm text-green-600 font-medium my-2 flex-grow">${p.beneficios}</p>
-                    <a href="${p.link}" target="_blank" class="w-full mt-auto bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition-colors">Pedir</a>
-                </div>`);
-        });
-    };
-    
+    // --- Lógica de Resultados dos Parceiros (Simulação) ---
     const showResults = (lead) => {
         showPage('resultados-page');
         const loading = document.getElementById('loading-results');
@@ -1779,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             loading.style.display = 'none';
             content.style.display = 'block';
-            populateResults(lead);
+            // A lógica de popular os resultados agora vem da filtragem principal
         }, 1500);
     };
 
@@ -1791,28 +1672,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const paginationContainer = document.getElementById('pagination');
     const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
+    // --- Base de Dados de Produtos ---
+    // A propriedade 'tipo' agora é um array para suportar múltiplas categorias.
     const allProducts = [
-        // --- PÁGINA 2
-        { id: 1, tipo: 'emprestimo', perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<strong>Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong>', 'Sem consulta ao SPC/Serasa.', 'Aprova <strong>negativados</strong> e <strong>score baixo</strong>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
-        { id: 2, tipo: 'emprestimo', perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['Encontre as melhores ofertas de crédito.', 'Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-        { id: 3, tipo: 'emprestimo', perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong>Aprova negativados e score baixo.</strong>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
-        { id: 4, tipo: 'cartao', perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX', vantagens: ['Zere a anuidade gastando R$100 na fatura ou cadastrando chaves PIX.', 'Cartão online disponível antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
-        { id: 5, tipo: 'cartao', perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-        { id: 6, tipo: 'emprestimo', perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-        { id: 7, tipo: 'cartao', perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['Crédito aprovado em poucos minutos.', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-        { id: 8, tipo: 'cartao', perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
-        // --- PÁGINA 2
-        { id: 9, tipo: 'cartao', perfis: ['autonomo','negativado','score-baixo',], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['Sem anuidade e limite garantido.', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-        { id: 10, tipo: 'bolsafamilia', perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebolsafamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
-        { id: 11, tipo: 'fgts', perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
-        { id: 13, tipo: 'seguro', perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' }
-        { id: 14, tipo: 'seguro', perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' }
+        { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<strong>Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong>', 'Sem consulta ao SPC/Serasa.', 'Aprova <strong>negativados</strong> e <strong>score baixo</strong>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
+        { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['Encontre as melhores ofertas de crédito.', 'Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+        { id: 3, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong>Aprova negativados e score baixo.</strong>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
+        { id: 4, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX', vantagens: ['Zere a anuidade gastando R$100 na fatura ou cadastrando chaves PIX.', 'Cartão online disponível antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
+        { id: 5, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+        { id: 6, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+        { id: 7, tipo: ['cartao'], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['Crédito aprovado em poucos minutos.', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+        { id: 8, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
+        { id: 9, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['Sem anuidade e limite garantido.', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
+        { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
+        { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Antecipe seu FGTS a partir de R$50.', 'Dinheiro na conta em até 30 minutos.'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+        { id: 13, tipo: ['seguro'], perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
+        { id: 14, tipo: ['contas'], perfis: ['autonomo', 'score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: '#', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' }
     ];
 
     const productState = {
         itemsPerPage: 8,
         currentPage: 1,
-        filteredCards: [...allProducts]
+        filteredCards: []
     };
 
     function createProductCard(product) {
@@ -1863,34 +1744,38 @@ document.addEventListener('DOMContentLoaded', () => {
         pageItems.forEach(product => fragment.appendChild(createProductCard(product)));
         productListContainer.appendChild(fragment);
         renderPagination();
-        window.scrollTo(0, 0);
+        const filterSection = document.getElementById('home-filters');
+        if (filterSection) {
+            filterSection.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 
     function applyFilters() {
         const selectedType = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
         const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
+        
         productState.filteredCards = allProducts.filter(card => {
-            const typeMatch = (selectedType === 'all') || (card.tipo === selectedType);
+            // Lógica de filtro atualizada para checar se 'tipo' (array) inclui o tipo selecionado.
+            const typeMatch = (selectedType === 'all') || card.tipo.includes(selectedType);
             const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => card.perfis.includes(p));
             return typeMatch && profileMatch;
         });
+
         goToPage(1);
+        if (window.innerWidth < 1024) {
+            closePanel();
+        }
     }
 
-    // --- Lógica do Painel de Filtros ---
+    // --- Lógica do Painel de Filtros (Mobile) ---
     const filterBtn = document.getElementById('filter-button');
     const filterPanel = document.getElementById('filter-panel');
     const closeBtn = document.getElementById('filter-close');
     const overlay = document.createElement('div');
     overlay.id = 'filter-overlay';
     Object.assign(overlay.style, {
-        position: 'fixed',
-        inset: '0',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: '40',
-        opacity: '0',
-        pointerEvents: 'none',
-        transition: 'opacity .3s ease-in-out'
+        position: 'fixed', inset: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: '40', opacity: '0', pointerEvents: 'none', transition: 'opacity .3s ease-in-out'
     });
     document.body.appendChild(overlay);
 
@@ -1915,14 +1800,59 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================
     // PARTE 3: LÓGICA DO CARROSSEL "COMO FUNCIONA"
     // ===================================================
-    const carouselTrack = document.getElementById('carousel-track');
-    // ... (adicione aqui a lógica do seu carrossel, se estiver em um script separado)
+    const track = document.getElementById('carousel-track');
+    const nextButton = document.getElementById('nextBtn');
+    const prevButton = document.getElementById('prevBtn');
+    const dotsNav = document.getElementById('carousel-dots');
+    const container = document.getElementById('carousel-container');
 
+    if (track && nextButton && prevButton && dotsNav) {
+        const slides = Array.from(track.children);
+        const slideCount = slides.length;
+        let currentIndex = 0;
+
+        for (let i = 0; i < slideCount; i++) {
+            const dot = document.createElement('button');
+            dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+            dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
+            dot.addEventListener('click', () => {
+                currentIndex = i;
+                updateCarousel();
+            });
+            dotsNav.appendChild(dot);
+        }
+        const dots = Array.from(dotsNav.children);
+
+        const updateCarousel = () => {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+                dot.classList.toggle('bg-green-500', index === currentIndex);
+                dot.classList.toggle('bg-gray-300', index !== currentIndex);
+            });
+            prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
+            nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+        };
+
+        nextButton.addEventListener('click', () => {
+            if (currentIndex < slideCount - 1) {
+                currentIndex++;
+                updateCarousel();
+            }
+        });
+        prevButton.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+        updateCarousel();
+    }
 
     // ===================================================
     // PARTE 4: INICIALIZAÇÃO GERAL
     // ===================================================
-    // initializeApp(); // Descomente se estiver a usar Supabase com chaves válidas
+
     if(filterInputs.length > 0) {
         filterInputs.forEach(input => input.addEventListener('change', applyFilters));
         applyFilters(); // Carga inicial dos produtos
