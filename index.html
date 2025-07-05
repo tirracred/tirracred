@@ -1562,7 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </footer>
 
 <script>
-
+    
     document.addEventListener('DOMContentLoaded', () => {
         // ===================================================
         // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
@@ -1586,8 +1586,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             mobileMenu?.classList.add('hidden');
         };
-
-        // --- LÓGICA DE CAPTURA DE LEAD E REDIRECIONAMENTO (CORRIGIDA) ---
+        
+        // --- LÓGICA DE CAPTURA DE LEAD E EXIBIÇÃO DE RESULTADOS (CORRIGIDA) ---
         leadForm?.addEventListener('submit', async (e) => {
             // 1. Previne o envio padrão para podermos capturar o lead primeiro.
             e.preventDefault(); 
@@ -1600,41 +1600,31 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.innerHTML = 'Analisando...';
 
             const formData = new FormData(leadForm);
+            const leadData = {
+                nome: formData.get('nome'),
+                cpf: formData.get('cpf'),
+                whatsapp: formData.get('whatsapp'),
+                email: formData.get('email'),
+                valor: Number(formData.get('valor')) || 0,
+                renda: Number(formData.get('renda')) || 0,
+                parcelas: Number(formData.get('parcelas')) || 0,
+                negativado: formData.has('negativado')
+            };
             
             try {
                 // 2. Envia os dados para a sua função Netlify para capturar o lead.
-
-                const leadPayload = {
-                    nome: formData.get('nome'),
-                    cpf: formData.get('cpf'),
-                    whatsapp: formData.get('whatsapp'),
-                    email: formData.get('email'),
-                    valor: Number(formData.get('valor')) || 0,
-                    renda: Number(formData.get('renda')) || 0,
-                    parcelas: Number(formData.get('parcelas')) || 0,
-                    negativado: formData.has('negativado')
-                };
-
                 await fetch('/.netlify/functions/capturar-lead', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leadPayload),
+                    body: JSON.stringify(leadData),
                 });
 
             } catch (error) {
                 console.error("Erro ao capturar lead:", error);
-                // Mesmo que a captura falhe, continuamos para a página de resultados para não prejudicar a experiência do usuário.
+                
             } finally {
-                // 3. Após a tentativa de captura, redireciona o usuário para a página de resultados.
-                
-                const params = new URLSearchParams({
-                    nome: formData.get('nome') || 'Cliente',
-                    valor: formData.get('valor') || '5000',
-                    negativado: formData.has('negativado')
-                });
-                
-                // O redirecionamento manual acontece aqui!
-                window.location.href = `./pages/resultados.html?${params.toString()}`;
+                // 3. Após a tentativa de captura, exibe os resultados na própria página.
+                displayResults(leadData);
             }
         });
 
@@ -1673,22 +1663,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- Lógica de Resultados dos Parceiros (Simulação) ---
-        // Esta função não será mais chamada pelo formulário principal, mas a mantemos caso seja usada em outro lugar.
-        const showResults = (lead) => {
+        const displayResults = (lead) => {
+            const { valor, negativado } = lead;
+            
             showPage('resultados-page');
             const loading = document.getElementById('loading-results');
             const content = document.getElementById('results-content');
-            if(!loading || !content) return;
+            const messageBox = document.getElementById('results-message');
+            const productGrid = document.getElementById('results-grid');
+
+            if(!loading || !content || !messageBox || !productGrid) return;
 
             loading.style.display = 'flex';
             content.style.display = 'none';
-
+            
             setTimeout(() => {
+                const productsWithChance = allProducts.map(product => {
+                    let chance = 0;
+                    const maxAmount = product.maxAmount || Infinity;
+
+                    if (product.tipo.includes('fgts')) {
+                        chance = 99;
+                    } else if (negativado) {
+                        chance = product.baseChanceNegativado || 5;
+                    } else {
+                        if (valor <= maxAmount) {
+                            chance = product.baseChanceNaoNegativado || 5;
+                        } else {
+                            chance = Math.min(product.baseChanceNaoNegativado || 0, 20);
+                        }
+                    }
+                    return { ...product, displayChance: chance };
+                });
+
+                productsWithChance.sort((a, b) => b.displayChance - a.displayChance);
+
+                if (negativado) {
+                    messageBox.innerHTML = `<p class="font-bold text-lg mb-2">Análise para perfil negativado!</p><p>Abaixo estão todas as nossas ofertas, ordenadas pelas <strong>maiores chances de aprovação</strong> para você.</p>`;
+                } else {
+                    messageBox.innerHTML = `<p class="font-bold text-lg mb-2">Análise para ${fmt(valor)} concluída!</p><p>Com um bom perfil, você tem acesso a ótimas condições! Organizamos as ofertas com as maiores chances de aprovação para o valor que você precisa.</p>`;
+                }
+                messageBox.classList.remove('hidden');
+
+                productGrid.innerHTML = productsWithChance.map(p => createResultCard(p)).join('');
+
                 loading.style.display = 'none';
                 content.style.display = 'block';
             }, 1500);
         };
 
+        const createResultCard = (product) => {
+            let chanceBadge = '';
+            if (product.displayChance) {
+                chanceBadge = `<div class="absolute -top-3 -right-3 animate-pulse bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">${product.displayChance}% DE CHANCE</div>`;
+            }
+            const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>`).join('');
+            return `<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col relative transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        ${chanceBadge}
+                        <div class="flex items-center justify-between">
+                            <div class="w-28 h-12 flex items-center justify-start">
+                                <img src="${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                            </div>
+                            <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
+                        <ul class="space-y-2 text-gray-600 text-sm flex-grow">
+                            ${vantagensHTML}
+                        </ul>
+                        <a href="${product.link}" target="_blank" class="mt-6 w-full text-center bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition-colors">Ver Oferta</a>
+                    </div>`;
+        };
 
         // ===================================================
         // PARTE 2: LÓGICA DE FILTROS E PAGINAÇÃO DE PRODUTOS
@@ -1698,19 +1742,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
         const allProducts = [
-            { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
-            { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-            { id: 3, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-            { id: 4, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
-            { id: 5, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-            { id: 6, tipo: ['fgts', 'emprestimo'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', tagClass: 'blue', titulo: 'UP.P Empréstimo - FGTS', vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-            { id: 7, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX + Conta', vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
-            { id: 8, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-            { id: 9, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
-            { id: 10, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-            { id: 11, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Empréstimo Bolsa Família', vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
-            { id: 12, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
-            { id: 13, tipo: ['emprestimocomgarantia'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/c4.jpg', tag: 'Empréstimo com Garantia', tagClass: 'blue', titulo: 'Empréstimo com Garantia Veicular', vantagens: ['<span class="text-green-700"> <strong> Utilize garantia para Aprovar o seu Empréstimo.</strong></span>', 'Libera Negativados.', 'Valores altos.'], link: 'https://adstartrack.com/click/684ae50f2bfa815a523fe122/186566/307759/subaccount', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
+            { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', maxAmount: 1000, baseChanceNegativado: 95, baseChanceNaoNegativado: 60, vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
+            { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+            { id: 3, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', maxAmount: Infinity, baseChanceNegativado: 90, baseChanceNaoNegativado: 40, vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+            { id: 4, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', maxAmount: 2500, baseChanceNegativado: 85, baseChanceNaoNegativado: 50, vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
+            { id: 5, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+            { id: 6, tipo: ['fgts', 'emprestimo'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', tagClass: 'blue', titulo: 'UP.P Empréstimo - FGTS', maxAmount: 50000, baseChanceNegativado: 99, baseChanceNaoNegativado: 99, vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
+            { id: 7, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX + Conta', maxAmount: Infinity, baseChanceNegativado: 20, baseChanceNaoNegativado: 80, vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
+            { id: 8, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', maxAmount: Infinity, baseChanceNegativado: 15, baseChanceNaoNegativado: 75, vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+            { id: 9, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', maxAmount: Infinity, baseChanceNegativado: 10, baseChanceNaoNegativado: 70, vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
+            { id: 10, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', maxAmount: Infinity, baseChanceNegativado: 80, baseChanceNaoNegativado: 65, vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
+            { id: 11, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Empréstimo Bolsa Família', maxAmount: 2500, baseChanceNegativado: 98, baseChanceNaoNegativado: 98, vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
+            { id: 12, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', maxAmount: 50000, baseChanceNegativado: 99, baseChanceNaoNegativado: 99, vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+            { id: 13, tipo: ['emprestimocomgarantia'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/c4.jpg', tag: 'Empréstimo com Garantia', tagClass: 'blue', titulo: 'Empréstimo com Garantia Veicular', maxAmount: 150000, baseChanceNegativado: 70, baseChanceNaoNegativado: 85, vantagens: ['<span class="text-green-700"> <strong> Utilize garantia para Aprovar o seu Empréstimo.</strong></span>', 'Libera Negativados.', 'Valores altos.'], link: 'https://adstartrack.com/click/684ae50f2bfa815a523fe122/186566/307759/subaccount', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
         ];
 
         const productState = {
@@ -1881,7 +1925,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showPage('page-home'); // Mostra a página inicial por defeito
     });
-</script>
 
 </script>
 
