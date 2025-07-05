@@ -1580,7 +1580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageContainers = document.querySelectorAll('.page-container');
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    
+
     const leadForm = document.getElementById('leadFormHome');
 
     const registerForm = document.getElementById('registerForm');
@@ -1599,6 +1599,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     // --- Lógica de Formulários ---
+
     leadForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         const btn = document.getElementById('submit-btn-home');
@@ -1673,8 +1674,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
     // --- Base de Dados de Produtos ---
-    // A propriedade 'tipo' agora é um array para suportar múltiplas categorias.
+    // Todos os produtos estão em um único array para simplificar.
+    // A propriedade 'tipo' é um array para suportar múltiplas categorias.
     const allProducts = [
+        // --- PÁGINA 1 (IDs 1-8) ---
         { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<strong>Antecipe seu salário em até 2&nbsp;minutos via PIX.</strong>', 'Sem consulta ao SPC/Serasa.', 'Aprova <strong>negativados</strong> e <strong>score baixo</strong>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
         { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['Encontre as melhores ofertas de crédito.', 'Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
         { id: 3, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong>Aprova negativados e score baixo.</strong>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
@@ -1683,6 +1686,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 6, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
         { id: 7, tipo: ['cartao'], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['Crédito aprovado em poucos minutos.', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
         { id: 8, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
+        
+        // --- PÁGINA 2 (IDs 9 em diante) ---
         { id: 9, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['Sem anuidade e limite garantido.', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
         { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
         { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Antecipe seu FGTS a partir de R$50.', 'Dinheiro na conta em até 30 minutos.'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
