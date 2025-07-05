@@ -430,6 +430,10 @@
                     <span class="ml-2 text-gray-600">Empréstimos</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                    <span class="ml-2 text-gray-600">Contas</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
                     <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                     <span class="ml-2 text-gray-600">Cartões de Crédito</span>
                 </label>
@@ -1799,9 +1803,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 8, tipo: 'cartao', perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
         // --- PÁGINA 2
         { id: 9, tipo: 'cartao', perfis: ['autonomo','negativado','score-baixo',], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['Sem anuidade e limite garantido.', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-        { id: 10, tipo: 'bolsafamilia', perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebolsafamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
+        { id: 10, tipo: 'bolsafamilia', perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebolsafamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
         { id: 11, tipo: 'fgts', perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
-        { id: 12, tipo: 'seguro', perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' }
+        { id: 13, tipo: 'seguro', perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' }
+        { id: 14, tipo: 'seguro', perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' }
     ];
 
     const productState = {
