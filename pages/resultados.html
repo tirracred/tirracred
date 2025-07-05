@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suas Recomendações de Crédito - TirraCred</title>
-    <link rel="icon" type="image/png" href="public/favincon.png"/>
+    <!-- O caminho para o favicon e outras imagens deve ser relativo à localização deste arquivo -->
+    <link rel="icon" type="image/png" href="../public/favincon.png"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,20 +67,13 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex-shrink-0">
-                    <a href="index.html" class="flex items-center">
-                        <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/cccccc/000000?text=TirraCred';">
+                    <a href="../index.html" class="flex items-center">
+                        <img src="../public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/cccccc/000000?text=TirraCred';">
                     </a>
                 </div>
                 <nav class="hidden md:flex md:space-x-8">
-                    <a href="index.html" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Início</a>
-                    <a href="index.html" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
-                    <a href="index.html" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
-                    <a href="index.html" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
+                    <a href="../index.html" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Início</a>
                 </nav>
-                <div class="hidden md:flex items-center space-x-2">
-                    <a href="#" class="px-4 py-2 text-sm font-medium text-green-600 bg-white border border-green-600 rounded-lg hover:bg-green-50 transition-colors">Acessar</a>
-                    <a href="#" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Criar Conta</a>
-                </div>
             </div>
         </div>
     </header>
@@ -93,14 +87,14 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <h1 class="text-2xl font-bold mt-6 text-gray-700">Buscando as melhores ofertas...</h1>
-                <p class="text-gray-500 mt-2">Olá, <span id="lead-name" class="font-strong text-green-700">cliente</span>! Estamos analisando seu perfil para encontrar as soluções ideais para você.</p>
+                <h1 class="text-2xl font-bold mt-6 text-gray-700">A analisar as melhores ofertas...</h1>
+                <p class="text-gray-500 mt-2">Olá, <span id="lead-name" class="font-semibold">cliente</span>! Estamos a analisar o seu perfil para encontrar as soluções ideais para si.</p>
             </div>
 
             <!-- Conteúdo dos Resultados (inicialmente oculto) -->
             <div id="results-content" class="hidden">
                 <div class="text-center mb-10">
-                    <h1 class="text-4xl md:text-4xl font-extrabold text-gray-800 mt-4">Aqui estão suas chances!</h1>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mt-4">Aqui estão as suas chances!</h1>
                 </div>
 
                 <div id="results-message" class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg my-8 max-w-4xl mx-auto fade-in"></div>
@@ -108,7 +102,7 @@
                 <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
 
                 <div class="text-center mt-12">
-                    <a href="index.html" class="btn-primary">
+                    <a href="../index.html" class="btn-primary">
                         Fazer Nova Simulação
                     </a>
                 </div>
@@ -120,7 +114,7 @@
     <!-- Footer -->
     <footer class="bg-green-900 text-white mt-16">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <!-- Conteúdo do footer... -->
+           <!-- O seu conteúdo de footer aqui -->
         </div>
     </footer>
 
@@ -128,14 +122,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- BANCO DE DADOS DE PRODUTOS ---
             const allProducts = [
-                { id: 'facio', isPrioritario: true, logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', maxAmount: 1000, baseChanceNegativado: 95, baseChanceNaoNegativado: 60, vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V' },
-                { id: 'jurosbaixos', isPrioritario: true, logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS' },
-                { id: 'supersim', isPrioritario: true, logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', maxAmount: 2500, baseChanceNegativado: 85, baseChanceNaoNegativado: 50, vantagens: ['<strong><span class="text-green-700"> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T' },
-                { id: 'bompracredito', isPrioritario: true, logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl' },
-                { id: 'brasilcard', logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', titulo: 'Cartão Brasilcard', maxAmount: Infinity, baseChanceNegativado: 90, baseChanceNaoNegativado: 40, vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados com score muito baixo.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb' },
-                { id: 'uppemprestimo', logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', titulo: 'UP.P Empréstimo - FGTS', maxAmount: 50000, baseChanceNegativado: 99, baseChanceNaoNegativado: 99, vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87' },
-                { id: 'santander', logo: 'public/santander.png', tag: 'Cartão de Crédito', titulo: 'Santander SX + Conta', maxAmount: Infinity, baseChanceNegativado: 20, baseChanceNaoNegativado: 80, vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0' },
-                { id: 'itaupassai', logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', titulo: 'Itaú Passaí Gold', maxAmount: Infinity, baseChanceNegativado: 15, baseChanceNaoNegativado: 75, vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6' },
+                { id: 'facio', isPrioritario: true, logo: '../public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', maxAmount: 1000, baseChanceNegativado: 95, baseChanceNaoNegativado: 60, vantagens: ['<span class="text-green-700"> <strong>Antecipe o seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V' },
+                { id: 'jurosbaixos', isPrioritario: true, logo: '../public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e os valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS' },
+                { id: 'supersim', isPrioritario: true, logo: '../public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', maxAmount: 2500, baseChanceNegativado: 85, baseChanceNaoNegativado: 50, vantagens: ['<strong><span class="text-green-700"> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de telemóvel para facilitar.'], link: 'https://bit.ly/4jQk57T' },
+                { id: 'bompracredito', isPrioritario: true, logo: '../public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', maxAmount: 50000, baseChanceNegativado: 88, baseChanceNaoNegativado: 90, vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para o seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl' },
+                { id: 'brasilcard', logo: '../public/brasilcard.png', tag: 'Cartão de Crédito', titulo: 'Cartão Brasilcard', maxAmount: Infinity, baseChanceNegativado: 90, baseChanceNaoNegativado: 40, vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados com score muito baixo.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb' },
+                { id: 'uppemprestimo', logo: '../public/uppemprestimo.png', tag: 'Empréstimo FGTS', titulo: 'UP.P Empréstimo - FGTS', maxAmount: 50000, baseChanceNegativado: 99, baseChanceNaoNegativado: 99, vantagens: ['<span class="text-green-700"> <strong> Antecipe o seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87' },
+                { id: 'santander', logo: '../public/santander.png', tag: 'Cartão de Crédito', titulo: 'Santander SX + Conta', maxAmount: Infinity, baseChanceNegativado: 20, baseChanceNaoNegativado: 80, vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0' },
+                { id: 'itaupassai', logo: '../public/itaupassai.png', tag: 'Cartão de Crédito', titulo: 'Itaú Passaí Gold', maxAmount: Infinity, baseChanceNegativado: 15, baseChanceNaoNegativado: 75, vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6' },
             ];
 
             function getUrlParams() {
@@ -152,31 +146,25 @@
             function createProductCard(product) {
                 let chanceBadge = '';
                 if (product.displayChance) {
-                    chanceBadge = `
-                        <div class="absolute -top-3 -right-3 chance-badge bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                            ${product.displayChance}% DE CHANCE
-                        </div>
-                    `;
+                    chanceBadge = `<div class="absolute -top-3 -right-3 chance-badge bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">${product.displayChance}% DE CHANCE</div>`;
                 }
 
-                return `
-                    <div class="product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative">
-                        ${chanceBadge}
-                        <div class="flex items-center justify-between">
-                            <div class="w-28 h-12 flex items-center justify-start">
-                                <img src="${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                return `<div class="product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative">
+                            ${chanceBadge}
+                            <div class="flex items-center justify-between">
+                                <div class="w-28 h-12 flex items-center justify-start">
+                                    <img src="${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                                </div>
+                                <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
                             </div>
-                            <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
-                        <ul class="space-y-2 text-gray-600 text-sm flex-grow">
-                            ${product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>`).join('')}
-                        </ul>
-                        <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">
-                            Ver Oferta
-                        </a>
-                    </div>
-                `;
+                            <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
+                            <ul class="space-y-2 text-gray-600 text-sm flex-grow">
+                                ${product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>`).join('')}
+                            </ul>
+                            <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">
+                                Ver Oferta
+                            </a>
+                        </div>`;
             }
 
             function displayResults() {
@@ -187,51 +175,53 @@
 
                 let message = '';
                 
-                // 1. Calcula a chance de aprovação para cada produto
                 const productsWithChance = allProducts.map(product => {
                     let chance = 0;
-                    // Caso especial para FGTS: sempre 99%
                     if (product.tag.toLowerCase().includes('fgts')) {
                         chance = 99;
                     } else if (negativado) {
                         chance = product.baseChanceNegativado || 5;
-                    } else { // Não negativado
+                    } else {
                         if (valor <= product.maxAmount) {
                             chance = product.baseChanceNaoNegativado || 5;
                         } else {
-                            // Reduz a chance se o valor for muito alto, mas não zera
                             chance = Math.min(product.baseChanceNaoNegativado || 0, 20);
                         }
                     }
                     return { ...product, displayChance: chance };
                 });
 
-                // 2. Ordena os produtos com a nova lógica
                 productsWithChance.sort((a, b) => {
-                    // Critério 1: Prioritários vêm primeiro
                     const aIsPrioritario = a.isPrioritario || false;
                     const bIsPrioritario = b.isPrioritario || false;
                     if (aIsPrioritario && !bIsPrioritario) return -1;
                     if (!aIsPrioritario && bIsPrioritario) return 1;
-
-                    // Critério 2: Se ambos são (ou não são) prioritários, ordena pela chance
                     return b.displayChance - a.displayChance;
                 });
 
-                // 3. Monta a mensagem personalizada
+                // ===================================================
+                // ✅ LOCAL PARA ALTERAR AS MENSAGENS
+                // ===================================================
                 if (negativado) {
+                    // **ALTERAÇÃO FEITA AQUI** - Mensagem para negativado agora mostra o valor.
                     message = `
-                        <p class="font-bold text-lg mb-2">Análise para perfil negativado!</p>
-                        <p>Abaixo estão todas as nossas ofertas, ordenadas pelas <strong>maiores chances de aprovação</strong> para você. Nossas principais recomendações, como <strong>Facio e Supersim</strong>, estão no topo da lista!</p>
+                        <p class="font-bold text-lg mb-2">Análise para ${formatCurrency(valor)} em perfil negativado!</p>
+                        <p>Mesmo com restrições, existem ótimas chances para si. As nossas principais recomendações estão no topo da lista!</p>
                     `;
                 } else {
+                    // Mensagem para perfil NÃO NEGATIVADO.
                     message = `
                         <p class="font-bold text-lg mb-2">Análise para ${formatCurrency(valor)} concluída!</p>
-                        <p>Com um bom perfil, você tem acesso a ótimas condições! Organizamos todas as ofertas abaixo, com as maiores chances de aprovação para o valor que você precisa no topo.</p>
+                        <p>Com um bom perfil, tem acesso a ótimas condições! Organizámos as ofertas com as maiores chances de aprovação para o valor que precisa no topo.</p>
                     `;
                 }
+                // ===================================================
 
-                // 4. Exibe os resultados na tela
+                // ===================================================
+                // ✅ LOCAL PARA ALTERAR O TEMPO DA TRANSIÇÃO
+                // O valor 1500 significa 1500 milissegundos, ou 1.5 segundos.
+                // Troque para 1000 para 1 segundo, 3000 para 3 segundos, etc.
+                // ===================================================
                 setTimeout(() => {
                     const loadingState = document.getElementById('loading-state');
                     const resultsContent = document.getElementById('results-content');
@@ -243,13 +233,13 @@
                     if (productsWithChance.length > 0) {
                         productGrid.innerHTML = productsWithChance.map(createProductCard).join('');
                     } else {
-                        productGrid.innerHTML = `<div class="text-center text-gray-600 md:col-span-3"><p>Nenhuma oferta encontrada para o valor de <strong>${formatCurrency(valor)}</strong>.</p><p class="mt-2">Tente simular com um valor menor ou veja nossas opções gerais.</p></div>`;
+                        productGrid.innerHTML = `<div class="text-center text-gray-600 md:col-span-3"><p>Nenhuma oferta encontrada para o valor de <strong>${formatCurrency(valor)}</strong>.</p><p class="mt-2">Tente simular com um valor menor ou veja as nossas opções gerais.</p></div>`;
                     }
 
                     loadingState.style.display = 'none';
                     resultsContent.style.display = 'block';
 
-                }, 4000);
+                }, 5000); // <-- ALTERE ESTE NÚMERO PARA MUDAR O TEMPO
             }
 
             displayResults();
