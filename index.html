@@ -1564,26 +1564,21 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
     
     document.addEventListener('DOMContentLoaded', () => {
-        // --- SELETORES DE ELEMENTOS DA UI ---
+        // ===================================================
+        // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
+        // ===================================================
+
+        // --- Variáveis e Seletores Globais ---
         const pageContainers = document.querySelectorAll('.page-container');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
         const leadForm = document.getElementById('leadFormHome');
-        const showFormBtn = document.getElementById('show-form-btn');
-        const formFieldsHome = document.getElementById('form-fields-home');
-        const valorSlider = document.getElementById('valorHome');
-        const valorDisplay = document.getElementById('valor-display-home');
-        const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
-        const parcelasInput = document.getElementById('parcelasHome');
-        const negCheck = document.getElementById('negativado-checkbox-home');
-        const negMsg = document.getElementById('negativado-message');
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.querySelector('#login-page form');
 
-        // --- FUNÇÕES GERAIS ---
-        // Função para mostrar/esconder as diferentes seções da página (como o blog)
+        // --- Funções da App ---
         window.showPage = (pageId) => {
-            pageContainers.forEach(container => {
-                container.classList.remove('active');
-            });
+            pageContainers.forEach(container => container.classList.remove('active'));
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.add('active');
@@ -1592,44 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileMenu?.classList.add('hidden');
         };
 
-        // --- LÓGICA DA UI (INTERAÇÕES DA PÁGINA INICIAL) ---
-        // Controla o menu mobile
-        mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
-
-        // Mostra o resto do formulário ao clicar em "Continuar"
-        showFormBtn?.addEventListener('click', () => {
-            if (formFieldsHome) {
-                formFieldsHome.style.display = 'block';
-                formFieldsHome.classList.add('animate-fade-in');
-                showFormBtn.style.display = 'none';
-            }
-        });
-
-        // Atualiza o valor do slider
-        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
-        valorSlider?.addEventListener('input', e => {
-            if (valorDisplay) valorDisplay.textContent = fmt(e.target.value);
-        });
-
-        // Controla a seleção de parcelas
-        parcelaBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                parcelaBtns.forEach(b => {
-                    b.classList.replace('bg-green-500', 'bg-gray-200');
-                    b.classList.replace('text-white', 'text-gray-700');
-                });
-                btn.classList.replace('bg-gray-200', 'bg-green-500');
-                btn.classList.replace('text-gray-700', 'text-white');
-                if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
-            });
-        });
-
-        // Mostra a mensagem para negativado
-        negCheck?.addEventListener('change', () => {
-            if (negMsg) negMsg.classList.toggle('hidden', !negCheck.checked);
-        });
-        
-        // --- LÓGICA DE CAPTURA DE LEAD E REDIRECIONAMENTO ---
+        // --- LÓGICA DE CAPTURA DE LEAD E REDIRECIONAMENTO (CORRIGIDA) ---
         leadForm?.addEventListener('submit', async (e) => {
             // 1. Previne o envio padrão para podermos capturar o lead primeiro.
             e.preventDefault(); 
@@ -1639,13 +1597,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Altera o botão para o estado de carregamento
             submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Enviando...';
+            submitBtn.innerHTML = 'Analisando...';
 
             const formData = new FormData(leadForm);
             
             try {
                 // 2. Envia os dados para a sua função Netlify para capturar o lead.
-                // Criamos um objeto simples para o backend, garantindo os tipos corretos.
+
                 const leadPayload = {
                     nome: formData.get('nome'),
                     cpf: formData.get('cpf'),
@@ -1668,7 +1626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Mesmo que a captura falhe, continuamos para a página de resultados para não prejudicar a experiência do usuário.
             } finally {
                 // 3. Após a tentativa de captura, redireciona o usuário para a página de resultados.
-                // Criamos os parâmetros para a URL da página de resultados.
+
                 const params = new URLSearchParams({
                     nome: formData.get('nome') || 'Cliente',
                     valor: formData.get('valor') || '5000',
@@ -1679,266 +1637,252 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = `./pages/resultados.html?${params.toString()}`;
             }
         });
-        
-        // Garante que a página inicial seja exibida ao carregar
-        showPage('page-home');
-    });
 
-    // --- Lógica da UI (Menu, Simulador, etc) ---
-    mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+        // --- Lógica da UI (Menu, Simulador, etc) ---
+        mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
-    const showFormBtn = document.getElementById('show-form-btn');
-    const formFieldsHome = document.getElementById('form-fields-home');
-    showFormBtn?.addEventListener('click', () => {
-        if (formFieldsHome) {
-            formFieldsHome.style.display = 'block';
-            formFieldsHome.classList.add('animate-fade-in');
-            showFormBtn.style.display = 'none';
-        }
-    });
-
-    const valorSlider = document.getElementById('valorHome');
-    const valorDisplay = document.getElementById('valor-display-home');
-    const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
-    const parcelasInput = document.getElementById('parcelasHome');
-    const negCheck = document.getElementById('negativado-checkbox-home');
-    const negMsg = document.getElementById('negativado-message');
-    const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
-    valorSlider?.addEventListener('input', e => { if (valorDisplay) valorDisplay.textContent = fmt(e.target.value); });
-    parcelaBtns.forEach(btn => btn.addEventListener('click', () => {
-        parcelaBtns.forEach(b => {
-            b.classList.replace('bg-green-500', 'bg-gray-200');
-            b.classList.replace('text-white', 'text-gray-700');
-        });
-        btn.classList.replace('bg-gray-200', 'bg-green-500');
-        btn.classList.replace('text-gray-700', 'text-white');
-        if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
-    }));
-    negCheck?.addEventListener('change', () => {
-        if (negMsg) negMsg.classList.toggle('hidden', !negCheck.checked);
-    });
-
-    // --- Lógica de Resultados dos Parceiros (Simulação) ---
-    const showResults = (lead) => {
-        showPage('resultados-page');
-        const loading = document.getElementById('loading-results');
-        const content = document.getElementById('results-content');
-        if(!loading || !content) return;
-
-        loading.style.display = 'flex';
-        content.style.display = 'none';
-
-        setTimeout(() => {
-            loading.style.display = 'none';
-            content.style.display = 'block';
-            // A lógica de popular os resultados agora vem da filtragem principal
-        }, 1500);
-    };
-
-
-    // ===================================================
-    // PARTE 2: LÓGICA DE FILTROS E PAGINAÇÃO DE PRODUTOS
-    // ===================================================
-    const productListContainer = document.getElementById('product-list');
-    const paginationContainer = document.getElementById('pagination');
-    const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-
-    // --- Base de Dados de Produtos ---
-
-
-    const allProducts = [
-
-      
-    { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
-        { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-        { id: 3, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-        { id: 4, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
-        { id: 5, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
-        { id: 6, tipo: ['fgts', 'emprestimo'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', tagClass: 'blue', titulo: 'UP.P Empréstimo - FGTS', vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-        { id: 7, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX + Conta', vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
-        { id: 8, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
-
-
-        { id: 9, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
-        { id: 10, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-        { id: 11, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Empréstimo Bolsa Família', vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
-        { id: 12, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
-    
-        { id: 13, tipo: ['emprestimocomgarantia'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/c4.jpg', tag: 'Empréstimo com Garantia', tagClass: 'blue', titulo: 'Empréstimo com Garantia Veicular', vantagens: ['<span class="text-green-700"> <strong> Utilize garantia para Aprovar o seu Empréstimo.</strong></span>', 'Libera Negativados.', 'Valores altos.'], link: 'https://adstartrack.com/click/684ae50f2bfa815a523fe122/186566/307759/subaccount', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-    ];
-
-
-
-    const productState = {
-        itemsPerPage: 8,
-        currentPage: 1,
-        filteredCards: []
-    };
-
-    function createProductCard(product) {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        const tagColorClass = product.tagClass === 'red' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
-        const checkColorClass = product.tagClass === 'red' ? 'text-red-600' : 'text-green-600';
-        const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="${checkColorClass} mr-2">✓</span><span>${v}</span></li>`).join('');
-        card.innerHTML = `<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col"><div class="flex flex-col lg:flex-row gap-6"><div class="flex-shrink-0 flex justify-center lg:justify-start"><div class="p-3 border rounded-lg bg-gray-50"><img src="${product.logo}" alt="Logo ${product.titulo}" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=${product.titulo}';" /></div></div><div class="flex-grow"><div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"><div class="flex-grow"><span class="inline-block ${tagColorClass} text-xs font-semibold px-3 py-1 rounded-full mb-3">${product.tag}</span><h4 class="text-xl font-bold text-gray-800 mb-3">${product.titulo}</h4><ul class="space-y-2 text-gray-600 mb-4">${vantagensHTML}</ul></div><div class="flex-shrink-0"><div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col"><a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">${product.btnPrimario}</a><a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">${product.btnSecundario}</a></div></div></div></div></div></div>`;
-        return card;
-    }
-
-    function renderPagination() {
-        if (!paginationContainer) return;
-        paginationContainer.innerHTML = '';
-        const totalPages = Math.ceil(productState.filteredCards.length / productState.itemsPerPage);
-        if (totalPages <= 1) return;
-        const createButton = (text, page, isDisabled = false, isCurrent = false) => {
-            const btn = document.createElement('button');
-            btn.innerText = text;
-            btn.disabled = isDisabled;
-            let baseClass = 'px-3 py-1 rounded-lg text-sm font-medium border';
-            if (isCurrent) {
-                btn.className = `${baseClass} border-green-600 bg-green-600 text-white font-semibold`;
-            } else if (isDisabled) {
-                btn.className = `${baseClass} text-gray-400 border-gray-300 cursor-not-allowed`;
-            } else {
-                btn.className = `${baseClass} text-gray-700 border-gray-300 hover:bg-gray-100`;
-                btn.addEventListener('click', () => goToPage(page));
+        const showFormBtn = document.getElementById('show-form-btn');
+        const formFieldsHome = document.getElementById('form-fields-home');
+        showFormBtn?.addEventListener('click', () => {
+            if (formFieldsHome) {
+                formFieldsHome.style.display = 'block';
+                formFieldsHome.classList.add('animate-fade-in');
+                showFormBtn.style.display = 'none';
             }
-            return btn;
-        };
-        paginationContainer.appendChild(createButton('Anterior', productState.currentPage - 1, productState.currentPage === 1));
-        for (let i = 1; i <= totalPages; i++) {
-            paginationContainer.appendChild(createButton(i, i, false, i === productState.currentPage));
-        }
-        paginationContainer.appendChild(createButton('Próximo', productState.currentPage + 1, productState.currentPage === totalPages));
-    }
-
-    function goToPage(pageNumber) {
-        if (!productListContainer) return;
-        productState.currentPage = pageNumber;
-        productListContainer.innerHTML = '';
-        const startIndex = (productState.currentPage - 1) * productState.itemsPerPage;
-        const endIndex = startIndex + productState.itemsPerPage;
-        const pageItems = productState.filteredCards.slice(startIndex, endIndex);
-        const fragment = document.createDocumentFragment();
-        pageItems.forEach(product => fragment.appendChild(createProductCard(product)));
-        productListContainer.appendChild(fragment);
-        renderPagination();
-        const filterSection = document.getElementById('home-filters');
-        if (filterSection) {
-            filterSection.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    function applyFilters() {
-        const selectedType = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-        const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
-        
-        productState.filteredCards = allProducts.filter(card => {
-
-            const typeMatch = (selectedType === 'all') || card.tipo.includes(selectedType);
-            const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => card.perfis.includes(p));
-            return typeMatch && profileMatch;
         });
 
-        goToPage(1);
-        if (window.innerWidth < 1024) {
-            closePanel();
-        }
-    }
-
-    // --- Lógica do Painel de Filtros (Mobile) ---
-    const filterBtn = document.getElementById('filter-button');
-    const filterPanel = document.getElementById('filter-panel');
-    const closeBtn = document.getElementById('filter-close');
-    const overlay = document.createElement('div');
-    overlay.id = 'filter-overlay';
-    Object.assign(overlay.style, {
-        position: 'fixed', inset: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: '40', opacity: '0', pointerEvents: 'none', transition: 'opacity .3s ease-in-out'
-    });
-    document.body.appendChild(overlay);
-
-    const openPanel = () => {
-        if (!filterPanel) return;
-        filterPanel.classList.remove('translate-x-full');
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'hidden';
-    };
-    const closePanel = () => {
-        if (!filterPanel) return;
-        filterPanel.classList.add('translate-x-full');
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-        document.body.style.overflow = '';
-    };
-    if (filterBtn) filterBtn.addEventListener('click', openPanel);
-    if (closeBtn) closeBtn.addEventListener('click', closePanel);
-    overlay.addEventListener('click', closePanel);
-
-    // ===================================================
-    // PARTE 3: LÓGICA DO CARROSSEL "COMO FUNCIONA"
-    // ===================================================
-    const track = document.getElementById('carousel-track');
-    const nextButton = document.getElementById('nextBtn');
-    const prevButton = document.getElementById('prevBtn');
-    const dotsNav = document.getElementById('carousel-dots');
-    const container = document.getElementById('carousel-container');
-
-    if (track && nextButton && prevButton && dotsNav) {
-        const slides = Array.from(track.children);
-        const slideCount = slides.length;
-        let currentIndex = 0;
-
-        for (let i = 0; i < slideCount; i++) {
-            const dot = document.createElement('button');
-            dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
-            dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
-            dot.addEventListener('click', () => {
-                currentIndex = i;
-                updateCarousel();
+        const valorSlider = document.getElementById('valorHome');
+        const valorDisplay = document.getElementById('valor-display-home');
+        const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
+        const parcelasInput = document.getElementById('parcelasHome');
+        const negCheck = document.getElementById('negativado-checkbox-home');
+        const negMsg = document.getElementById('negativado-message');
+        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
+        valorSlider?.addEventListener('input', e => { if (valorDisplay) valorDisplay.textContent = fmt(e.target.value); });
+        parcelaBtns.forEach(btn => btn.addEventListener('click', () => {
+            parcelaBtns.forEach(b => {
+                b.classList.replace('bg-green-500', 'bg-gray-200');
+                b.classList.replace('text-white', 'text-gray-700');
             });
-            dotsNav.appendChild(dot);
-        }
-        const dots = Array.from(dotsNav.children);
+            btn.classList.replace('bg-gray-200', 'bg-green-500');
+            btn.classList.replace('text-gray-700', 'text-white');
+            if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
+        }));
+        negCheck?.addEventListener('change', () => {
+            if (negMsg) negMsg.classList.toggle('hidden', !negCheck.checked);
+        });
 
-        const updateCarousel = () => {
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-                dot.classList.toggle('bg-green-500', index === currentIndex);
-                dot.classList.toggle('bg-gray-300', index !== currentIndex);
-            });
-            prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-            nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+        // --- Lógica de Resultados dos Parceiros (Simulação) ---
+        // Esta função não é mais chamada pelo formulário principal, mas é mantida para outras partes do site.
+        const showResults = (lead) => {
+            showPage('resultados-page');
+            const loading = document.getElementById('loading-results');
+            const content = document.getElementById('results-content');
+            if(!loading || !content) return;
+
+            loading.style.display = 'flex';
+            content.style.display = 'none';
+
+            setTimeout(() => {
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            }, 1500);
         };
 
-        nextButton.addEventListener('click', () => {
-            if (currentIndex < slideCount - 1) {
-                currentIndex++;
-                updateCarousel();
+
+        // ===================================================
+        // PARTE 2: LÓGICA DE FILTROS E PAGINAÇÃO DE PRODUTOS
+        // ===================================================
+        const productListContainer = document.getElementById('product-list');
+        const paginationContainer = document.getElementById('pagination');
+        const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+
+        const allProducts = [
+            { id: 1, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/facio.png', tag: 'Antecipação Salarial', titulo: 'Empréstimo Facio', vantagens: ['<span class="text-green-700"> <strong>Antecipe seu salário em até 2 minutos via PIX.</strong></span>', 'Sem consulta ao SPC/Serasa.','Aprova <strong><span class="text-green-700">negativados</strong> e <span class="text-green-700"><strong>score baixo</strong></span>.'], link: 'https://bit.ly/4l19g3V', btnPrimario: 'Receber Agora', btnSecundario: 'Mais Info' },
+            { id: 2, tipo: ['emprestimo'], perfis: ['autonomo', 'negativado', 'score-baixo'], logo: 'public/jurosbaixos.png', tag: 'Empréstimo Pessoal', titulo: 'Juros Baixos', vantagens: ['<span class="text-green-700"> <strong>Encontre as melhores ofertas de crédito.</strong></span>','Aceita negativados e valores podem ser muito altos.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/414zSbS', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+            { id: 3, tipo: ['cartao',], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'https://bit.ly/3WJuKZb', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+            { id: 4, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
+            { id: 5, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
+            { id: 6, tipo: ['fgts', 'emprestimo'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Empréstimo FGTS', tagClass: 'blue', titulo: 'UP.P Empréstimo - FGTS', vantagens: ['<span class="text-green-700"> <strong> Antecipe seu FGTS em até 30 minutos.</strong></span>', 'Taxas a Partir de 1,49%.', 'Pix em Até 30 MINUTOS!.'], link: 'http://upp.com.br/?m=kd8i87', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
+            { id: 7, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/santander.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Santander SX + Conta', vantagens: ['<span class="text-green-700"><strong>Zere a anuidade gastando R$100</strong></span> na fatura ou cadastrando chaves PIX.', '<span class=text-green-700><strong>Cartão online disponível </strong></span> antes do físico chegar.', 'Programa de pontos Esfera e descontos.'], link: 'https://bit.ly/4jdUsO0', btnPrimario: 'Peça Agora', btnSecundario: 'Ver Detalhes' },
+            { id: 8, tipo: ['cartao'], perfis: ['negativado', 'score-baixo'], logo: 'public/itaupassai.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Itaú Passaí Gold', vantagens: ['Preço de atacado a partir de 1 unidade no Assaí.', 'Anuidade zero gastando R$ 1.000 em compras.', 'Benefícios da bandeira Visa Gold.'], link: 'https://bit.ly/3Hh5Pr6', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
+            { id: 9, tipo: ['cartao'], perfis: ['score-baixo'], logo: 'public/ourocard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Ourocard Fácil', vantagens: ['Sem anuidade acumulando R$100 em compras por mês.', 'Aprovação simplificada, bom para score baixo.', 'Cartão virtual e benefícios da bandeira Visa.'], link: 'https://bit.ly/3HZaM8s', btnPrimario: 'Peça Agora', btnSecundario: 'Conhecer' },
+            { id: 10, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
+            { id: 11, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Empréstimo Bolsa Família', vantagens:['Empréstimo para <strong><span class="text-green-700"> Beneficiários do Bolsa Família </span></strong>'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
+            { id: 12, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credspot.png', tag: 'Empréstimo FGTS', titulo: 'Credspot - FGTS', vantagens:['<span class="text-green-700"><strong> Antecipe seu FGTS a partir de R$50.</span></strong>', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+            { id: 13, tipo: ['emprestimocomgarantia'], perfis: ['autonomo','negativado','score-baixo','score-regular',], logo: 'public/c4.jpg', tag: 'Empréstimo com Garantia', tagClass: 'blue', titulo: 'Empréstimo com Garantia Veicular', vantagens: ['<span class="text-green-700"> <strong> Utilize garantia para Aprovar o seu Empréstimo.</strong></span>', 'Libera Negativados.', 'Valores altos.'], link: 'https://adstartrack.com/click/684ae50f2bfa815a523fe122/186566/307759/subaccount', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
+        ];
+
+        const productState = {
+            itemsPerPage: 8,
+            currentPage: 1,
+            filteredCards: []
+        };
+
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            const tagColorClass = product.tagClass === 'red' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+            const checkColorClass = product.tagClass === 'red' ? 'text-red-600' : 'text-green-600';
+            const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="${checkColorClass} mr-2">✓</span><span>${v}</span></li>`).join('');
+            card.innerHTML = `<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col"><div class="flex flex-col lg:flex-row gap-6"><div class="flex-shrink-0 flex justify-center lg:justify-start"><div class="p-3 border rounded-lg bg-gray-50"><img src="${product.logo}" alt="Logo ${product.titulo}" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=${product.titulo}';" /></div></div><div class="flex-grow"><div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"><div class="flex-grow"><span class="inline-block ${tagColorClass} text-xs font-semibold px-3 py-1 rounded-full mb-3">${product.tag}</span><h4 class="text-xl font-bold text-gray-800 mb-3">${product.titulo}</h4><ul class="space-y-2 text-gray-600 mb-4">${vantagensHTML}</ul></div><div class="flex-shrink-0"><div class="product-actions space-y-2 sm:space-y-0 sm:flex sm:flex-col"><a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">${product.btnPrimario}</a><a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">${product.btnSecundario}</a></div></div></div></div></div></div>`;
+            return card;
+        }
+
+        function renderPagination() {
+            if (!paginationContainer) return;
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(productState.filteredCards.length / productState.itemsPerPage);
+            if (totalPages <= 1) return;
+            const createButton = (text, page, isDisabled = false, isCurrent = false) => {
+                const btn = document.createElement('button');
+                btn.innerText = text;
+                btn.disabled = isDisabled;
+                let baseClass = 'px-3 py-1 rounded-lg text-sm font-medium border';
+                if (isCurrent) {
+                    btn.className = `${baseClass} border-green-600 bg-green-600 text-white font-semibold`;
+                } else if (isDisabled) {
+                    btn.className = `${baseClass} text-gray-400 border-gray-300 cursor-not-allowed`;
+                } else {
+                    btn.className = `${baseClass} text-gray-700 border-gray-300 hover:bg-gray-100`;
+                    btn.addEventListener('click', () => goToPage(page));
+                }
+                return btn;
+            };
+            paginationContainer.appendChild(createButton('Anterior', productState.currentPage - 1, productState.currentPage === 1));
+            for (let i = 1; i <= totalPages; i++) {
+                paginationContainer.appendChild(createButton(i, i, false, i === productState.currentPage));
             }
-        });
-        prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCarousel();
+            paginationContainer.appendChild(createButton('Próximo', productState.currentPage + 1, productState.currentPage === totalPages));
+        }
+
+        function goToPage(pageNumber) {
+            if (!productListContainer) return;
+            productState.currentPage = pageNumber;
+            productListContainer.innerHTML = '';
+            const startIndex = (productState.currentPage - 1) * productState.itemsPerPage;
+            const endIndex = startIndex + productState.itemsPerPage;
+            const pageItems = productState.filteredCards.slice(startIndex, endIndex);
+            const fragment = document.createDocumentFragment();
+            pageItems.forEach(product => fragment.appendChild(createProductCard(product)));
+            productListContainer.appendChild(fragment);
+            renderPagination();
+            const filterSection = document.getElementById('home-filters');
+            if (filterSection) {
+                filterSection.scrollIntoView({ behavior: 'smooth' });
             }
+        }
+
+        function applyFilters() {
+            const selectedType = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+            const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
+            
+            productState.filteredCards = allProducts.filter(card => {
+                const typeMatch = (selectedType === 'all') || card.tipo.includes(selectedType);
+                const profileMatch = (selectedProfiles.length === 0) || selectedProfiles.every(p => card.perfis.includes(p));
+                return typeMatch && profileMatch;
+            });
+
+            goToPage(1);
+            if (window.innerWidth < 1024) {
+                closePanel();
+            }
+        }
+
+        // --- Lógica do Painel de Filtros (Mobile) ---
+        const filterBtn = document.getElementById('filter-button');
+        const filterPanel = document.getElementById('filter-panel');
+        const closeBtn = document.getElementById('filter-close');
+        const overlay = document.createElement('div');
+        overlay.id = 'filter-overlay';
+        Object.assign(overlay.style, {
+            position: 'fixed', inset: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: '40', opacity: '0', pointerEvents: 'none', transition: 'opacity .3s ease-in-out'
         });
-        updateCarousel();
-    }
+        document.body.appendChild(overlay);
 
-    // ===================================================
-    // PARTE 4: INICIALIZAÇÃO GERAL
-    // ===================================================
+        const openPanel = () => {
+            if (!filterPanel) return;
+            filterPanel.classList.remove('translate-x-full');
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'hidden';
+        };
+        const closePanel = () => {
+            if (!filterPanel) return;
+            filterPanel.classList.add('translate-x-full');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            document.body.style.overflow = '';
+        };
+        if (filterBtn) filterBtn.addEventListener('click', openPanel);
+        if (closeBtn) closeBtn.addEventListener('click', closePanel);
+        overlay.addEventListener('click', closePanel);
 
-    if(filterInputs.length > 0) {
-        filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-        applyFilters(); // Carga inicial dos produtos
-    }
-    showPage('page-home'); // Mostra a página inicial por defeito
-});
+        // ===================================================
+        // PARTE 3: LÓGICA DO CARROSSEL "COMO FUNCIONA"
+        // ===================================================
+        const track = document.getElementById('carousel-track');
+        const nextButton = document.getElementById('nextBtn');
+        const prevButton = document.getElementById('prevBtn');
+        const dotsNav = document.getElementById('carousel-dots');
+        const container = document.getElementById('carousel-container');
 
+        if (track && nextButton && prevButton && dotsNav) {
+            const slides = Array.from(track.children);
+            const slideCount = slides.length;
+            let currentIndex = 0;
+
+            for (let i = 0; i < slideCount; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+                dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
+                dot.addEventListener('click', () => {
+                    currentIndex = i;
+                    updateCarousel();
+                });
+                dotsNav.appendChild(dot);
+            }
+            const dots = Array.from(dotsNav.children);
+
+            const updateCarousel = () => {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                    dot.classList.toggle('bg-green-500', index === currentIndex);
+                    dot.classList.toggle('bg-gray-300', index !== currentIndex);
+                });
+                prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
+                nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+            };
+
+            nextButton.addEventListener('click', () => {
+                if (currentIndex < slideCount - 1) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            });
+            prevButton.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            });
+            updateCarousel();
+        }
+
+        // ===================================================
+        // PARTE 4: INICIALIZAÇÃO GERAL
+        // ===================================================
+
+        if(filterInputs.length > 0) {
+            filterInputs.forEach(input => input.addEventListener('change', applyFilters));
+            applyFilters(); // Carga inicial dos produtos
+        }
+        showPage('page-home'); // Mostra a página inicial por defeito
+    });
+
+</script>
 </script>
 </body>
 </html>
