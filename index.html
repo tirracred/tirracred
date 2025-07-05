@@ -249,7 +249,7 @@
                                  <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
                                  <div class="flex items-start">
                                     <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termodeconsentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
                                  </div>
                                  <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
                                     Ver Recomendações
@@ -1347,19 +1347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="max-w-md mx-auto">
             <form class="flex flex-col sm:flex-row gap-3" action="https://bit.ly/4f9eMOv" target="_blank">
-                <label for="cpf" class="sr-only">Seu CPF</label>
-                <input
-                    type="tel"
-                    id="cpf"
-                    name="cpf"
-                    inputmode="numeric"
-                    placeholder="Digite seu CPF (apenas números)"
-                    class="flex-grow p-3 rounded-md text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500"
-                    required
-                    pattern="\d{11}"
-                    title="Digite um CPF válido com 11 dígitos, sem pontos ou traços."
-                    maxlength="11"
-                />
+
                 <button
                     type="submit"
                     class="bg-green-500 text-white font-bold px-6 py-3 rounded-md hover:bg-green-600 transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500"
@@ -1689,10 +1677,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- PÁGINA 2 (IDs 9 em diante) ---
         { id: 9, tipo: ['cartao', 'contas'], perfis: ['autonomo','negativado','score-baixo'], logo: 'public/picpay.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Cartão de Crédito PicPay + Conta', vantagens: ['Sem anuidade e limite garantido.', 'Fácil de Aprovar Negativados e SCORE BAIXO', 'Benefícios da bandeira Mastercard.'], link: 'https://picpay.onelink.me/kAIe/hrfzvmlc', btnPrimario: 'Pedir PicPay', btnSecundario: 'Ver Vantagens' },
-        { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Pix em 30 minutos para quem RECEBE BOLSA FAMÍLIA'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Antecipar Agora', btnSecundario: 'Ver Condições' },
-        { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/novohorizontefgts.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Antecipe seu FGTS a partir de R$50.', 'Dinheiro na conta em até 30 minutos.'], link: '#', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
+        { id: 10, tipo: ['bolsafamilia', 'emprestimo'], perfis: ['negativado', 'score-baixo'], logo: 'public/novohorizontebfamilia.png', tag: 'Benefício Social', titulo: 'Antecipação Bolsa Família', vantagens:['Empréstimo para Beneficiários do Bolsa Família'], link: 'https://bit.ly/4moHS1h', btnPrimario: 'Solicitar Agora', btnSecundario: 'Ver Condições' },
+        { id: 11, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/credispot.png', tag: 'Empréstimo FGTS', titulo: 'Novo Horizonte - FGTS', vantagens:['Antecipe seu FGTS a partir de R$50.', 'Dinheiro na conta em até 30 minutos.'], link: 'https://apretailer.com.br/click/684ae50e2bfa815a40492a72/186580/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
         { id: 13, tipo: ['seguro'], perfis: ['autonomo', 'score-regular'], logo: 'public/seguradora-logo.png', tag: 'Seguro de Vida', tagClass: 'blue', titulo: 'Seguro de Vida Protegido', vantagens: ['Cobertura completa para acidentes.', 'Assistência funeral incluída.', 'Preço que cabe no bolso.'], link: '#', btnPrimario: 'Cotar Agora', btnSecundario: 'Saber Mais' },
-        { id: 14, tipo: ['contas','cartao'], perfis: ['autonomo', 'score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: '#', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' }
+        { id: 14, tipo: ['contas','cartao'], perfis: ['autonomo','negativado','score-regular','score-baixo'], logo: 'public/santanderlogo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: 'https://apartjsx.com/click/67cf89652bfa812bd22e7fd3/185381/307759/subaccount', btnPrimario: 'Abrir Conta', btnSecundario: 'Saber Mais' },
+        { id: 15, tipo: ['fgts', 'emprestimo'], perfis: ['negativado','score-baixo','autonomo','score-regular',], logo: 'public/uppemprestimo.png', tag: 'Conta Digital', tagClass: 'blue', titulo: 'Conta Santander', vantagens: ['Conta corrente sem mensalidade.', 'Cartão de crédito sujeito a análise.', 'Saques ilimitados nos caixas Santander.'], link: 'https://apretailer.com.br/click/6657960d2bfa815e2a469393/179925/307759/subaccount', btnPrimario: 'Simular FGTS', btnSecundario: 'Detalhes' },
     ];
 
     const productState = {
