@@ -1562,7 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </footer>
 
 <script>
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         // ===================================================
         // PARTE 1: LÓGICA DA APLICAÇÃO PRINCIPAL (Páginas, Formulários, UI)
@@ -1626,7 +1626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Mesmo que a captura falhe, continuamos para a página de resultados para não prejudicar a experiência do usuário.
             } finally {
                 // 3. Após a tentativa de captura, redireciona o usuário para a página de resultados.
-
+                
                 const params = new URLSearchParams({
                     nome: formData.get('nome') || 'Cliente',
                     valor: formData.get('valor') || '5000',
@@ -1673,7 +1673,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- Lógica de Resultados dos Parceiros (Simulação) ---
-        // Esta função não é mais chamada pelo formulário principal, mas é mantida para outras partes do site.
+        // Esta função não será mais chamada pelo formulário principal, mas a mantemos caso seja usada em outro lugar.
         const showResults = (lead) => {
             showPage('resultados-page');
             const loading = document.getElementById('loading-results');
@@ -1881,9 +1881,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showPage('page-home'); // Mostra a página inicial por defeito
     });
+</script>
 
 </script>
-</script>
+
 </body>
 </html>
 
