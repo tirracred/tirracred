@@ -1,6 +1,6 @@
 // netlify/functions/send-welcome-email.js
 
-// Usamos node-fetch para compatibilidade com o ambiente Netlify
+// Usamos node-fetch para compatibilidade com o ambiente Netlify blablablabla
 const fetch = require('node-fetch');
 
 // Endpoint da API do Zoho para o seu centro de dados (Europa)
