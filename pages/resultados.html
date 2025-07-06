@@ -206,13 +206,13 @@
                     // **ALTERAÇÃO FEITA AQUI** - Mensagem para negativado agora mostra o valor.
                     message = `
                         <p class="font-bold text-lg mb-2">Análise para ${formatCurrency(valor)} em perfil negativado!</p>
-                        <p>Mesmo com restrições, existem ótimas chances para si. As nossas principais recomendações estão no topo da lista!</p>
+                        <p>Mesmo com restrições, existem ótimas chances para você. As nossas principais recomendações estão no topo da lista!</p>
                     `;
                 } else {
                     // Mensagem para perfil NÃO NEGATIVADO.
                     message = `
                         <p class="font-bold text-lg mb-2">Análise para ${formatCurrency(valor)} concluída!</p>
-                        <p>Com um bom perfil, tem acesso a ótimas condições! Organizámos as ofertas com as maiores chances de aprovação para o valor que precisa no topo.</p>
+                        <p>Com o seu perfil, você já tem acesso a ótimas condições! Vamos te mostrar ofertas com as maiores chances de aprovação para o valor que precisa no topo.</p>
                     `;
                 }
                 // ===================================================
@@ -239,7 +239,7 @@
                     loadingState.style.display = 'none';
                     resultsContent.style.display = 'block';
 
-                }, 5000); // <-- ALTERE ESTE NÚMERO PARA MUDAR O TEMPO
+                }, 3000); // <-- ALTERE ESTE NÚMERO PARA MUDAR O TEMPO
             }
 
             displayResults();
