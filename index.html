@@ -156,22 +156,37 @@
 
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow">
-                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
-                        <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow">
+                <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
+                    <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto">
+                </a>
+            </div>
+
+            <nav class="hidden md:flex md:space-x-8">
+                <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
+                <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
+                <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
+                <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center">
+                    <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.235.652 4.395 1.849 6.206l-.552 2.022 2.05-1.025z"/>
+                        </svg>
+                        <span>Falar com Atendente</span>
                     </a>
                 </div>
-                <nav class="hidden md:flex md:space-x-8">
-                    <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
-                    <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
-                    <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
-                    <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
-                </nav>
-                <div class="hidden md:flex items-center space-x-2">
-                    <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Falar com Atendente</a>
-                </div>
+                
+                <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="md:hidden text-green-600 hover:text-green-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.235.652 4.395 1.849 6.206l-.552 2.022 2.05-1.025z"/>
+                    </svg>
+                </a>
+
                 <div class="md:hidden">
                     <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -181,18 +196,20 @@
                 </div>
             </div>
         </div>
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
-            <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-            <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-            <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
-            <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
-            <div class="px-4 py-3 border-t">
-                <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Falar com Atendente</a>
+    </div>
 
-            </div>
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+        <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
+        <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
+        <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
+        <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
+        <div class="px-4 py-3 border-t">
+            <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="w-full flex justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
+                Falar com Atendente
+            </a>
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- Conteúdo da Página Inicial -->
     <div id="page-home" class="page-container active">
