@@ -1846,56 +1846,96 @@ leadForm?.addEventListener('submit', async (e) => {
         overlay.addEventListener('click', closePanel);
 
         // ===================================================
-        // PARTE 3: LÓGICA DO CARROSSEL "COMO FUNCIONA"
-        // ===================================================
-        const track = document.getElementById('carousel-track');
-        const nextButton = document.getElementById('nextBtn');
-        const prevButton = document.getElementById('prevBtn');
-        const dotsNav = document.getElementById('carousel-dots');
-        const container = document.getElementById('carousel-container');
+// PARTE 3: LÓGICA DO CARROSSEL "COMO FUNCIONA"
+// ===================================================
+const track = document.getElementById('carousel-track');
+const nextButton = document.getElementById('nextBtn');
+const prevButton = document.getElementById('prevBtn');
+const dotsNav = document.getElementById('carousel-dots');
+const container = document.getElementById('carousel-container');
 
-        if (track && nextButton && prevButton && dotsNav) {
-            const slides = Array.from(track.children);
-            const slideCount = slides.length;
-            let currentIndex = 0;
+if (track && nextButton && prevButton && dotsNav) {
+    const slides = Array.from(track.children);
+    const slideCount = slides.length;
+    let currentIndex = 0;
 
-            for (let i = 0; i < slideCount; i++) {
-                const dot = document.createElement('button');
-                dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
-                dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
-                dot.addEventListener('click', () => {
-                    currentIndex = i;
-                    updateCarousel();
-                });
-                dotsNav.appendChild(dot);
-            }
-            const dots = Array.from(dotsNav.children);
+    // AQUI ESTÁ A CORREÇÃO:
+    // Esta linha limpa quaisquer indicadores que já existam.
+    // O problema ocorria porque o script do carrossel estava sendo executado duas vezes,
+    // adicionando 3 indicadores de cada vez, totalizando 6.
+    dotsNav.innerHTML = '';
 
-            const updateCarousel = () => {
-                track.style.transform = `translateX(-${currentIndex * 100}%)`;
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentIndex);
-                    dot.classList.toggle('bg-green-500', index === currentIndex);
-                    dot.classList.toggle('bg-gray-300', index !== currentIndex);
-                });
-                prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-                nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
-            };
+    for (let i = 0; i < slideCount; i++) {
+        const dot = document.createElement('button');
+        dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+        dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
+        dot.addEventListener('click', () => {
+            currentIndex = i;
+            updateCarousel();
+        });
+        dotsNav.appendChild(dot);
+    }
+    const dots = Array.from(dotsNav.children);
 
-            nextButton.addEventListener('click', () => {
-                if (currentIndex < slideCount - 1) {
-                    currentIndex++;
-                    updateCarousel();
-                }
-            });
-            prevButton.addEventListener('click', () => {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updateCarousel();
-                }
-            });
+    const updateCarousel = () => {
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+            dot.classList.toggle('bg-green-500', index === currentIndex);
+            dot.classList.toggle('bg-gray-300', index !== currentIndex);
+        });
+        prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
+        nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+    };
+
+    nextButton.addEventListener('click', () => {
+        if (currentIndex < slideCount - 1) {
+            currentIndex++;
             updateCarousel();
         }
+    });
+    
+    prevButton.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+        }
+    });
+
+    // Funcionalidade de Swipe para dispositivos móveis
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    if (container) {
+        container.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        container.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+    }
+
+    const handleSwipe = () => {
+        // Swipe para a esquerda (próximo)
+        if (touchendX < touchstartX - 50) {
+            if (currentIndex < slideCount - 1) {
+                currentIndex++;
+                updateCarousel();
+            }
+        }
+        // Swipe para a direita (anterior)
+        if (touchendX > touchstartX + 50) {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        }
+    };
+    
+    updateCarousel();
+}
 
         // ===================================================
         // PARTE 4: INICIALIZAÇÃO GERAL
