@@ -1628,6 +1628,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileMenu?.classList.add('hidden');
         };
 
+        
+
      // --- LÓGICA DE CAPTURA DE LEAD E REDIRECIONAMENTO (CORRIGIDA) ---
 leadForm?.addEventListener('submit', async (e) => {
     // 1. Previne o envio padrão para podermos capturar o lead primeiro.
@@ -1676,7 +1678,27 @@ leadForm?.addEventListener('submit', async (e) => {
         window.location.href = `./pages/resultados.html?${params.toString()}`;
     }
 });
+ // --- Lógica para o checkbox "Negativado" ---
+  const negativadoCheckbox = document.getElementById('negativado-checkbox-home');
+  const negativadoMessage = document.getElementById('negativado-message');
 
+  if (negativadoCheckbox && negativadoMessage) {
+    negativadoCheckbox.addEventListener('change', function (event) {
+      // Mostra ou esconde a mensagem baseando-se se o checkbox está marcado.
+      negativadoMessage.classList.toggle('hidden', !event.target.checked);
+    });
+  }
+
+  // --- Lógica para o checkbox "Aposentado/INSS" ---
+  const inssCheckbox = document.getElementById('aposentado-inss-checkbox-home');
+  const inssMessage = document.getElementById('aposentado-inss-message');
+
+  if (inssCheckbox && inssMessage) {
+    inssCheckbox.addEventListener('change', function (event) {
+      // Mostra ou esconde a mensagem baseando-se se o checkbox está marcado.
+      inssMessage.classList.toggle('hidden', !event.target.checked);
+    });
+  }
         // --- Lógica da UI (Menu, Simulador, etc) ---
         mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
@@ -1972,40 +1994,12 @@ if (track && nextButton && prevButton && dotsNav) {
             applyFilters(); // Carga inicial dos produtos
         }
         showPage('page-home'); // Mostra a página inicial por defeito
-    });
-
-    
-</script>
-
-<script>
-// Garante que o script só rode depois que a página carregar completamente.
-document.addEventListener('DOMContentLoaded', function () {
-  
-  // --- Lógica para o checkbox "Negativado" ---
-  const negativadoCheckbox = document.getElementById('negativado-checkbox-home');
-  const negativadoMessage = document.getElementById('negativado-message');
-
-  if (negativadoCheckbox && negativadoMessage) {
-    negativadoCheckbox.addEventListener('change', function (event) {
-      // Mostra ou esconde a mensagem baseando-se se o checkbox está marcado.
-      negativadoMessage.classList.toggle('hidden', !event.target.checked);
-    });
-  }
-
-  // --- Lógica para o checkbox "Aposentado/INSS" ---
-  const inssCheckbox = document.getElementById('aposentado-inss-checkbox-home');
-  const inssMessage = document.getElementById('aposentado-inss-message');
-
-  if (inssCheckbox && inssMessage) {
-    inssCheckbox.addEventListener('change', function (event) {
-      // Mostra ou esconde a mensagem baseando-se se o checkbox está marcado.
-      inssMessage.classList.toggle('hidden', !event.target.checked);
-    });
-  }
-
-});
+        
+ });
 
 </script>
+
+
 
 </script>
 
