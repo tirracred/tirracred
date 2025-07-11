@@ -1604,7 +1604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
     // ===================================================
     // 1. CORE APP LOGIC & UI
     // ===================================================
@@ -1668,6 +1668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- FORM SUBMISSION WITH LEAD CAPTURE ---
     leadForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById('submit-btn-home');
@@ -1677,14 +1678,42 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = 'Analisando...';
 
         const formData = new FormData(leadForm);
-        
-        // Redirect to the external results page
-        const params = new URLSearchParams({
-            nome: formData.get('nome') || 'Cliente',
-            valor: formData.get('valor') || '5000',
-            negativado: formData.has('negativado')
-        });
-        window.location.href = `./pages/resultados.html?${params.toString()}`;
+
+        try {
+            // 1. Create the payload for the backend function
+            const leadPayload = {
+                nome: formData.get('nome'),
+                cpf: formData.get('cpf'),
+                whatsapp: formData.get('whatsapp'),
+                email: formData.get('email'),
+                valor: Number(formData.get('valor')) || 0,
+                renda: Number(formData.get('renda')) || 0,
+                parcelas: Number(formData.get('parcelas')) || 0,
+                negativado: formData.has('negativado'),
+                aposentado: formData.has('aposentado_inss') // New field
+            };
+
+            // 2. Send the data to the Netlify function
+            await fetch('/.netlify/functions/capturar-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadPayload),
+            });
+
+        } catch (error) {
+            console.error("Erro ao capturar lead:", error);
+            // The process continues to the next step even if the lead capture fails,
+            // to avoid disrupting the user experience.
+        } finally {
+            // 3. Redirect the user to the results page
+            const params = new URLSearchParams({
+                nome: formData.get('nome') || 'Cliente',
+                valor: formData.get('valor') || '5000',
+                negativado: formData.has('negativado'),
+                aposentado: formData.has('aposentado_inss')
+            });
+            window.location.href = `./pages/resultados.html?${params.toString()}`;
+        }
     });
 
     // ===================================================

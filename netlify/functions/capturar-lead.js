@@ -3,7 +3,7 @@ const supabase = require('./utils/supabase');
 
 // Cabeçalhos CORS compartilhados para todas as respostas
 const headers = {
-  'Access-Control-Allow-Origin': '*',  // Em produção, ajuste para o domínio do seu site
+  'Access-Control-Allow-Origin': '*', // Em produção, ajuste para o domínio do seu site
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
@@ -38,6 +38,8 @@ exports.handler = async function(event) {
     let valorDesejado = data.valor;
     let negativado = data.negativado;
     let parcelas = data.parcelas;
+    let aposentado = data.aposentado; // Novo campo
+
 
     // Validação dos campos obrigatórios
     if (!nome || !email) {
@@ -50,8 +52,12 @@ exports.handler = async function(event) {
 
     // Conversão de tipos dos campos opcionais
     if (typeof negativado !== 'boolean') {
-      // Trata strings "true"/"on" ou booleanos truthy/falsy
+
       negativado = (negativado === true || negativado === 'true' || negativado === 'on');
+    }
+    // Adiciona a conversão para o novo campo 'aposentado'
+    if (typeof aposentado !== 'boolean') {
+      aposentado = (aposentado === true || aposentado === 'true' || aposentado === 'on');
     }
     if (rendaMensal !== undefined && rendaMensal !== null) {
       rendaMensal = Number(rendaMensal);
@@ -66,7 +72,7 @@ exports.handler = async function(event) {
       if (isNaN(parcelas)) parcelas = null;
     }
 
-    // Monta o objeto com nomes de coluna corretos
+    // Monta o objeto com nomes de coluna corretos, incluindo 'aposentado'
     const newLead = {
       nome,
       email,
@@ -75,12 +81,13 @@ exports.handler = async function(event) {
       ...(rendaMensal !== undefined ? { renda_mensal: rendaMensal } : {}),
       ...(valorDesejado !== undefined ? { valor_desejado: valorDesejado } : {}),
       ...(negativado !== undefined ? { negativado } : {}),
+      ...(aposentado !== undefined ? { aposentado } : {}), // Adiciona o campo ao objeto
       ...(parcelas !== undefined ? { parcelas } : {})
     };
 
     // Insere na tabela 'leads'
     const { error } = await supabase.from('leads').insert(newLead);
-    if (error) throw error;  // Lança erro para cair no catch em caso de falha
+    if (error) throw error; // Lança erro para cair no catch em caso de falha
 
     // Sucesso
     return {
