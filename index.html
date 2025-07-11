@@ -243,10 +243,10 @@
                         </div>
                         
                         <!-- Seção de Checkboxes: Negativado & Aposentado -->
-                        <div class="space-y-4">
+                        <div class="space-y-4 md:space-y-0 md:flex md:items-start md:gap-6">
 
                             <!-- Opção: Negativado -->
-                            <div>
+                            <div class="flex-1">
                                <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                     <span class="ml-3 text-gray-700 font-medium">Possui nome negativado?</span>
@@ -255,12 +255,12 @@
                             </div>
 
                             <!-- Opção: Aposentado / INSS -->
-                            <div>
+                            <div class="flex-1">
                                <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="aposentado_inss" id="aposentado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                    <span class="ml-3 text-gray-700 font-medium">Recebe do INSS?</span>
+                                    <input type="checkbox" name="aposentado_inss" id="aposentado-inss-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                    <span class="ml-3 text-gray-700 font-medium">É aposentado / do INSS?</span>
                                 </label>
-                                <p id="aposentado-message" class="text-sm text-green-700 mt-1 ml-8 hidden">Temos ótimas opções para você!</p>
+                                <p id="aposentado-inss-message" class="text-sm text-green-700 mt-1 ml-8 hidden">Temos ótimas opções para você!</p>
                             </div>
 
                         </div>
@@ -292,9 +292,8 @@
         <!-- O restante do seu HTML da página inicial continua aqui... -->
         
     </main>
-</div>
-            </section>
-            <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
