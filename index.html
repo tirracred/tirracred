@@ -206,7 +206,7 @@
 </header>
 
 
-   <!-- Conteúdo da Página Inicial -->
+    <!-- Conteúdo da Página Inicial -->
 <div id="page-home" class="page-container active">
     <main>
         <!-- Hero e Simulador -->
@@ -242,11 +242,15 @@
                             <input type="hidden" name="parcelas" id="parcelasHome" value="12">
                         </div>
                         
+                        <!-- ================================================== -->
+                        <!-- INÍCIO DA CORREÇÃO -->
+                        <!-- ================================================== -->
+                        
                         <!-- Seção de Checkboxes: Negativado & Aposentado -->
-                        <div class="space-y-4 md:space-y-0 md:flex md:items-start md:gap-6">
+                        <div class="space-y-4">
 
                             <!-- Opção: Negativado -->
-                            <div class="flex-1">
+                            <div>
                                <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                     <span class="ml-3 text-gray-700 font-medium">Possui nome negativado?</span>
@@ -255,7 +259,7 @@
                             </div>
 
                             <!-- Opção: Aposentado / INSS -->
-                            <div class="flex-1">
+                            <div>
                                <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" name="aposentado_inss" id="aposentado-inss-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                     <span class="ml-3 text-gray-700 font-medium">É aposentado / do INSS?</span>
@@ -265,35 +269,30 @@
 
                         </div>
 
-                        <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                            Continuar
-                        </button>
-
-                        <!-- Campos do Formulário (inicialmente ocultos) -->
-                        <div id="form-fields-home" class="hidden space-y-4">
-                             <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                             <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                             <input name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                             <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                             <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                             <div class="flex items-start">
-                                <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                                <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
-                             </div>
-                             <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                                Ver Recomendações
+                            <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                                Continuar
                             </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-        
-        <!-- O restante do seu HTML da página inicial continua aqui... -->
-        
-    </main>
 
-<!DOCTYPE html>
+                            <!-- Campos do Formulário (inicialmente ocultos) -->
+                            <div id="form-fields-home" class="hidden space-y-4">
+                                 <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <div class="flex items-start">
+                                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                                 </div>
+                                 <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                                    Ver Recomendações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
