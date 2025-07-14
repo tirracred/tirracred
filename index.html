@@ -1726,37 +1726,41 @@ document.addEventListener('DOMContentLoaded', () => {
     card.className = 'product-card';
 
     let tagColorClass;
-    let checkColorClass;
+    
 
     // Define as classes de cor com base na product.tagClass
     switch (product.tagClass) {
+
         case 'red':
             tagColorClass = 'bg-red-100 text-red-800';
-            checkColorClass = 'text-red-600';
+
             break;
+
         case 'blue':
             tagColorClass = 'bg-blue-100 text-blue-800';
-            checkColorClass = 'text-blue-600';
+
             break;
         case 'yellow':
             tagColorClass = 'bg-yellow-100 text-yellow-800';
-            checkColorClass = 'text-yellow-600';
+
             break;
         case 'purple':
             tagColorClass = 'bg-purple-100 text-purple-800';
-            checkColorClass = 'text-purple-600';
+
             break;
         default:
             // Cor padrão (verde) se nenhuma tagClass for correspondida
             tagColorClass = 'bg-green-100 text-green-800';
-            checkColorClass = 'text-green-600';
+
             break;
     }
 
-    const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-600 mr-2">✓</span><span>${v}</span></li>`).join('');
+    // O ícone de check agora é sempre verde (text-green-800)
+    const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-800 mr-2">✓</span><span>${v}</span></li>`).join('');
 
+    // A sombra do card foi alterada de 'shadow-sm' para 'shadow'
     card.innerHTML = `
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow hover:shadow-lg transition-all duration-300 h-full flex flex-col">
             <div class="flex flex-col lg:flex-row gap-6">
                 <div class="flex-shrink-0 flex justify-center lg:justify-start">
                     <div class="p-3 border rounded-lg bg-gray-50">
@@ -1783,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
     return card;
 }
+
 
     function renderPagination() {
         if (!paginationContainer) return;
