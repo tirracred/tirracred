@@ -1753,7 +1753,7 @@ document.addEventListener('DOMContentLoaded', () => {
             break;
     }
 
-    const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="${checkColorClass} mr-2">✓</span><span>${v}</span></li>`).join('');
+    const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-600 mr-2">✓</span><span>${v}</span></li>`).join('');
 
     card.innerHTML = `
         <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 h-full flex flex-col">
