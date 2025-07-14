@@ -157,7 +157,7 @@
     </div>
 
     <!-- Header -->
-
+    <header id="main-header" class="bg-white shadow-md sticky top-0 z-50"></header>
     <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -169,10 +169,12 @@
             </div>
             <!-- Desktop Navigation -->
              
-            <nav class="hidden md:flex md:space-x-8">
+                <nav class="hidden md:flex md:space-x-8">
                 <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
-                <a href="#home-filters" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
-                <a href="#renegociação" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
+                <!-- Adicione a classe 'scroll-toggle' aqui -->
+                <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
+                <!-- Adicione a classe 'scroll-toggle' aqui -->
+                <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
                 <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
             </nav>
 
@@ -195,15 +197,17 @@
         </div>
     </div>
     <!-- Mobile Menu (Your original code) -->
-    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
-        <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-        <a href="#home-filters" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-        <a href="#renegociação" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
-        <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
-        <div class="px-4 py-3 border-t">
-            <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Falar com Atendimento</a>
-        </div>
+   <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+    <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
+    <!-- Adicione 'scroll-toggle' e remova o onclick -->
+    <a href="#home-filters" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
+    <!-- Adicione 'scroll-toggle' e remova o onclick -->
+    <a href="#renegociacao" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
+    <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
+    <div class="px-4 py-3 border-t">
+        <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Falar com Atendimento</a>
     </div>
+</div>
     
 </header>
 
@@ -1345,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-<section id="renegociação" class="py-0 bg-gray-800 text-white">
+<section id="renegociacao" class="py-0 bg-gray-800 text-white">
 </section>
 <section class="py-16 bg-gray-800 text-white">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -1872,6 +1876,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     showPage('page-home');
 });
+    /**
+     * Configura o comportamento de scroll "toggle" para links específicos.
+     * Adicione a classe 'scroll-toggle' aos links <a> que devem ter esta funcionalidade.
+     */
+    function setupScrollToggle() {
+        // Seleciona apenas os links com a classe '.scroll-toggle'
+        const toggleLinks = document.querySelectorAll('.scroll-toggle');
+        const header = document.getElementById('main-header');
+        const headerHeight = header ? header.offsetHeight : 0;
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        toggleLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                // Previne o comportamento padrão do link de pular para a âncora
+                event.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                // O seletor de query precisa escapar caracteres especiais se o ID começar com um número
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    const targetPosition = targetElement.offsetTop - headerHeight;
+                    const tolerance = 5; // Pequena tolerância para a verificação da posição
+
+                    // Fecha o menu mobile, se estiver aberto
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                    
+                    // Verifica se a visualização já está na posição de destino
+                    if (Math.abs(window.scrollY - targetPosition) < tolerance) {
+                        // Se sim, rola suavemente para o topo da página
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        // Se não, rola suavemente para o elemento de destino
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else {
+                    console.warn('Elemento de destino para o scroll não encontrado:', targetId);
+                }
+            });
+        });
+    }
+
+    // Garante que o script rode após o conteúdo da página ser carregado
+    // e se integre com seus outros scripts.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupScrollToggle);
+    } else {
+        setupScrollToggle();
+    }
+
+
+</script>
+
 
 </script>
 
