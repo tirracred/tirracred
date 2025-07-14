@@ -1879,49 +1879,53 @@ document.addEventListener('DOMContentLoaded', () => {
 });
     /**
      * Configura o comportamento de scroll "toggle" para links específicos.
-     * Adicione a classe 'scroll-toggle' aos links <a> que devem ter esta funcionalidade.
+     * Esta versão corrigida rastreia o último link clicado em vez de
+     * depender da posição do scroll, resolvendo o problema com elementos no final da página.
      */
     function setupScrollToggle() {
-        // Seleciona apenas os links com a classe '.scroll-toggle'
+        // Seleciona todos os links que devem ter o comportamento de toggle
         const toggleLinks = document.querySelectorAll('.scroll-toggle');
         const header = document.getElementById('main-header');
         const headerHeight = header ? header.offsetHeight : 0;
         const mobileMenu = document.getElementById('mobile-menu');
 
+        // Variável para rastrear o último link ativo
+        let activeToggleHref = null;
+
         toggleLinks.forEach(link => {
             link.addEventListener('click', function(event) {
-                // Previne o comportamento padrão do link de pular para a âncora
+                // Previne o comportamento padrão do link
                 event.preventDefault();
 
-                const targetId = this.getAttribute('href');
-                // O seletor de query precisa escapar caracteres especiais se o ID começar com um número
-                const targetElement = document.querySelector(targetId);
+                const targetHref = this.getAttribute('href');
+                const targetElement = document.querySelector(targetHref);
 
-                if (targetElement) {
-                    const targetPosition = targetElement.offsetTop - headerHeight;
-                    const tolerance = 5; // Pequena tolerância para a verificação da posição
+                // Fecha o menu mobile, se estiver aberto
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
 
-                    // Fecha o menu mobile, se estiver aberto
-                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                    }
-                    
-                    // Verifica se a visualização já está na posição de destino
-                    if (Math.abs(window.scrollY - targetPosition) < tolerance) {
-                        // Se sim, rola suavemente para o topo da página
-                        window.scrollTo({
-                            top: 0,
-                            behavior: 'smooth'
-                        });
-                    } else {
-                        // Se não, rola suavemente para o elemento de destino
+                // Se o link clicado já for o ativo, volte ao topo
+                if (activeToggleHref === targetHref) {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                    // Limpa a variável para que o próximo clique funcione
+                    activeToggleHref = null;
+                } else {
+                    // Se for um novo link (ou nenhum estiver ativo)
+                    if (targetElement) {
+                        const targetPosition = targetElement.offsetTop - headerHeight;
                         window.scrollTo({
                             top: targetPosition,
                             behavior: 'smooth'
                         });
+                        // Define este link como o ativo
+                        activeToggleHref = targetHref;
+                    } else {
+                        console.warn('Elemento de destino para o scroll não encontrado:', targetHref);
                     }
-                } else {
-                    console.warn('Elemento de destino para o scroll não encontrado:', targetId);
                 }
             });
         });
