@@ -172,7 +172,7 @@
             <nav class="hidden md:flex md:space-x-8">
                 <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
                 <a href="#home-filters" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
-                <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
+                <a href="#renegociar" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
                 <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
             </nav>
 
@@ -197,8 +197,8 @@
     <!-- Mobile Menu (Your original code) -->
     <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
         <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-        <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-        <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
+        <a href="#home-filters" onclick="showPage('cartoes-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
+        <a href="#renegociar" onclick="showPage('dividas-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
         <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
         <div class="px-4 py-3 border-t">
             <a href="https://wa.me/351915827506?text=Ol%C3%A1!%20Gostaria%20de%20falar%20com%20o%20atendimento%2C%20por%20favor." target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">Falar com Atendimento</a>
@@ -1345,6 +1345,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+<section id="renegociar" class="py-16 bg-gray-800 text-white">
+</section>
 <section class="py-16 bg-gray-800 text-white">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl font-extrabold mb-4">
@@ -1368,89 +1370,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </section>
-    <!-- Página do Artigo sobre Registrato -->
-    <div id="artigo-registrato-page" class="page-container">
-        <article class="bg-white py-12">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-                <button onclick="showPage('blog-page')" class="mb-8 inline-flex items-center gap-1 text-green-600 font-semibold hover:underline">
-                    &larr; Voltar para o Blog
-                </button>
-                <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Desvendando o Registrato: Sua Vida Financeira em um Só Lugar</h1>
-                <p class="text-lg text-gray-600 mb-8">Entenda o que é, para que serve e como o relatório do Banco Central pode ser seu maior aliado na busca por crédito e na organização das suas finanças.</p>
-                
-                <img src="https://images.unsplash.com/photo-1620714223084-86c9df355935?q=80&w=1974&auto=format&fit=crop" alt="Imagem gerada por IA de um cofre com relatórios financeiros" class="rounded-xl shadow-lg mb-8 w-full">
-
-                <div class="prose lg:prose-xl max-w-none text-gray-700">
-                    <p>Você já ouviu falar no Registrato? Se a resposta é não, prepare-se para conhecer uma das ferramentas mais poderosas e gratuitas para a sua saúde financeira. Criado pelo Banco Central do Brasil, o Registrato é um sistema que permite a qualquer cidadão consultar, de forma rápida e segura, todas as suas informações financeiras.</p>
-                    
-                    <h2 class="text-2xl font-bold mt-8 mb-4">O que é o Registrato?</h2>
-                    <p>O Registrato (Extrato do Registro de Informações no Banco Central) é um relatório completo que consolida seus relacionamentos com instituições financeiras. Nele, você encontra dados sobre:</p>
-                    <ul>
-                        <li><strong>Contas e Relacionamentos:</strong> Todas as contas bancárias, de investimento e de pagamento que você possui ou já possuiu.</li>
-                        <li><strong>Empréstimos e Financiamentos (SCR):</strong> O Sistema de Informações de Crédito (SCR) mostra seu histórico de empréstimos, financiamentos, limites de cartão de crédito e outras operações de crédito. É aqui que os bancos "enxergam" seu nível de endividamento.</li>
-                        <li><strong>Cheques sem Fundo:</strong> Consulta ao Cadastro de Emitentes de Cheques sem Fundos (CCF).</li>
-                        <li><strong>Chaves Pix:</strong> Todas as chaves Pix cadastradas em seu nome.</li>
-                    </ul>
-
-                    <img src="https://images.unsplash.com/photo-1633409361618-c73427e4e206?q=80&w=1974&auto=format&fit=crop" alt="Imagem gerada por IA de uma pessoa analisando dados em uma tela futurista" class="rounded-xl shadow-lg my-8 w-full">
-
-                    <h2 class="text-2xl font-bold mt-8 mb-4">Por que o Registrato é Tão Importante?</h2>
-                    <p>Consultar o Registrato periodicamente é um ato de autocuidado financeiro. Ele é crucial por vários motivos:</p>
-                    <ol>
-                        <li><strong>Visão Completa das Dívidas:</strong> Muitas vezes, esquecemos de uma dívida antiga ou de um cartão de crédito que não usamos mais. O relatório SCR dentro do Registrato mostra tudo, ajudando você a ter uma visão clara do seu endividamento total. É o primeiro passo para uma renegociação eficaz.</li>
-                        <li><strong>Segurança contra Fraudes:</strong> Descobriu uma conta ou um empréstimo que você não reconhece? Pode ser um sinal de fraude. O Registrato permite que você identifique atividades suspeitas em seu nome rapidamente.</li>
-                        <li><strong>Entender a Visão dos Bancos:</strong> Antes de aprovar um empréstimo ou um cartão, os bancos consultam o SCR. Ao ver seu próprio relatório, você entende exatamente o que eles veem, podendo se antecipar e corrigir possíveis problemas, como dívidas em atraso que você não lembrava.</li>
-                    </ol>
-
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg my-8">
-                        <p class="font-bold">Dica de Ouro:</p>
-                        <p>Antes de solicitar qualquer crédito, acesse seu Registrato. Verifique se existem pendências e, se houver, considere renegociá-las. Uma "faxina" no seu relatório aumenta drasticamente suas chances de aprovação e de conseguir taxas de juros melhores.</p>
-                    </div>
-
-                    <h2 class="text-2xl font-bold mt-8 mb-4">Como Acessar o Registrato?</h2>
-                    <p>O acesso é simples, gratuito e totalmente online. Você pode fazer login com sua conta Gov.br (nível prata ou ouro) ou diretamente pelo site do seu banco (internet banking).</p>
-                    <p>Não deixe sua vida financeira no escuro. Use o Registrato a seu favor, organize suas contas, renegocie suas dívidas com parceiros como o <a href="https://bit.ly/4f9eMOv" target="_blank" class="text-green-600 font-semibold hover:underline">Acordo Certo</a> e abra as portas para um futuro financeiro mais saudável e com mais crédito disponível para você.</p>
-                </div>
-            </div>
-        </article>
-    </div>
 
 
-    <!-- Página de Login -->
-    <div id="login-page" class="page-container">
-         <section class="py-20 flex items-center justify-center">
-            <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                 <h2 class="text-2xl font-bold text-center mb-6">Acessar Conta</h2>
-                 <form class="space-y-4">
-                     <input type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <input type="password" placeholder="Senha" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <button type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-green-700">Entrar</button>
-                 </form>
-            </div>
-        </section>
-    </div>
 
-    <!-- Página de Criar Conta -->
-    <div id="conta-page" class="page-container">
-        <section class="py-20 flex items-center justify-center">
-            <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                 <h2 class="text-2xl font-bold text-center mb-6">Criar Nova Conta</h2>
-                 <form id="registerForm" class="space-y-4">
-                     <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <input name="whatsapp" placeholder="WhatsApp" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <input name="password" type="password" placeholder="Crie uma senha" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                     <div class="flex items-start">
-                        <input id="marketing-consent" name="marketing_consent" type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                        <label for="marketing-consent" class="ml-2 text-sm text-gray-600">Eu aceito receber e-mails com ofertas e novidades da TirraCred.</label>
-                     </div>
-                     <button type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-green-700">Criar Conta</button>
-                 </form>
-            </div>
-        </section>
-    </div>
-    
+
+  
+
     <!-- Página de Resultados -->
     <div id="resultados-page" class="page-container">
          <main class="mx-auto max-w-6xl space-y-6 p-6">
