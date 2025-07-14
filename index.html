@@ -171,7 +171,7 @@
              
             <nav class="hidden md:flex md:space-x-8">
                 <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos</a>
-                <a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
+                <a href="#home-filters" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito</a>
                 <a href="javascript:void(0)" onclick="showPage('dividas-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Renegociar Dívidas</a>
                 <a href="javascript:void(0)" onclick="showPage('blog-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Blog</a>
             </nav>
@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.className = 'product-card';
 
     let tagColorClass;
-    
+
 
     // Define as classes de cor com base na product.tagClass
     switch (product.tagClass) {
