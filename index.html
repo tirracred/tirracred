@@ -1570,7 +1570,17 @@ document.addEventListener('DOMContentLoaded', () => {
     leadForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!validateCPF(cpfInput?.value)) {
-        alert('Por favor, insira um CPF válido para continuar.');
+        // Cria um modal de alerta moderno em vez do alert() padrão
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white p-6 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
+                <p class="mb-4 text-gray-700">Por favor, insira um CPF válido para continuar.</p>
+                <button onclick="this.parentElement.parentElement.remove()" class="bg-green-600 text-white px-4 py-2 rounded-md w-full">OK</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
         cpfInput?.focus();
         return; 
     }
