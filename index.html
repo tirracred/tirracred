@@ -201,7 +201,7 @@
     <div id="page-home" class="page-container active">
         <main>
             <!-- Hero e Simulador -->
-            <section id="hero-section" class="hero-bg text-white py-16 sm:py-24" style="transition: background-image 1s ease-in-out;">
+         <section id="hero-section" class="hero-bg text-white py-16 sm:py-24" style="transition: background-image 1s ease-in-out;">
     <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <div class="text-center lg:text-left">
             <!-- Adicionados IDs para controle via JS -->
@@ -273,6 +273,8 @@
                 </div>
             </form>
         </div>
+    </div>
+</section>
     </div>
 </section>
             <!DOCTYPE html>
@@ -2040,42 +2042,46 @@ if (whatsappInput) {
         currentSlideIndex = (currentSlideIndex + 1) % slides.length;
         const nextSlide = slides[currentSlideIndex];
 
-        // Animação de saída (fade out) para os textos
-        titleEl.classList.remove('animate-fade-in');
-        subtitleEl.classList.remove('animate-fade-in', 'fade-in-delay-1');
+        // 1. Animação de saída para os textos
         titleEl.style.opacity = '0';
         subtitleEl.style.opacity = '0';
         
-        // Espera a animação de saída terminar para trocar o conteúdo
+        // 2. Espera a animação de saída terminar (600ms)
         setTimeout(() => {
-            // Troca a imagem de fundo da seção
+            // 3. Troca a imagem de fundo e o TÍTULO
             heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${nextSlide.image}')`;
+           
             
-            // Troca os textos
             titleEl.textContent = nextSlide.title;
-            subtitleEl.textContent = nextSlide.subtitle;
-
-            // Animação de entrada (fade in) para os novos textos
+            
+            // 4. Animação de entrada para o TÍTULO
             titleEl.style.opacity = '1';
-            subtitleEl.style.opacity = '1';
-            titleEl.classList.add('animate-fade-in');
-            subtitleEl.classList.add('animate-fade-in', 'fade-in-delay-1');
-        }, 600); // 0.6s para a animação de saída
+
+            // 5. Espera um pouco antes de mostrar o subtítulo para criar a transição sequencial
+            setTimeout(() => {
+                // 6. Troca e mostra o SUBTÍTULO
+                subtitleEl.textContent = nextSlide.subtitle;
+                subtitleEl.style.opacity = '1';
+            }, 500); // Atraso de 500ms para o subtítulo aparecer
+
+        }, 600); // Tempo para a animação de saída dos textos
     }
 
     // --- Configuração Inicial ---
     function initializeCarousel() {
         if (!heroSection || !titleEl || !subtitleEl) return;
 
-        // Define o conteúdo inicial
+        // Adiciona transições CSS via JS para um controle mais limpo da animação de fade
+        titleEl.style.transition = 'opacity 0.5s ease-in-out';
+        subtitleEl.style.transition = 'opacity 0.5s ease-in-out';
+
+        // Define o conteúdo inicial do primeiro slide
         const initialSlide = slides[0];
         heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${initialSlide.image}')`;
         titleEl.textContent = initialSlide.title;
         subtitleEl.textContent = initialSlide.subtitle;
         
-        // Aplica a animação de entrada inicial
-        titleEl.classList.add('animate-fade-in');
-        subtitleEl.classList.add('animate-fade-in', 'fade-in-delay-1');
+        
 
         // Inicia o temporizador para a troca de slides
         setInterval(changeSlide, 6000); // Troca a cada 6 segundos
