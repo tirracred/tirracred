@@ -277,26 +277,39 @@
                                 Continuar
                             </button>
 
-                            <!-- Campos do Formulário (inicialmente ocultos) -->
-                            <div id="form-fields-home" class="hidden space-y-4">
-                                 <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <input name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <input name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <div class="flex items-start">
-                                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
-                                 </div>
-                                 <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                                    Ver Recomendações
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            <!-- O formulário começa aqui -->
+        <form id="registration-form" novalidate>
+            <div id="form-fields-home" class="space-y-4">
+                <!-- Campo Nome -->
+                <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                
+                <!-- Campo CPF com estrutura para feedback e limite de caracteres -->
+                <div>
+                    <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
+                    <p id="cpf-message" class="text-sm mt-1 h-4"></p> <!-- Mensagem de validação -->
                 </div>
-            </section>
-            <!DOCTYPE html>
+
+                <!-- Campo WhatsApp com máscara -->
+                <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
+
+                <!-- Outros campos do formulário -->
+                <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                
+                <!-- Termos e Condições -->
+                <div class="flex items-start">
+                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="#" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="#" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                </div>
+                
+                <!-- Botão de Envio -->
+                <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                    Ver Recomendações
+                </button>
+            </div>
+        </form>
+    </div>
+    
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -1626,6 +1639,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 3, tipo: ['cartao'], perfis: ['autonomo', 'score-baixo', 'negativado'], logo: 'public/brasilcard.png', tag: 'Cartão de Crédito', tagClass: 'red', titulo: 'Cartão Brasilcard', vantagens: ['<span class= "text-green-700"> <strong> Crédito aprovado em poucos minutos.</strong> </span>', 'Aprovação mesmo para negativados.', 'Processo 100% online em até 2&nbsp;minutos.'], link: 'http://trafficcost.ru/67ec2eb62bfa8179a731986e/subaccount', btnPrimario: 'Peça Agora', btnSecundario: 'Condições' },
         { id: 4, tipo: ['emprestimo'], perfis: ['score-regular','autonomo','negativado','score-baixo'], logo: 'public/jeitto.png', tag: 'Empréstimo Pessoal', titulo: 'Jeitto Empréstimo para Negativado', vantagens: ['<span class="text-green-700"> <strong>Empréstimo para Negativados em até 2 minutos via PIX.</strong></span>','<span class="text-green-700"><strong> Capital de Giro para Autônomos e Negativados.</strong></span>', 'Sem comprovantes de Renda'], link: 'https://apretailer.com.br/click/686dd86f2bfa8164a80a7b83/186962/307759/subaccount', btnPrimario: 'Solicitar Empréstimo', btnSecundario: 'Ver Vantagens' },
         { id: 5, tipo: ['cartao', 'contas'], perfis: ['score-regular','autonomo','negativado','score-baixo'], logo: 'public/mpago.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Conta + Cartão de Crédito Mercado Pago', vantagens: ['<span class="text-green-700"><strong> Ganhe R$25 por abrir a conta.</strong></span>','<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Aprova Negativados e SCORE BAIXO GARANTIDO', 'Mercado Crédito e Empréstimos.'], link: 'https://mpago.li/1uzWLPZ', btnPrimario: 'Solicitar Empréstimo', btnSecundario: 'Ver Vantagens' },
+        { id: 19, tipo: ['cartao', 'contas'], perfis: ['score-regular','autonomo','negativado','score-baixo'], logo: 'public/inter.png', tag: 'Conta e Cartão', tagClass: 'red', titulo: 'Conta Banco Inter + Cartão', vantagens: ['<span class="text-green-700"><strong> Ganhe R$25 por abrir a conta.</strong></span>','<span class="text-green-700"><strong> Sem anuidade e limite garantido.</strong></span>', 'Aprova Negativados e SCORE BAIXO GARANTIDO', 'Mercado Crédito e Empréstimos.'], link: 'https://mpago.li/1uzWLPZ', btnPrimario: 'Solicitar Empréstimo', btnSecundario: 'Ver Vantagens' },
         { id: 6, tipo: ['emprestimo'], perfis: ['aposentado',], logo: 'public/consigmais.png', tag: 'Empréstimo Consignado', titulo: 'Empréstimo do INSS para Aposentados e Pensionistas', vantagens: ['<span class="text-green-700"> <strong>Valores altissímos acima de 20 mil reais.</strong></span>','<span class="text-green-700"><strong> 99% de CHANCES de ser Aprovado.</strong></span>', 'Taxas baixas para Aposentados e Aprovação para Negativados'], link: 'https://apretailer.com.br/click/686de1952bfa8161db54a256/186657/307759/subaccount', btnPrimario: 'Solicitar Agora', btnSecundario: 'Saber Mais' },
         { id: 7, tipo: ['emprestimo'], perfis: ['negativado', 'score-baixo', 'autonomo'], logo: 'public/supersim.png', tag: 'Empréstimo Pessoal', titulo: 'Empréstimo Supersim', vantagens: ['<strong><span class= text-green-700> Aprova negativados e score baixo.</strong></span>', 'Dinheiro na conta em até 30 minutos via PIX.', 'Empréstimo com garantia de celular para facilitar.'], link: 'https://bit.ly/4jQk57T', btnPrimario: 'Simular Grátis', btnSecundario: 'Saiba Mais' },
         { id: 8, tipo: ['emprestimo'], perfis: ['autonomo'], logo: 'public/bompracredito.png', tag: 'Empréstimo Pessoal', titulo: 'Bom Pra Crédito', vantagens: ['Compare ofertas de mais de 30 financeiras.', 'Encontre a melhor taxa de juros para seu perfil.', 'Processo 100% online, rápido e seguro.'], link: 'https://bit.ly/3Y4yzJl', btnPrimario: 'Comparar Ofertas', btnSecundario: 'Simular' },
@@ -1641,6 +1655,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // PÁGINA 3
         { id: 17, tipo: ['renegociar'], perfis: ['autonomo','negativado','score-baixo','score-regular'], logo: 'public/acordocerto.png', tag: 'Renegociação', tagClass: 'purple', titulo: 'Renegociação de Dívidas - Acordo Certo', vantagens: ['<span class="text-green-700"> <strong> Renegocie suas dívidas com 99% de desconto.</strong></span>', 'Regularize o seu Nome.', 'Libere Ofertas de Crédito.'], link: 'https://www.acordocerto.com.br/?utm_source=parcerias&utm_medium=actionpay&utm_content=307759&actionpay=b5bbb397-90b4-dd0f-c393-0193b175ba64.307759', btnPrimario: 'Condições', btnSecundario: 'Saber Mais' },
         { id: 18, tipo: ['seguro'], perfis: ['autonomo','negativado','score-baixo','score-regular'], logo: 'public/minutoseguros.png', tag: 'Seguro', tagClass: 'yellow', titulo: 'Seguro Veicular para VOCÊ!', vantagens: ['<span class="text-green-700"> Soluções de seguros para proteger suas conquistas de forma simples, rápida e online.</span>', '<narrow>Simulação gratuita.</narrow>', '<narrow>17 seguradoras.</narrow>'], link: 'https://apretailer.com.br/click/6871c13b2bfa8175614c82fb/183524/307759/subaccount', btnPrimario: 'Simular Agora', btnSecundario: 'Cote Agora' },
+
 
     ];
 
@@ -1941,6 +1956,112 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         setupScrollToggle();
     }
+    // Seleciona os elementos do DOM
+        const cpfInput = document.getElementById('cpf');
+        const cpfMessage = document.getElementById('cpf-message');
+        const whatsappInput = document.getElementById('whatsapp');
+
+        /**
+         * Aplica a máscara de CPF (###.###.###-##) ao campo de input.
+         * @param {string} value - O valor atual do campo de input.
+         * @returns {string} O valor com a máscara aplicada.
+         */
+        function formatCPF(value) {
+            const numericValue = value.replace(/\D/g, '');
+            return numericValue
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})/, '$1-$2');
+        }
+        
+        /**
+         * Aplica a máscara de telefone/WhatsApp (XX) XXXXX-XXXX.
+         * @param {string} value - O valor atual do campo de input.
+         * @returns {string} O valor com a máscara aplicada.
+         */
+        function formatPhone(value) {
+            const numericValue = value.replace(/\D/g, '');
+            return numericValue
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2');
+        }
+
+        /**
+         * Valida um número de CPF de acordo com o algoritmo da Receita Federal.
+         * @param {string} cpf - O CPF a ser validado (pode conter máscara).
+         * @returns {boolean} - Retorna true se o CPF for válido, false caso contrário.
+         */
+        function validateCPF(cpf) {
+            const cleanCPF = cpf.replace(/\D/g, '');
+            if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) {
+                return false;
+            }
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+            }
+            let remainder = sum % 11;
+            let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            if (firstVerifier !== parseInt(cleanCPF.charAt(9))) {
+                return false;
+            }
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+            }
+            remainder = sum % 11;
+            let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            if (secondVerifier !== parseInt(cleanCPF.charAt(10))) {
+                return false;
+            }
+            return true;
+        }
+
+        // Adiciona um ouvinte de evento 'input' ao campo CPF
+        cpfInput.addEventListener('input', (e) => {
+            e.target.value = formatCPF(e.target.value);
+            cpfInput.classList.remove('valid-input', 'invalid-input');
+            cpfMessage.textContent = '';
+            cpfMessage.classList.remove('text-green-600', 'text-red-600');
+
+            if (e.target.value.length === 14) {
+                const isValid = validateCPF(e.target.value);
+                if (isValid) {
+                    cpfInput.classList.add('valid-input');
+                    cpfMessage.textContent = 'CPF válido!';
+                    cpfMessage.classList.add('text-green-600');
+                } else {
+                    cpfInput.classList.add('invalid-input');
+                    cpfMessage.textContent = 'CPF inválido.';
+                    cpfMessage.classList.add('text-red-600');
+                }
+            }
+        });
+        
+        // Adiciona um ouvinte de evento 'input' ao campo WhatsApp
+        whatsappInput.addEventListener('input', (e) => {
+            e.target.value = formatPhone(e.target.value);
+        });
+
+        // Opcional: Prevenir o envio do formulário se o CPF for inválido
+        const form = document.getElementById('registration-form');
+        form.addEventListener('submit', (e) => {
+            if (!validateCPF(cpfInput.value)) {
+                e.preventDefault(); // Impede o envio do formulário
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
+                        <p class="mb-4 text-gray-700">Por favor, insira um CPF válido para continuar.</p>
+                        <button onclick="this.parentElement.parentElement.remove()" class="bg-green-600 text-white px-4 py-2 rounded-md w-full">OK</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                cpfInput.focus();
+            }
+            // Adicione outras validações de formulário aqui se necessário
+        })
+
 
 
 </script>
