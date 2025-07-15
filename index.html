@@ -277,39 +277,29 @@
                                 Continuar
                             </button>
 
-                            <!-- O formulário começa aqui -->
-        <form id="registration-form" novalidate>
-            <div id="form-fields-home" class="space-y-4">
-                <!-- Campo Nome -->
-                <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                
-                <!-- Campo CPF com estrutura para feedback e limite de caracteres -->
-                <div>
-                    <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
-                    <p id="cpf-message" class="text-sm mt-1 h-4"></p> <!-- Mensagem de validação -->
+                            <!-- Campos do Formulário (inicialmente ocultos) -->
+                            <div id="form-fields-home" class="hidden space-y-4">
+                                 <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                <div>
+                                <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
+                                <p id="cpf-message" class="text-sm mt-1 h-4"></p> <!-- Elemento para a mensagem de validação -->
+                                </div>
+                                <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
+                                 <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                                 <div class="flex items-start">
+                                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                                 </div>
+                                 <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                                    Ver Recomendações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <!-- Campo WhatsApp com máscara -->
-                <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
-
-                <!-- Outros campos do formulário -->
-                <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                
-                <!-- Termos e Condições -->
-                <div class="flex items-start">
-                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="#" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="#" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
-                </div>
-                
-                <!-- Botão de Envio -->
-                <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                    Ver Recomendações
-                </button>
-            </div>
-        </form>
-    </div>
-    
+            </section>
+            <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -1956,120 +1946,83 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         setupScrollToggle();
     }
-    // Seleciona os elementos do DOM
-        const cpfInput = document.getElementById('cpf');
-        const cpfMessage = document.getElementById('cpf-message');
-        const whatsappInput = document.getElementById('whatsapp');
+    
+     const cpfInput = document.getElementById('cpf');
+const whatsappInput = document.getElementById('whatsapp');
+const cpfMessage = document.getElementById('cpf-message');
 
-        /**
-         * Aplica a máscara de CPF (###.###.###-##) ao campo de input.
-         * @param {string} value - O valor atual do campo de input.
-         * @returns {string} O valor com a máscara aplicada.
-         */
-        function formatCPF(value) {
-            const numericValue = value.replace(/\D/g, '');
-            return numericValue
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d{1,2})/, '$1-$2');
-        }
-        
-        /**
-         * Aplica a máscara de telefone/WhatsApp (XX) XXXXX-XXXX.
-         * @param {string} value - O valor atual do campo de input.
-         * @returns {string} O valor com a máscara aplicada.
-         */
-        function formatPhone(value) {
-            const numericValue = value.replace(/\D/g, '');
-            return numericValue
-                .replace(/^(\d{2})(\d)/g, '($1) $2')
-                .replace(/(\d{5})(\d)/, '$1-$2');
-        }
+function formatCPF(value) {
+    const numericValue = value.replace(/\D/g, '');
+    return numericValue
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2');
+}
 
-        /**
-         * Valida um número de CPF de acordo com o algoritmo da Receita Federal.
-         * @param {string} cpf - O CPF a ser validado (pode conter máscara).
-         * @returns {boolean} - Retorna true se o CPF for válido, false caso contrário.
-         */
-        function validateCPF(cpf) {
-            const cleanCPF = cpf.replace(/\D/g, '');
-            if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) {
-                return false;
-            }
-            let sum = 0;
-            for (let i = 0; i < 9; i++) {
-                sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
-            }
-            let remainder = sum % 11;
-            let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
-            if (firstVerifier !== parseInt(cleanCPF.charAt(9))) {
-                return false;
-            }
-            sum = 0;
-            for (let i = 0; i < 10; i++) {
-                sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
-            }
-            remainder = sum % 11;
-            let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
-            if (secondVerifier !== parseInt(cleanCPF.charAt(10))) {
-                return false;
-            }
-            return true;
-        }
+function formatPhone(value) {
+    const numericValue = value.replace(/\D/g, '');
+    return numericValue
+        .replace(/^(\d{2})(\d)/g, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2');
+}
 
-        // Adiciona um ouvinte de evento 'input' ao campo CPF
-        cpfInput.addEventListener('input', (e) => {
-            e.target.value = formatCPF(e.target.value);
-            cpfInput.classList.remove('valid-input', 'invalid-input');
+function validateCPF(cpf) {
+    const cleanCPF = (cpf || '').replace(/\D/g, '');
+    if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) {
+        return false;
+    }
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+        sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+    }
+    let remainder = sum % 11;
+    let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
+    if (firstVerifier !== parseInt(cleanCPF.charAt(9))) {
+        return false;
+    }
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+        sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+    }
+    remainder = sum % 11;
+    let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
+    if (secondVerifier !== parseInt(cleanCPF.charAt(10))) {
+        return false;
+    }
+    return true;
+}
+
+if (cpfInput) {
+    cpfInput.addEventListener('input', (e) => {
+        e.target.value = formatCPF(e.target.value);
+        cpfInput.classList.remove('valid-input', 'invalid-input');
+        if (cpfMessage) {
             cpfMessage.textContent = '';
-            cpfMessage.classList.remove('text-green-600', 'text-red-600');
-
-            if (e.target.value.length === 14) {
-                const isValid = validateCPF(e.target.value);
-                if (isValid) {
-                    cpfInput.classList.add('valid-input');
+            cpfMessage.className = 'text-sm mt-1 h-4';
+        }
+        if (e.target.value.length === 14) {
+            const isValid = validateCPF(e.target.value);
+            if (isValid) {
+                cpfInput.classList.add('valid-input');
+                if (cpfMessage) {
                     cpfMessage.textContent = 'CPF válido!';
                     cpfMessage.classList.add('text-green-600');
-                } else {
-                    cpfInput.classList.add('invalid-input');
+                }
+            } else {
+                cpfInput.classList.add('invalid-input');
+                if (cpfMessage) {
                     cpfMessage.textContent = 'CPF inválido.';
                     cpfMessage.classList.add('text-red-600');
                 }
             }
-        });
-        
-        // Adiciona um ouvinte de evento 'input' ao campo WhatsApp
-        whatsappInput.addEventListener('input', (e) => {
-            e.target.value = formatPhone(e.target.value);
-        });
-
-        // Opcional: Prevenir o envio do formulário se o CPF for inválido
-        const form = document.getElementById('registration-form');
-        form.addEventListener('submit', (e) => {
-            if (!validateCPF(cpfInput.value)) {
-                e.preventDefault(); // Impede o envio do formulário
-                const modal = document.createElement('div');
-                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-                modal.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
-                        <p class="mb-4 text-gray-700">Por favor, insira um CPF válido para continuar.</p>
-                        <button onclick="this.parentElement.parentElement.remove()" class="bg-green-600 text-white px-4 py-2 rounded-md w-full">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                cpfInput.focus();
-            }
-            // Adicione outras validações de formulário aqui se necessário
-        })
-
-
-
-</script>
-
-
-</script>
-
-
+        }
+    });
+}
+if (whatsappInput) {
+    whatsappInput.addEventListener('input', (e) => {
+        e.target.value = formatPhone(e.target.value);
+    });
+}
 
 </script>
 
