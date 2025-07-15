@@ -1569,6 +1569,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FORM SUBMISSION WITH LEAD CAPTURE ---
     leadForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!validateCPF(cpfInput?.value)) {
+        alert('Por favor, insira um CPF válido para continuar.');
+        cpfInput?.focus();
+        return; 
+    }
         const submitBtn = document.getElementById('submit-btn-home');
         if (!submitBtn) return;
 
