@@ -13,17 +13,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0fdf4; /* Fundo verde claro */
-        }
-       /* Animação para loop completo de fade */
-@keyframes loopCompleto {
-  0%, 25% { opacity: 0; }
-  35%, 65% { opacity: 1; }
-  75%, 100% { opacity: 0; }
+    }
 
-}
+        
 
 
 
@@ -37,19 +33,7 @@
   background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('public/banner-1.png');
 }
 
-/* Camada superior com animação de loop completo */
-.hero-bg::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-size: cover;
-  background-position: center;
-  background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('public/banner3.png');
-  animation: loopCompleto 12s infinite ease-in-out;
-}
+
 
         /* Estilos para o slider */
         input[type=range] {
@@ -217,90 +201,80 @@
     <div id="page-home" class="page-container active">
         <main>
             <!-- Hero e Simulador -->
-            <section class="hero-bg text-white py-16 sm:py-24">
-                <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
-                    <div class="text-center lg:text-left">
-                        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight animate-fade-in">Compare e contrate o produto financeiro certo para você.</h1>
-                        <p class="text-lg md:text-xl text-gray-300 max-w-xl lg:max-w-none animate-fade-in fade-in-delay-1">Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.</p>
+            <section id="hero-section" class="hero-bg text-white py-16 sm:py-24" style="transition: background-image 1s ease-in-out;">
+    <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+        <div class="text-center lg:text-left">
+            <!-- Adicionados IDs para controle via JS -->
+            <h1 id="hero-title" class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight"></h1>
+            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-300 max-w-xl lg:max-w-none"></p>
+        </div>
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2">
+            <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
+            
+            <form id="leadFormHome" class="space-y-6" action="./pages/resultados.html" method="GET">
+                <!-- O restante do seu formulário continua aqui, sem alterações -->
+                <div>
+                    <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-gray-500 text-sm">R$ 500</span>
+                        <span id="valor-display-home" class="text-xl font-bold text-green-600">R$ 1.000</span>
+                        <span class="text-gray-500 text-sm">R$ 50.000</span>
                     </div>
-                    <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2">
-                        <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
-                        <p class="text-lg md:text-xl text-gray-300 max-w-xl lg:max-w-none animate-fade-in fade-in-delay-1 cursor-pointer">
-                            Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.
-                            </p>
-                        <form id="leadFormHome" class="space-y-6" action="./pages/resultados.html" method="GET">
-                            <!-- Loan Slider -->
-                            <div>
-                                <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
-                                <div class="flex items-center justify-between mt-1">
-                                    <span class="text-gray-500 text-sm">R$ 500</span>
-                                    <span id="valor-display-home" class="text-xl font-bold text-green-600">R$ 1.000</span>
-                                    <span class="text-gray-500 text-sm">R$ 50.000</span>
-                                </div>
-                                <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                            </div>
-
-                            <!-- Parcelas -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">12x</button>
-                                    <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">24x</button>
-                                    <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">36x</button>
-                                </div>
-                                <input type="hidden" name="parcelas" id="parcelasHome" value="12">
-                            </div>
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-
-                        <div>
-                            <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                            <span class="ml-3 text-gray-700 font-medium">Estou Negativado! </span>
-                            </label>
-                            <p id="negativado-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
-                            Ainda há chances de conseguir. ✅
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" name="aposentado_inss" id="inss-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                            <span class="ml-3 text-gray-700 font-medium">Sou Aposentado ou Pensionista!</span>
-                            </label>
-                            <p id="inss-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
-                            Ótimo! Temos opções especiais para aposentados e pensionistas. 💸💸
-                            </p>
-                        </div>
-
-                        </div>
-
-                            <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                                Continuar
-                            </button>
-
-                            <!-- Campos do Formulário (inicialmente ocultos) -->
-                            <div id="form-fields-home" class="hidden space-y-4">
-                                 <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                <div>
-                                <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
-                                <p id="cpf-message" class="text-sm mt-1 h-4"></p> <!-- Elemento para a mensagem de validação -->
-                                </div>
-                                <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
-                                 <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                                 <div class="flex items-start">
-                                    <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                                    <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
-                                 </div>
-                                 <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                                    Ver Recomendações
-                                </button>
-                            </div>
-                        </form>
+                    <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">12x</button>
+                        <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">24x</button>
+                        <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">36x</button>
+                    </div>
+                    <input type="hidden" name="parcelas" id="parcelasHome" value="12">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="ml-3 text-gray-700 font-medium">Estou Negativado! </span>
+                        </label>
+                        <p id="negativado-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
+                        Ainda há chances de conseguir. ✅
+                        </p>
+                    </div>
+                    <div>
+                        <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" name="aposentado_inss" id="inss-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="ml-3 text-gray-700 font-medium">Sou Aposentado ou Pensionista!</span>
+                        </label>
+                        <p id="inss-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
+                        Ótimo! Temos opções especiais para aposentados e pensionistas. 💸💸
+                        </p>
                     </div>
                 </div>
-            </section>
+                <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                    Continuar
+                </button>
+                <div id="form-fields-home" class="hidden space-y-4">
+                    <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                    <div>
+                    <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
+                    <p id="cpf-message" class="text-sm mt-1 h-4"></p>
+                    </div>
+                    <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
+                    <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                    <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+                    <div class="flex items-start">
+                        <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                        <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+                    </div>
+                    <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                        Ver Recomendações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
             <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2029,6 +2003,85 @@ if (whatsappInput) {
     whatsappInput.addEventListener('input', (e) => {
         e.target.value = formatPhone(e.target.value);
     });
+}
+
+{
+    // --- Lógica do Carrossel do Banner ---
+
+    // Array com os dados de cada slide (banner e textos)
+    // ADICIONE OU EDITE OS ITENS AQUI PARA MUDAR O CONTEÚDO
+    const slides = [
+        {
+            image: 'public/banner-1.png',
+            title: 'Compare e contrate o produto financeiro certo para você.',
+            subtitle: 'Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.'
+        },
+        {
+            image: 'public/banner3.png', // O seu segundo banner
+            title: 'Crédito para negativados? Temos a solução!',
+            subtitle: 'Não deixe que as restrições te impeçam de realizar seus sonhos. Encontre ofertas especiais.'
+        },
+        {
+            image: 'https://placehold.co/1920x1080/059669/FFFFFF?text=Banner+3', // Um exemplo de terceiro banner
+            title: 'Antecipe seu FGTS com as melhores taxas do mercado.',
+            subtitle: 'Use seu saldo do FGTS como garantia e consiga crédito rápido, fácil e com juros baixos.'
+        }
+    ];
+
+    // Seleciona os elementos que serão alterados
+    const heroSection = document.getElementById('hero-section');
+    const titleEl = document.getElementById('hero-title');
+    const subtitleEl = document.getElementById('hero-subtitle');
+
+    let currentSlideIndex = 0;
+
+    function changeSlide() {
+        // Próximo slide (em loop)
+        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+        const nextSlide = slides[currentSlideIndex];
+
+        // Animação de saída (fade out) para os textos
+        titleEl.classList.remove('animate-fade-in');
+        subtitleEl.classList.remove('animate-fade-in', 'fade-in-delay-1');
+        titleEl.style.opacity = '0';
+        subtitleEl.style.opacity = '0';
+        
+        // Espera a animação de saída terminar para trocar o conteúdo
+        setTimeout(() => {
+            // Troca a imagem de fundo da seção
+            heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${nextSlide.image}')`;
+            
+            // Troca os textos
+            titleEl.textContent = nextSlide.title;
+            subtitleEl.textContent = nextSlide.subtitle;
+
+            // Animação de entrada (fade in) para os novos textos
+            titleEl.style.opacity = '1';
+            subtitleEl.style.opacity = '1';
+            titleEl.classList.add('animate-fade-in');
+            subtitleEl.classList.add('animate-fade-in', 'fade-in-delay-1');
+        }, 600); // 0.6s para a animação de saída
+    }
+
+    // --- Configuração Inicial ---
+    function initializeCarousel() {
+        if (!heroSection || !titleEl || !subtitleEl) return;
+
+        // Define o conteúdo inicial
+        const initialSlide = slides[0];
+        heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${initialSlide.image}')`;
+        titleEl.textContent = initialSlide.title;
+        subtitleEl.textContent = initialSlide.subtitle;
+        
+        // Aplica a animação de entrada inicial
+        titleEl.classList.add('animate-fade-in');
+        subtitleEl.classList.add('animate-fade-in', 'fade-in-delay-1');
+
+        // Inicia o temporizador para a troca de slides
+        setInterval(changeSlide, 6000); // Troca a cada 6 segundos
+    }
+
+    initializeCarousel();
 }
 
 </script>
