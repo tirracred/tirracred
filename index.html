@@ -1586,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 1. Create the payload for the backend function
             const leadPayload = {
                 nome: formData.get('nome'),
-                cpf: formData.get('cpf'),
+                cpf: (formData.get('cpf') || '').replace(/\D/g, ''),
                 whatsapp: (formData.get('whatsapp') || '').replace(/\D/g, ''), //
                 email: formData.get('email'),
                 valor: Number(formData.get('valor')) || 0,
