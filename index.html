@@ -1558,43 +1558,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }))
 
         // --- Lógica para o novo formulário de etapas ---
-        const formViewport = document.querySelector('.form-viewport');
+
         const formTrack = document.getElementById('form-track');
-        const formSteps = document.querySelectorAll('.form-step');
+
         const nextBtn = document.getElementById('next-step-btn');
+
         const prevBtn = document.getElementById('prev-step-btn');
 
-        // Função para ajustar a altura do contentor
-        const adjustFormHeight = () => {
-            const activeStep = document.querySelector('.form-track.step-2-active') ? formSteps[1] : formSteps[0];
-            if (formViewport && activeStep) {
-                formViewport.style.height = `${activeStep.scrollHeight}px`;
-            }
-        };
-
-        // Ajusta a altura inicial
-        adjustFormHeight();
+        
 
         // Evento para avançar para a Etapa 2
         nextBtn?.addEventListener('click', () => {
             formTrack?.classList.add('step-2-active');
-            // Ajusta a altura para a Etapa 2
-            if (formViewport && formSteps[1]) {
-                formViewport.style.height = `${formSteps[1].scrollHeight}px`;
-            }
+
         });
 
         // Evento para voltar para a Etapa 1
         prevBtn?.addEventListener('click', () => {
             formTrack?.classList.remove('step-2-active');
-            // Ajusta a altura para a Etapa 1
-            if (formViewport && formSteps[0]) {
-                formViewport.style.height = `${formSteps[0].scrollHeight}px`;
-            }
+
         });
 
-        // Bónus: reajusta a altura se a janela mudar de tamanho (útil para mobile)
-        window.addEventListener('resize', adjustFormHeight);
 
     // --- FORM SUBMISSION WITH LEAD CAPTURE ---
         leadForm?.addEventListener('submit', async (e) => {
