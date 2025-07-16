@@ -22,11 +22,31 @@
             background-color: #f0fdf4; /* Fundo verde claro */
     }
 
+/* Adicione este CSS para a animação do formulário */
+    .form-viewport {
+        overflow-x: hidden; /* Esconde a parte do formulário que não está visível */
+    }
+
+    .form-track {
+        display: flex;
+        width: 200%; /* Largura total para comportar os 2 passos */
+        transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1); /* Animação suave */
+    }
+
+    .form-step {
+        width: 50%; /* Cada passo ocupa metade do 'track' */
+        padding: 0 0.5rem; /* Um pequeno espaçamento para evitar que os elementos toquem as bordas */
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Mantém o espaçamento 'space-y-6' do seu form */
+    }
+
+    /* Quando a classe é adicionada, o track desliza para a esquerda */
+    .form-track.step-2-active {
+        transform: translateX(-50%);
+    }
 
 
-
-
-    
         /* Estilos para o slider */
         input[type=range] {
             -webkit-appearance: none;
@@ -203,72 +223,81 @@
         <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2">
             <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
             
-            <form id="leadFormHome" class="space-y-6" action="./pages/resultados.html" method="GET">
+            <form id="leadFormHome" action="./pages/resultados.html" method="GET">
                 <!-- O restante do seu formulário continua aqui, sem alterações -->
-                <div>
-                    <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="text-gray-500 text-sm">R$ 500</span>
-                        <span id="valor-display-home" class="text-xl font-bold text-green-600">R$ 1.000</span>
-                        <span class="text-gray-500 text-sm">R$ 50.000</span>
-                    </div>
-                    <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <div class="form-viewport">
+    <div id="form-track" class="form-track">
+
+        <div class="form-step">
+            <div>
+                <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
+                <div class="flex items-center justify-between mt-1">
+                    <span class="text-gray-500 text-sm">R$ 500</span>
+                    <span id="valor-display-home" class="text-xl font-bold text-green-600">R$ 1.000</span>
+                    <span class="text-gray-500 text-sm">R$ 50.000</span>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">12x</button>
-                        <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">24x</button>
-                        <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">36x</button>
-                    </div>
-                    <input type="hidden" name="parcelas" id="parcelasHome" value="12">
+                <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">12x</button>
+                    <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">24x</button>
+                    <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">36x</button>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                        <label class="flex items-center cursor-pointer">
+                <input type="hidden" name="parcelas" id="parcelasHome" value="12">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                    <label class="flex items-center cursor-pointer">
                         <input type="checkbox" name="negativado" id="negativado-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="ml-3 text-gray-700 font-medium">Estou Negativado! </span>
-                        </label>
-                        <p id="negativado-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
-                        Ainda há chances de conseguir. ✅
-                        </p>
-                    </div>
-                    <div>
-                        <label class="flex items-center cursor-pointer">
+                        <span class="ml-3 text-gray-700 font-medium">Estou Negativado!</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center cursor-pointer">
                         <input type="checkbox" name="aposentado_inss" id="inss-checkbox-home" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="ml-3 text-gray-700 font-medium">Sou Aposentado ou Pensionista!</span>
-                        </label>
-                        <p id="inss-message" class="text-sm text-green-700 mt-2 hidden" aria-live="polite">
-                        Ótimo! Temos opções especiais para aposentados e pensionistas. 💸💸
-                        </p>
-                    </div>
-                    <div>
-                        <label class="flex items-center cursor-pointer">
+                        <span class="ml-3 text-gray-700 font-medium">Sou Aposentado/Pensionista!</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center cursor-pointer">
                         <input type="checkbox" name="bolsafamilia" id="bolsa-checkbox" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
                         <span class="ml-3 text-gray-700 font-medium">Recebo do Bolsa Família!</span>
-                        </label>
-                    </div>
+                    </label>
                 </div>
-                <button id="show-form-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                    Continuar
+            </div>
+            <button id="next-step-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
+                Continuar
+            </button>
+        </div>
+
+        <div class="form-step">
+            <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+            <div>
+                <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
+                <p id="cpf-message" class="text-sm mt-1 h-4"></p>
+            </div>
+            <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
+            <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+            <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
+            <div class="flex items-start">
+                <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
+            </div>
+            
+            <div class="flex flex-col gap-4">
+                 <button id="submit-btn-home" type="submit" class="w-full order-1 rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
+                    Ver Recomendações
                 </button>
-                <div id="form-fields-home" class="hidden space-y-4">
-                    <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                    <div>
-                    <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="14">
-                    <p id="cpf-message" class="text-sm mt-1 h-4"></p>
-                    </div>
-                    <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition" maxlength="15">
-                    <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                    <input name="renda" type="number" placeholder="Renda mensal (R$)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500 transition">
-                    <div class="flex items-start">
-                        <input id="consent-home" name="consent" type="checkbox" required class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
-                        <label for="consent-home" class="ml-2 text-sm text-gray-600">Eu aceito os <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Termos de Consentimento</a> e a <a href="pages/termo de consentimento.html" class="underline hover:text-green-600">Política de Privacidade</a>.</label>
-                    </div>
-                    <button id="submit-btn-home" type="submit" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105 disabled:opacity-60">
-                        Ver Recomendações
-                    </button>
-                </div>
+                <button id="prev-step-btn" type="button" class="w-full order-2 text-center text-sm font-medium text-gray-600 hover:text-black transition-colors">
+                    &larr; Voltar
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
             </form>
         </div>
     </div>
@@ -1510,17 +1539,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const valorDisplay = document.getElementById('valor-display-home');
     const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
     const parcelasInput = document.getElementById('parcelasHome');
-    const showFormBtn = document.getElementById('show-form-btn');
-    const formFieldsHome = document.getElementById('form-fields-home');
-    const negCheck = document.getElementById('negativado-checkbox-home');
-    const negMsg = document.getElementById('negativado-message');
-    const inssCheck = document.getElementById('inss-checkbox-home');
-    const inssMsg = document.getElementById('inss-message');
+    
 
     const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
-    
+
     valorSlider?.addEventListener('input', e => { if (valorDisplay) valorDisplay.textContent = fmt(e.target.value); });
-    
+
     parcelaBtns.forEach(btn => btn.addEventListener('click', () => {
         parcelaBtns.forEach(b => {
             b.classList.replace('bg-green-500', 'bg-gray-200');
@@ -1529,18 +1553,22 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.classList.replace('bg-gray-200', 'bg-green-500');
         btn.classList.replace('text-gray-700', 'text-white');
         if (parcelasInput) parcelasInput.value = btn.dataset.parcelas;
-    }));
-    
-    negCheck?.addEventListener('change', () => negMsg?.classList.toggle('hidden', !negCheck.checked));
-    inssCheck?.addEventListener('change', () => inssMsg?.classList.toggle('hidden', !inssCheck.checked));
+    }))
 
-    showFormBtn?.addEventListener('click', () => {
-        if (formFieldsHome) {
-            formFieldsHome.style.display = 'block';
-            formFieldsHome.classList.add('animate-fade-in');
-            showFormBtn.style.display = 'none';
-        }
-    });
+        // --- Lógica para o novo formulário de etapas ---
+        const formTrack = document.getElementById('form-track');
+        const nextBtn = document.getElementById('next-step-btn');
+        const prevBtn = document.getElementById('prev-step-btn');
+
+        // Evento para avançar para a Etapa 2
+        nextBtn?.addEventListener('click', () => {
+            formTrack?.classList.add('step-2-active');
+        });
+
+        // Evento para voltar para a Etapa 1
+        prevBtn?.addEventListener('click', () => {
+            formTrack?.classList.remove('step-2-active');
+        });
 
     // --- FORM SUBMISSION WITH LEAD CAPTURE ---
         leadForm?.addEventListener('submit', async (e) => {
