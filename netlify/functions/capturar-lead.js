@@ -38,7 +38,8 @@ exports.handler = async function(event) {
     let valorDesejado = data.valor;
     let negativado = data.negativado;
     let parcelas = data.parcelas;
-    let aposentado = data.aposentado; // Novo campo
+    let aposentado = data.aposentado; 
+    let bolsafamilia = data.bolsafamilia; // Novo campo
 
 
     // Validação dos campos obrigatórios
@@ -71,6 +72,9 @@ exports.handler = async function(event) {
       parcelas = Number(parcelas);
       if (isNaN(parcelas)) parcelas = null;
     }
+    if (typeof bolsafamilia !== 'boolean') {
+    bolsafamilia = (bolsafamilia === true || bolsafamilia === 'true' || bolsafamilia === 'on');
+    }
 
     // Monta o objeto com nomes de coluna corretos, incluindo 'aposentado'
     const newLead = {
@@ -81,7 +85,8 @@ exports.handler = async function(event) {
       ...(rendaMensal !== undefined ? { renda_mensal: rendaMensal } : {}),
       ...(valorDesejado !== undefined ? { valor_desejado: valorDesejado } : {}),
       ...(negativado !== undefined ? { negativado } : {}),
-      ...(aposentado !== undefined ? { aposentado } : {}), // Adiciona o campo ao objeto
+      ...(aposentado !== undefined ? { aposentado } : {}), 
+      ...(bolsafamilia !== undefined ? { bolsafamilia } : {}), 
       ...(parcelas !== undefined ? { parcelas } : {})
     };
 
