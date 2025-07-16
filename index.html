@@ -25,6 +25,8 @@
 /* Adicione este CSS para a animação do formulário */
     .form-viewport {
         overflow-x: hidden; /* Esconde a parte do formulário que não está visível */
+        transition: height 0.4s ease-in-out; /* ADICIONE ESTA LINHA */
+
     }
 
     .form-track {
@@ -220,7 +222,7 @@
             <h1 id="hero-title" class="text-4xl md:text-5xl font-extrabold mb-4 leading-tight"></h1>
             <p id="hero-subtitle" class="text-lg md:text-xl text-gray-300 max-w-xl lg:max-w-none"></p>
         </div>
-        <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2 h-fit">
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-2xl text-gray-800 animate-fade-in fade-in-delay-2">
             <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
             
             <form id="leadFormHome" action="./pages/resultados.html" method="GET">
@@ -1556,19 +1558,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }))
 
         // --- Lógica para o novo formulário de etapas ---
+        const formViewport = document.querySelector('.form-viewport');
         const formTrack = document.getElementById('form-track');
+        const formSteps = document.querySelectorAll('.form-step');
         const nextBtn = document.getElementById('next-step-btn');
         const prevBtn = document.getElementById('prev-step-btn');
+
+        // Função para ajustar a altura do contentor
+        const adjustFormHeight = () => {
+            const activeStep = document.querySelector('.form-track.step-2-active') ? formSteps[1] : formSteps[0];
+            if (formViewport && activeStep) {
+                formViewport.style.height = `${activeStep.scrollHeight}px`;
+            }
+        };
+
+        // Ajusta a altura inicial
+        adjustFormHeight();
 
         // Evento para avançar para a Etapa 2
         nextBtn?.addEventListener('click', () => {
             formTrack?.classList.add('step-2-active');
+            // Ajusta a altura para a Etapa 2
+            if (formViewport && formSteps[1]) {
+                formViewport.style.height = `${formSteps[1].scrollHeight}px`;
+            }
         });
 
         // Evento para voltar para a Etapa 1
         prevBtn?.addEventListener('click', () => {
             formTrack?.classList.remove('step-2-active');
+            // Ajusta a altura para a Etapa 1
+            if (formViewport && formSteps[0]) {
+                formViewport.style.height = `${formSteps[0].scrollHeight}px`;
+            }
         });
+
+        // Bónus: reajusta a altura se a janela mudar de tamanho (útil para mobile)
+        window.addEventListener('resize', adjustFormHeight);
 
     // --- FORM SUBMISSION WITH LEAD CAPTURE ---
         leadForm?.addEventListener('submit', async (e) => {
