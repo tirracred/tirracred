@@ -215,23 +215,24 @@
     <div id="page-home" class="page-container active">
         <main>
             <!-- Hero e Simulador -->
-         <section id="hero-section" class="hero-bg text-white py-16 sm:py-24" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('public/banner-1.png'); background-size: cover; background-position: center; transition: background-image 1s ease-in-out;">
-    <div class="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+         <section id="hero-section" class="relative text-white py-16 sm:py-24">
+    <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('public/banner-1.png'); z-index: -1;"></div>
 
+    <div class="relative z-10 container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
         <div class="text-center lg:text-left">
-            <h1 id="hero-title" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight transition-opacity duration-500">
+            <h1 id="hero-title" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
                 Compare e contrate o produto financeiro certo para você.
             </h1>
-            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0 transition-opacity duration-500">
+            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0">
                 Soluções prontas para te ajudar a retomar o controle da sua vida financeira.
             </p>
         </div>
 
         <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xl text-gray-800 w-full max-w-lg mx-auto">
             <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
-            
+    
             <form id="leadFormHome" novalidate>
-                
+   
                 <fieldset id="form-step-1" class="space-y-6">
                     <div>
                         <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
@@ -242,7 +243,7 @@
                         </div>
                         <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full">
                     </div>
-                    
+  
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
                         <div class="grid grid-cols-3 gap-2">
@@ -252,7 +253,7 @@
                         </div>
                         <input type="hidden" name="parcelas" id="parcelasHome" value="12">
                     </div>
-
+  
                     <div class="space-y-4">
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
@@ -267,18 +268,18 @@
                             <span class="ml-3 text-gray-700 font-medium">Recebo Bolsa Família!</span>
                         </label>
                     </div>
-
+ 
                     <button id="next-step-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
                         Continuar
                     </button>
                 </fieldset>
-
+ 
                 <fieldset id="form-step-2" class="hidden space-y-4">
                     <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
                     <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="14">
                     <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="15">
                     <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
-                    
+   
                     <div class="flex flex-col gap-4 pt-2">
                         <button id="submit-btn-home" type="submit" class="w-full order-1 rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
                             Ver Recomendações
@@ -2056,13 +2057,13 @@ if (whatsappInput) {
         {
             image: 'public/banner-1.png',  // O seu segundo banner
             title: 'Crédito para negativados? Temos a solução!',
-            subtitle: 'Não deixe que as restrições te impeçam de realizar seus sonhos. Encontre ofertas especiais.'
+            subtitle: 'Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.'
         },
 
         {
             image: 'public/banner2.png', 
             title: 'É Aposentado ou Pensionista do INSS?',
-            subtitle: 'Temos ofertas especiais para aposentado e pensionista do INSS.'
+            subtitle: 'Aproveite condições de crédito exclusivas e vantajosas, pensadas especialmente para valorizar sua história.'
         },
         {
             image: 'public/banner3.png',
