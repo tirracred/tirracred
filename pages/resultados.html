@@ -212,14 +212,28 @@
                  return buildOrderedList(priorityOrder);
              }
 
-             // Regra 3: Negativado
+             // Regra 3: Negativado - LÓGICA DE TESTE A/B IMPLEMENTADA
              if (params.negativado) {
                  const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
-                 // Por padrão, usa a variação "Com Renegociação"
-                 priorityOrder = [17, 2, 1, 3, 4, 12, ...fgtsProductIds];
                  
-                 // Condição especial: Se valor > 1000, Acordo Certo já está no topo pela regra acima.
-                 // O prompt pode ser simplificado, pois a regra padrão já o coloca em primeiro.
+                 // Variação A (Principal): Mostra o produto de renegociação (ID 17)
+                 const variationA = [17, 2, 1, 3, 4, 12, ...fgtsProductIds];
+                 
+                 // Variação B (Teste): NÃO mostra o produto 17.
+                 const variationB = [2, 1, 3, 4, 12, ...fgtsProductIds];
+
+                 // --- LÓGICA DO TESTE A/B ---
+                 // Vamos mostrar a Variação A (com ID 17) na maioria das vezes (ex: 70% de chance)
+                 // e a Variação B nos outros 30% dos casos.
+                 // Você pode ajustar este valor como quiser. 0.7 = 70%, 0.5 = 50%, etc.
+                 if (Math.random() < 0.7) { 
+                     priorityOrder = variationA;
+                     console.log("Teste A/B: Mostrando Variação A (com Renegociação)");
+                 } else {
+                     priorityOrder = variationB;
+                     console.log("Teste A/B: Mostrando Variação B (sem Renegociação)");
+                 }
+
                  return buildOrderedList(priorityOrder);
              }
 
@@ -228,7 +242,7 @@
              priorityOrder = [8, 13, 2, 1, 3, ...fgtsProductIds, 16, 4];
              return buildOrderedList(priorityOrder);
          }
-
+         
 
          // ========================================================================
          // IV. BLOCO DE EXECUÇÃO PRINCIPAL E RENDERIZAÇÃO
