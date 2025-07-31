@@ -222,10 +222,10 @@ crossorigin="anonymous"></script>
                  const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
                  
                  // Variação A (Principal): Mostra o produto de renegociação (ID 17)
-                 const variationA = [18, 1, 2, 3, 4, 5, 6, 7, 12, 13, ...fgtsProductIds];
+                 const variationA = [18, 1, 2, 4, 5, 6, 10, 14, 12, 13, 3, ...fgtsProductIds];
                  
                  // Variação B (Teste): NÃO mostra o produto 18.
-                 const variationB = [2, 1, 13, 2, 3, 4, 5, 6, 7, 12, ...fgtsProductIds];
+                 const variationB = [2, 1, 4, 5, 6, 10, 14, 12, 13, 3, ...fgtsProductIds];
 
                  // --- LÓGICA DO TESTE A/B ---
                  // Vamos mostrar a Variação A (com ID 17) na maioria das vezes (ex: 70% de chance)
