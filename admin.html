@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Admin – Ofertas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{font-family:Inter,sans-serif;background:#fafafa;margin:0;color:#111}
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
+  h1{font-size:18px;margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}
+  label{display:block;font-size:12px;color:#666;margin-bottom:6px}
+  input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+  button{padding:10px 14px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}
+  button.primary{background:#111;color:#fff;border-color:#111}
+  table{width:100%;border-collapse:collapse} th,td{border-top:1px solid #eee;padding:8px;text-align:left}
+  .grid{display:grid;gap:12px} .g2{grid-template-columns:1fr 1fr}
+  .row{display:flex;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Admin – Ofertas</h1>
+  <div class="row">
+    <span id="authState">Desconectado</span>
+    <button id="btnSignIn">Entrar</button>
+    <button id="btnSignOut" style="display:none">Sair</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Config mínima -->
+  <div class="card">
+    <h2 style="margin:0 0 10px">Config de acesso</h2>
+    <div class="grid g2">
+      <div><label>Domínio permitido (opcional)</label><input id="ALLOW_DOMAIN" placeholder="@seu-dominio.com"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="btnPublish" class="primary">Publicar no site</button>
+    </div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="card">
+    <h2 style="margin:0 0 10px">Products</h2>
+    <form id="formP" class="grid g2">
+      <input type="hidden" name="id">
+      <div><label>Título</label><input name="titulo" required></div>
+      <div><label>Logo (URL)</label><input name="logo" required></div>
+      <div><label>Tag</label><input name="tag"></div>
+      <div><label>tagClass</label><input name="tagClass"></div>
+      <div><label>Tipo (vírgula)</label><input name="tipo" placeholder="emprestimo, cartao, fgts"></div>
+      <div><label>Perfis (vírgula)</label><input name="perfis" placeholder="negativado, aposentado, clt"></div>
+      <div class="grid" style="grid-column:1/-1">
+        <label>Vantagens (uma por linha)</label>
+        <textarea name="vantagens" rows="4"></textarea>
+      </div>
+      <div><label>Link</label><input name="link" required></div>
+      <div><label>Botão Primário</label><input name="btnPrimario" value="Acessar"></div>
+      <div><label>Botão Secundário</label><input name="btnSecundario" value="Detalhes"></div>
+      <div><label>Ordem</label><input name="ordem" type="number" min="0"></div>
+      <div><label>Ativo</label><select name="ativo"><option value="true">true</option><option value="false">false</option></select></div>
+      <div style="grid-column:1/-1" class="row">
+        <button class="primary">Salvar</button>
+        <button type="button" id="novoP">Novo</button>
+        <button type="button" id="reloadP">Recarregar</button>
+      </div>
+    </form>
+    <table id="tblP"><thead><tr>
+      <th>ID</th><th>Título</th><th>Tipo</th><th>Perfis</th><th>Tag</th><th>Ordem</th><th>Ações</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+
+  <!-- RULES -->
+  <div class="card">
+    <h2 style="margin:0 0 10px">Rules (prioridade/chance/A-B)</h2>
+    <form id="formR" class="grid g2">
+      <div><label>Nome (perfil)</label><input name="nome" placeholder="default, negativado, aposentado" required></div>
+      <div><label>ab_split (0–1)</label><input name="ab_split" type="number" step="0.01" min="0" max="1"></div>
+      <div><label>priority_ids (CSV)</label><input name="priority_ids" placeholder="1,2,3"></div>
+      <div><label>ab_a_ids (CSV)</label><input name="ab_a_ids" placeholder="1,2,3"></div>
+      <div><label>ab_b_ids (CSV)</label><input name="ab_b_ids" placeholder="4,5,6"></div>
+      <div><label>chance_min</label><input name="chance_min" type="number" min="0" max="100" value="75"></div>
+      <div><label>chance_max</label><input name="chance_max" type="number" min="0" max="100" value="98"></div>
+      <div><label>tipo_chance_override</label><input name="tipo_chance_override" placeholder="fgts"></div>
+      <div><label>tipo_chance_value</label><input name="tipo_chance_value" type="number" min="0" max="100" value="99"></div>
+      <div style="grid-column:1/-1" class="row">
+        <button class="primary">Salvar</button>
+        <button type="button" id="reloadR">Recarregar</button>
+      </div>
+    </form>
+    <table id="tblR"><thead><tr>
+      <th>nome</th><th>priority_ids</th><th>ab_split</th><th>chance</th><th>override</th><th>Ações</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<script>
+let sb=null, user=null;
+
+/* ====== boot com /.netlify/functions/config ====== */
+async function bootSupabase(){
+  const r = await fetch('/.netlify/functions/config', { cache:'no-store' });
+  if(!r.ok){ alert('Config não disponível'); throw new Error('config failed'); }
+  const { supabaseUrl, supabaseAnonKey } = await r.json();
+  sb = supabase.createClient(supabaseUrl, supabaseAnonKey);
+}
+
+async function initSupabase(){
+  if(!sb) await bootSupabase();
+  const { data:{ user:u } } = await sb.auth.getUser();
+  user = u; updateAuthUI();
+}
+
+function updateAuthUI(){
+  const s = document.getElementById('authState');
+  const inB = document.getElementById('btnSignIn');
+  const outB= document.getElementById('btnSignOut');
+  if(user){ s.textContent = `Conectado: ${user.email}`; inB.style.display='none'; outB.style.display='inline-block'; }
+  else{ s.textContent='Desconectado'; inB.style.display='inline-block'; outB.style.display='none'; }
+}
+
+async function signIn(){
+  const email = prompt('Seu e-mail:'); if(!email) return;
+  const dom = document.getElementById('ALLOW_DOMAIN').value.trim();
+  if(dom && !email.endsWith(dom)) return alert('Domínio não permitido.');
+  const { error } = await sb.auth.signInWithOtp({ email });
+  if(error) return alert(error.message);
+  alert('Link enviado. Abra pelo mesmo navegador e recarregue a página.');
+}
+async function signOut(){ await sb.auth.signOut(); user=null; updateAuthUI(); }
+
+/* ====== PRODUCTS ====== */
+async function loadP(){
+  const { data, error } = await sb.from('products').select('*').order('ordem',{ascending:true,nullsFirst:true}).order('id',{ascending:true});
+  if(error) return alert(error.message);
+  const tb = document.querySelector('#tblP tbody'); tb.innerHTML='';
+  (data||[]).forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${p.id}</td><td>${p.titulo||''}</td><td>${(p.tipo||[]).join(',')}</td><td>${(p.perfis||[]).join(',')}</td><td>${p.tag||''}</td><td>${p.ordem??''}</td>
+      <td><button data-id="${p.id}" class="editP">Editar</button><button data-id="${p.id}" class="delP">Excluir</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('.editP').forEach(b=>b.onclick=()=>editP(+b.dataset.id));
+  tb.querySelectorAll('.delP').forEach(b=>b.onclick=()=>delP(+b.dataset.id));
+}
+async function editP(id){
+  const { data, error } = await sb.from('products').select('*').eq('id',id).single();
+  if(error) return alert(error.message);
+  const f=document.getElementById('formP'); const p=data;
+  f.id.value=p.id||''; f.titulo.value=p.titulo||''; f.logo.value=p.logo||''; f.tag.value=p.tag||''; f.tagClass.value=p.tagClass||'';
+  f.tipo.value=(p.tipo||[]).join(', '); f.perfis.value=(p.perfis||[]).join(', ');
+  f.vantagens.value=(p.vantagens||[]).join('\n'); f.link.value=p.link||'';
+  f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
+  f.ordem.value=p.ordem??''; f.ativo.value=(p.ativo??true)?'true':'false';
+}
+async function delP(id){ if(!confirm('Excluir?'))return; const { error }=await sb.from('products').delete().eq('id',id); if(error) alert(error.message); else loadP(); }
+document.getElementById('formP').onsubmit = async (e)=>{
+  e.preventDefault(); const f=e.target;
+  const payload = {
+    id: f.id.value?+f.id.value:undefined,
+    titulo: f.titulo.value.trim(), logo:f.logo.value.trim(), tag:f.tag.value.trim(), tagClass:f.tagClass.value.trim()||null,
+    tipo: f.tipo.value.split(',').map(s=>s.trim()).filter(Boolean),
+    perfis: f.perfis.value.split(',').map(s=>s.trim()).filter(Boolean),
+    vantagens: f.vantagens.value.split('\n').map(s=>s.trim()).filter(Boolean),
+    link: f.link.value.trim(), btnPrimario: f.btnPrimario.value.trim()||'Acessar', btnSecundario: f.btnSecundario.value.trim()||'Detalhes',
+    ordem: f.ordem.value?+f.ordem.value:null, ativo: f.ativo.value==='true'
+  };
+  const { error } = await sb.from('products').upsert(payload).select().single();
+  if(error) return alert(error.message); f.reset(); loadP();
+};
+document.getElementById('novoP').onclick = ()=> document.getElementById('formP').reset();
+document.getElementById('reloadP').onclick = loadP;
+
+/* ====== RULES ====== */
+async function loadR(){
+  const { data, error } = await sb.from('rules').select('*').order('nome');
+  if(error) return alert(error.message);
+  const tb=document.querySelector('#tblR tbody'); tb.innerHTML='';
+  (data||[]).forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.nome}</td>
+      <td>${(r.priority_ids||[]).join(',')}</td>
+      <td>${r.ab_split ?? ''}</td>
+      <td>${r.chance_min ?? ''}–${r.chance_max ?? ''}</td>
+      <td>${r.tipo_chance_override||''}:${r.tipo_chance_value??''}</td>
+      <td><button class="editR" data-n="${r.nome}">Editar</button><button class="delR" data-n="${r.nome}">Excluir</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('.editR').forEach(b=>b.onclick=()=>editR(b.dataset.n));
+  tb.querySelectorAll('.delR').forEach(b=>b.onclick=()=>delR(b.dataset.n));
+}
+async function editR(nome){
+  const { data, error } = await sb.from('rules').select('*').eq('nome', nome).single();
+  if(error) return alert(error.message);
+  const f=document.getElementById('formR'); const r=data;
+  f.nome.value=r.nome; f.ab_split.value=r.ab_split ?? '';
+  f.priority_ids.value=(r.priority_ids||[]).join(','); f.ab_a_ids.value=(r.ab_a_ids||[]).join(','); f.ab_b_ids.value=(r.ab_b_ids||[]).join(',');
+  f.chance_min.value=r.chance_min ?? ''; f.chance_max.value=r.chance_max ?? '';
+  f.tipo_chance_override.value=r.tipo_chance_override || ''; f.tipo_chance_value.value=r.tipo_chance_value ?? '';
+}
+async function delR(nome){ if(!confirm('Excluir regra '+nome+'?'))return; const { error }=await sb.from('rules').delete().eq('nome', nome); if(error) alert(error.message); else loadR(); }
+document.getElementById('formR').onsubmit = async (e)=>{
+  e.preventDefault(); const f=e.target;
+  const toArr = (s)=> s.split(',').map(x=>x.trim()).filter(Boolean).map(Number);
+  const payload = {
+    nome: f.nome.value.trim(),
+    ab_split: f.ab_split.value ? Number(f.ab_split.value) : null,
+    priority_ids: toArr(f.priority_ids.value),
+    ab_a_ids: toArr(f.ab_a_ids.value),
+    ab_b_ids: toArr(f.ab_b_ids.value),
+    chance_min: f.chance_min.value ? Number(f.chance_min.value) : null,
+    chance_max: f.chance_max.value ? Number(f.chance_max.value) : null,
+    tipo_chance_override: f.tipo_chance_override.value.trim() || null,
+    tipo_chance_value: f.tipo_chance_value.value ? Number(f.tipo_chance_value.value) : null
+  };
+  const { error } = await sb.from('rules').upsert(payload).select().single();
+  if(error) return alert(error.message); f.reset(); loadR();
+};
+document.getElementById('reloadR').onclick = loadR;
+
+/* ====== Publish (chama Netlify function) ====== */
+async function publish(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session?.access_token) return alert('Faça login para publicar.');
+  const resp = await fetch('/.netlify/functions/publish', {
+    method:'POST', headers:{ 'content-type':'application/json' },
+    body: JSON.stringify({ accessToken: session.access_token })
+  });
+  if(!resp.ok) return alert('Falha na publicação: '+await resp.text());
+  alert('Publicado! O Netlify deve iniciar o deploy em instantes.');
+}
+
+/* ====== wires ====== */
+document.getElementById('btnPublish').onclick = publish;
+document.getElementById('btnSignIn').onclick = async ()=>{ await initSupabase(); signIn(); };
+document.getElementById('btnSignOut').onclick = signOut;
+
+initSupabase().then(()=>{ loadP(); loadR(); });
+</script>
+</body>
+</html>
