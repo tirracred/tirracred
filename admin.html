@@ -1,3 +1,7 @@
+<!-- ===================
+FILE: /admin.html (v5)
+Drag & Drop com imagens + filtro por perfis + lápis corrigido
+=================== -->
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -396,12 +400,9 @@ function setMulti(id, values){ const sel=document.getElementById(id); const set=
 function getMulti(id){ return Array.from(document.getElementById(id).selectedOptions).map(o=>o.value); }
 
 async function editP(id){
-  // 1) tenta banco
-  let p=null; let from='db';
-  const db = await sb.from('products').select('*').eq('id',id).maybeSingle?.() || await sb.from('products').select('*').eq('id',id).single();
-  if(!db.error && db.data){ p = normalizeProduct(db.data); }
-  // 2) fallback: cache dos HTMLs
-  if(!p){ p = cacheById.get(id); from='html'; }
+  // tenta banco
+  const { data, error } = await sb.from('products').select('*').eq('id',id).single();
+  let p = (!error && data) ? normalizeProduct(data) : (cacheById.get(id) || null);
   if(!p){ return alert('Produto não encontrado (id '+id+').'); }
 
   const f = document.getElementById('formP');
@@ -431,20 +432,12 @@ document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnCl
 </body>
 </html>
 
-<!-- ==============================
-FUNÇÕES NETLIFY (ajustes)
-============================== -->
-<!--
-1) netlify/functions/publish.js – ajuste os paths
--------------------------------------------------
-Use:
-  const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN,
-          SUPABASE_URL, SUPABASE_SERVICE_KEY,
-          INDEX_PATH='index.html',
-          RESULTS_PATH='pages/resultados.html' } = process.env;
 
-2) netlify/functions/debug-env.js – para descobrir o que está faltando
------------------------------------------------------------------------
+<!-- ===================
+FILE: /netlify/functions/config.js
+Retorna apenas as chaves seguras para o client
+=================== -->
+<script type="text/plain" data-filename="/netlify/functions/config.js">
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -453,12 +446,209 @@ const headers = {
 };
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
-  const ok = (k)=> Boolean(process.env[k]);
-  const mask = (v)=> v? (v.slice(0,4) + '...' + v.slice(-4)) : null;
-  const out = {
-    GH_OWNER: ok('GH_OWNER'), GH_REPO: ok('GH_REPO'), GH_BRANCH: ok('GH_BRANCH'), GITHUB_TOKEN: ok('GITHUB_TOKEN'),
-    SUPABASE_URL: ok('SUPABASE_URL'), SUPABASE_ANON_KEY: ok('SUPABASE_ANON_KEY'), SUPABASE_SERVICE_KEY: ok('SUPABASE_SERVICE_KEY')
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ supabaseUrl: SUPABASE_URL, supabaseAnonKey: SUPABASE_ANON_KEY })
   };
-  return { statusCode:200, headers, body: JSON.stringify(out) };
 };
--->
+</script>
+
+
+<!-- ===================
+FILE: /netlify/functions/debug-env.js
+Diagnóstico: mostra quais ENVs (em MAIÚSCULO) estão presentes no Runtime
+=================== -->
+<script type="text/plain" data-filename="/netlify/functions/debug-env.js">
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Content-Type': 'application/json'
+};
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  const has = (k)=> Boolean(process.env[k]);
+  const out = {
+    GH_OWNER: has('GH_OWNER'),
+    GH_REPO: has('GH_REPO'),
+    GH_BRANCH: has('GH_BRANCH'),
+    GITHUB_TOKEN: has('GITHUB_TOKEN'),
+    SUPABASE_URL: has('SUPABASE_URL'),
+    SUPABASE_ANON_KEY: has('SUPABASE_ANON_KEY'),
+    SUPABASE_SERVICE_KEY: has('SUPABASE_SERVICE_KEY')
+  };
+  return { statusCode: 200, headers, body: JSON.stringify(out) };
+};
+</script>
+
+
+<!-- ===================
+FILE: /netlify/functions/publish.js (v5)
+Publica substituindo allProducts em index.html e pages/resultados.html
++ injeta prioByPerfil (rules.priority_ids) para Resultados
+=================== -->
+<script type="text/plain" data-filename="/netlify/functions/publish.js">
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
+};
+
+exports.handler = async function(event){
+  if(event.httpMethod==='OPTIONS') return { statusCode: 204, headers, body: '' };
+  if(event.httpMethod!=='POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido.' }) };
+
+  try{
+    const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY,
+            INDEX_PATH='index.html', RESULTS_PATH='pages/resultados.html' } = process.env;
+
+    // ENV case-sensitive – falha cedo
+    if(!GH_OWNER || !GH_REPO || !GITHUB_TOKEN){
+      throw new Error('Env faltando: GH_OWNER, GH_REPO ou GITHUB_TOKEN');
+    }
+    if(!SUPABASE_URL || !SUPABASE_SERVICE_KEY){
+      throw new Error('Env faltando: SUPABASE_URL ou SUPABASE_SERVICE_KEY');
+    }
+
+    // Auth Supabase (valida accessToken de usuário)
+    let accessToken = null;
+    try{ const body = event.body? JSON.parse(event.body) : {}; accessToken = body?.accessToken? String(body.accessToken) : null; }catch{}
+    if(!accessToken) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+    const u = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers:{ Authorization:`Bearer ${accessToken}`, apikey: SUPABASE_SERVICE_KEY } });
+    if(!u.ok) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+
+    // Leitura do banco
+    const fetchSB = async (path)=>{
+      const r = await fetch(`${SUPABASE_URL}${path}`,{ headers:{ apikey: SUPABASE_SERVICE_KEY, Authorization:`Bearer ${SUPABASE_SERVICE_KEY}` } });
+      if(!r.ok) throw new Error(`Supabase ${path}: ${r.status} ${await r.text()}`);
+      return r.json();
+    };
+    const products = await fetchSB('/rest/v1/products?select=*');
+    const rules    = await fetchSB('/rest/v1/rules?select=*');
+
+    // Monta allProducts ativo + ordenação
+    const active = (products||[])
+      .filter(p=> p.ativo !== false)
+      .sort((a,b)=> (a.ordem ?? 9999) - (b.ordem ?? 9999) || (a.id - b.id))
+      .map(p=>({ id:p.id, tipo:p.tipo, perfis:p.perfis, logo:p.logo, tag:p.tag, tagClass:p.tagClass||undefined, titulo:p.titulo, vantagens:p.vantagens, link:p.link, btnPrimario:p.btnPrimario, btnSecundario:p.btnSecundario }));
+
+    const jsAllProducts = 'const allProducts = ' + JSON.stringify(active, null, 2) + ';';
+
+    // prio por perfil a partir das rules
+    const PERFIS = ['negativado','aposentado','score-regular','bolsafamilia'];
+    const prioByPerfil = {};
+    for(const nome of PERFIS){
+      const r = (rules||[]).find(x=> x.nome===nome);
+      prioByPerfil[nome] = Array.isArray(r?.priority_ids)? r.priority_ids.filter(n=> Number.isInteger(n)) : [];
+    }
+    const jsPrioMap = '// <<<PRIORITY_MAP_START>>>\nconst prioByPerfil = ' + JSON.stringify(prioByPerfil, null, 2) + ';\n// <<<PRIORITY_MAP_END>>>';
+
+    // GITHUB helpers
+    const ghHeaders = { Authorization:`Bearer ${GITHUB_TOKEN}`, Accept:'application/vnd.github+json' };
+    const getFile = async (path)=>{
+      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(GH_BRANCH)}`;
+      const r = await fetch(url,{ headers: ghHeaders });
+      if(!r.ok) throw new Error(`GitHub GET ${path}: ${r.status} ${await r.text()}`);
+      const j = await r.json();
+      const content = Buffer.from((j.content||'').replace(/\n/g,''),'base64').toString('utf8');
+      return { sha:j.sha, content };
+    };
+    const putFile = async (path, content, sha)=>{
+      const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+      const body = { message:`chore(admin): atualizar ofertas/prioridades`, content: Buffer.from(content,'utf8').toString('base64'), sha, branch: GH_BRANCH };
+      const r = await fetch(url,{ method:'PUT', headers: ghHeaders, body: JSON.stringify(body) });
+      if(!r.ok) throw new Error(`GitHub PUT ${path}: ${r.status} ${await r.text()}`);
+      return r.json();
+    };
+
+    // Replace helpers
+    const replaceAllProducts = (txt)=>{
+      const idx = txt.indexOf('const allProducts');
+      if(idx===-1) return null;
+      const eq = txt.indexOf('=', idx);
+      const open = txt.indexOf('[', eq);
+      if(eq===-1 || open===-1) throw new Error('Início do array allProducts não encontrado.');
+      let i=open, depth=0;
+      for(; i<txt.length; i++){
+        const ch = txt[i];
+        if(ch==='[') depth++; else if(ch===']'){ depth--; if(depth===0){ let end=i+1; while(end<txt.length && /\s/.test(txt[end])) end++; if(txt[end]===';') end++; return txt.slice(0, idx) + jsAllProducts + txt.slice(end); } }
+      }
+      throw new Error('Fim do array allProducts não encontrado.');
+    };
+
+    const upsertPrioMap = (txt)=>{
+      const start = txt.indexOf('// <<<PRIORITY_MAP_START>>>');
+      const end   = txt.indexOf('// <<<PRIORITY_MAP_END>>>');
+      if(start!==-1 && end!==-1 && end>start){
+        return txt.slice(0,start) + jsPrioMap + txt.slice(end + '// <<<PRIORITY_MAP_END>>>'.length);
+      }
+      // se não existe, injeta antes do fechamento de </script> mais próximo ou no final do arquivo
+      const scriptEnd = txt.lastIndexOf('</script>');
+      if(scriptEnd!==-1){
+        return txt.slice(0, scriptEnd) + '\n' + jsPrioMap + '\n' + txt.slice(scriptEnd);
+      }
+      return txt + '\n' + jsPrioMap + '\n';
+    };
+
+    const reorderByPrio = (txt, ids)=>{
+      // opcional: reordena o allProducts de resultados para a prioridade geral (quando existir ordem_resultados no banco já refletida)
+      // aqui mantemos somente a substituição pelo jsAllProducts (já ordenado por ordem) – a página pode aplicar prioByPerfil no client.
+      return txt;
+    };
+
+    // Processa arquivos alvo
+    const targets = [ { path: INDEX_PATH, label:'index', withPrio:false }, { path: RESULTS_PATH, label:'results', withPrio:true } ];
+
+    let commits = 0;
+    for(const t of targets){
+      try{
+        const file = await getFile(t.path);
+        let txt = file.content;
+        const rep = replaceAllProducts(txt);
+        if(rep!==null) txt = rep; // só troca se existir bloco
+        if(t.withPrio) txt = upsertPrioMap(txt);
+        if(txt!==file.content){ await putFile(t.path, txt, file.sha); commits++; }
+      }catch(err){ console.warn(`[publish] Falha ao processar ${t.path}:`, err.message); }
+    }
+
+    if(commits===0){
+      return { statusCode: 200, headers, body: JSON.stringify({ ok:true, note:'Nenhum arquivo atualizado (ou não há bloco allProducts nos alvos). Verifique markers e caminhos.' }) };
+    }
+    return { statusCode: 200, headers, body: JSON.stringify({ ok:true, commits }) };
+
+  }catch(e){
+    console.error('[publish] erro:', e);
+    return { statusCode: 500, headers, body: JSON.stringify({ ok:false, error: String(e.message||e) }) };
+  }
+};
+</script>
+
+
+<!-- ===================
+EXTRA: snippet para /pages/resultados.html aplicar prioridade por perfil no client
+(Se publish já injeta prioByPerfil, este código reorganiza antes de renderizar)
+=================== -->
+<script type="text/plain" data-filename="SNIPPET-resultados-apply-priority.js">
+// Colar **depois** da definição de `const allProducts` e **antes** de montar o grid
+// Mantém compatibilidade se prioByPerfil não existir
+(function(){
+  function normalizeId(x){ return Number(x)||x }
+  function reorderBy(ids, arr){
+    const order = new Map(ids.map((id,idx)=>[normalizeId(id), idx]));
+    return [...arr].sort((a,b)=>{
+      const oa = order.has(a.id) ? order.get(a.id) : 999999;
+      const ob = order.has(b.id) ? order.get(b.id) : 999999;
+      if(oa!==ob) return oa-ob; return (a.ordem??9999)-(b.ordem??9999) || a.id-b.id;
+    });
+  }
+  // Detecta perfil a partir de querystring (?perfil=negativado) – ajuste se necessário
+  const url = new URL(window.location.href);
+  const perfil = url.searchParams.get('perfil');
+  if(window.prioByPerfil && perfil && prioByPerfil[perfil] && prioByPerfil[perfil].length){
+    window.allProducts = reorderBy(prioByPerfil[perfil], window.allProducts);
+  }
+})();
+</script>
