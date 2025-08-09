@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin – Ofertas (Drag & Drop com Imagens)</title>
+<title>Admin – Ofertas (Drag & Drop c/ Imagens + Perfis)</title>
 <link rel="icon" type="image/png" href="public/favincon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -45,10 +45,20 @@
 
     <!-- Painel visual de arrastar -->
     <section class="bg-white rounded-2xl shadow p-6">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <h2 class="text-xl font-bold">Prioridades por página (arraste os cards)</h2>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <button id="btnImport" class="pill rounded-lg px-3 py-2" title="Carregar do HTML (index e pages/resultados)">↻ Importar do HTML</button>
+          <label class="text-sm text-gray-600 flex items-center gap-2">
+            Perfil em Resultados:
+            <select id="perfilFilter" class="pill rounded-lg px-2 py-1">
+              <option value="">Todos</option>
+              <option value="negativado">Negativado</option>
+              <option value="aposentado">Aposentado</option>
+              <option value="score-regular">Score Regular</option>
+              <option value="bolsafamilia">Bolsa Família</option>
+            </select>
+          </label>
           <button id="saveIndex" class="pill rounded-lg px-3 py-2">Salvar ordem Index</button>
           <button id="saveResults" class="pill rounded-lg px-3 py-2">Salvar ordem Resultados</button>
         </div>
@@ -64,7 +74,7 @@
         </div>
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold">Resultados</h3>
+            <h3 class="font-semibold">Resultados <span id="perfilLabel" class="text-xs text-gray-500"></span></h3>
             <span id="countResults" class="text-xs text-gray-500">0</span>
           </div>
           <ul id="listResults" class="dropzone space-y-2 p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
@@ -78,7 +88,7 @@
         </div>
       </div>
 
-      <p class="text-xs text-gray-500 mt-4">Arraste entre as colunas. ✏️ edita o item; 🗑 inativa. Salve a ordem de cada página para gravar a prioridade visual.</p>
+      <p class="text-xs text-gray-500 mt-4">Arraste entre as colunas. ✏️ edita o item; 🗑 inativa. Em <strong>Resultados</strong>, selecione um <em>Perfil</em> para ver/salvar uma prioridade específica (usa a tabela <code>rules.priority_ids</code>).</p>
     </section>
 
     <!-- Form produto (edição rápida) -->
@@ -130,6 +140,7 @@
             <option value="score-regular">Score Regular</option>
             <option value="autonomo">Autônomo</option>
             <option value="aposentado">Aposentado</option>
+            <option value="bolsafamilia">Bolsa Família</option>
           </select>
         </div>
         <div class="md:col-span-2">
@@ -168,6 +179,7 @@
 
 <script>
 let sb, user; // supabase client + user
+let cacheIndex=[], cacheResults=[], cacheById=new Map();
 
 function previewLogo(url){
   const img = document.getElementById('logoPreview');
@@ -206,7 +218,7 @@ document.getElementById('btnPublish').onclick = async ()=>{
 
 document.getElementById('btnLogout').onclick = async ()=>{ await sb.auth.signOut(); location.href='login.html'; };
 
-// ===== utils =====
+// ===== utils (normalização forte) =====
 function toArrayMaybe(v){
   if (Array.isArray(v)) return v;
   if (typeof v === 'string') return v.split(/[ ,]+/).map(s=>s.trim()).filter(Boolean);
@@ -238,7 +250,11 @@ function card(pRaw){
 
 function wireCardButtons(root){
   root.querySelectorAll('.edit-btn').forEach(btn=>{
-    btn.onclick = (e)=>{ const id=Number(e.target.closest('li').dataset.id); editP(id); window.scrollTo({top:0,behavior:'smooth'}); };
+    btn.onclick = async (e)=>{
+      const id=Number(e.target.closest('li').dataset.id);
+      await editP(id);
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
   });
   root.querySelectorAll('.kill-btn').forEach(btn=>{
     btn.onclick = async (e)=>{ const id = Number(e.target.closest('li').dataset.id); if(!confirm('Inativar #'+id+'?')) return; await sb.from('products').upsert({id,ativo:false}); await hydrateFromHtmlOrDb(); };
@@ -260,7 +276,6 @@ async function tryReadAllProductsFrom(path){
     const html = await r.text();
     const m = html.match(/const\s+allProducts\s*=\s*(\[[\s\S]*?\])\s*;/);
     if(!m) return null;
-    // ⚠️ Usa Function pra avaliar como JS válido (suporta chaves sem aspas e aspas simples)
     const arr = (new Function('return ' + m[1]))();
     if (!Array.isArray(arr)) return null;
     return arr.map(normalizeProduct);
@@ -282,20 +297,30 @@ async function hydrateFromHtmlOrDb(){
     resultsArr = norm.filter(p=>p.ativo!==false && p.show_in_resultados!==false).sort((a,b) => (a.ordem_resultados??9999)-(b.ordem_resultados??9999)||a.id-b.id);
   }
 
-  renderLists(indexArr||[], resultsArr||[]);
+  cacheIndex = (indexArr||[]);
+  cacheResults = (resultsArr||[]);
+  cacheById.clear();
+  [...cacheIndex, ...cacheResults].forEach(p=> cacheById.set(p.id, normalizeProduct(p)));
+
+  renderLists();
 }
 
 document.getElementById('btnImport').onclick = hydrateFromHtmlOrDb;
 
-function renderLists(indexArr, resultsArr){
+document.getElementById('perfilFilter').addEventListener('change', renderLists);
+
+function renderLists(){
   const lIndex  = document.getElementById('listIndex');
   const lRes    = document.getElementById('listResults');
   const lTrash  = document.getElementById('listTrash');
+  const perfil  = document.getElementById('perfilFilter').value;
+  document.getElementById('perfilLabel').textContent = perfil?`(${perfil})`:'';
 
   lIndex.innerHTML = ''; lRes.innerHTML=''; lTrash.innerHTML='';
 
-  indexArr.forEach(p=> lIndex.insertAdjacentHTML('beforeend', card(p)));
-  resultsArr.forEach(p=> lRes.insertAdjacentHTML('beforeend', card(p)));
+  cacheIndex.forEach(p=> lIndex.insertAdjacentHTML('beforeend', card(p)));
+  const resFiltered = perfil? cacheResults.filter(p=> normalizeProduct(p).perfis.includes(perfil)) : cacheResults;
+  resFiltered.forEach(p=> lRes.insertAdjacentHTML('beforeend', card(p)));
 
   wireCardButtons(lIndex); wireCardButtons(lRes); wireCardButtons(lTrash);
   initDnD(); setCount();
@@ -336,13 +361,31 @@ function initDnD(){
 
 // ===== Salvar ordem =====
 async function saveOrder(page){
-  const listId = page==='index'?'listIndex':'listResults';
-  const ordField = page==='index'?'ordem_index':'ordem_resultados';
-  const rows = Array.from(document.querySelectorAll(`#${listId} > li`)).map((li,i)=>({ id:+li.dataset.id, [ordField]: i+1 }));
-  if(!rows.length){ alert('Nada para salvar.'); return; }
-  const { error } = await sb.from('products').upsert(rows);
-  if(error) return alert(error.message);
-  alert('Ordem salva!');
+  if(page==='index'){
+    const rows = Array.from(document.querySelectorAll('#listIndex > li')).map((li,i)=>({ id:+li.dataset.id, ordem_index: i+1 }));
+    if(!rows.length) return alert('Nada para salvar.');
+    const { error } = await sb.from('products').upsert(rows);
+    if(error) return alert(error.message);
+    return alert('Ordem do Index salva!');
+  }
+  // results (geral ou por perfil)
+  const perfil = document.getElementById('perfilFilter').value;
+  const ids = Array.from(document.querySelectorAll('#listResults > li')).map((li)=> +li.dataset.id);
+  if(!ids.length) return alert('Nada para salvar.');
+
+  if(perfil){
+    // grava nas regras: priority_ids por perfil
+    const payload = { nome: perfil, priority_ids: ids };
+    const { error } = await sb.from('rules').upsert(payload).select().single();
+    if(error) return alert(error.message);
+    alert(`Prioridade do perfil "${perfil}" salva!`);
+  }else{
+    // ordem geral dos resultados
+    const rows = ids.map((id,i)=>({ id, ordem_resultados: i+1 }));
+    const { error } = await sb.from('products').upsert(rows);
+    if(error) return alert(error.message);
+    alert('Ordem geral dos Resultados salva!');
+  }
 }
 
 document.getElementById('saveIndex').onclick   = ()=> saveOrder('index');
@@ -353,9 +396,15 @@ function setMulti(id, values){ const sel=document.getElementById(id); const set=
 function getMulti(id){ return Array.from(document.getElementById(id).selectedOptions).map(o=>o.value); }
 
 async function editP(id){
-  const { data, error } = await sb.from('products').select('*').eq('id',id).single();
-  if(error) return alert(error.message);
-  const f = document.getElementById('formP'); const p=normalizeProduct(data);
+  // 1) tenta banco
+  let p=null; let from='db';
+  const db = await sb.from('products').select('*').eq('id',id).maybeSingle?.() || await sb.from('products').select('*').eq('id',id).single();
+  if(!db.error && db.data){ p = normalizeProduct(db.data); }
+  // 2) fallback: cache dos HTMLs
+  if(!p){ p = cacheById.get(id); from='html'; }
+  if(!p){ return alert('Produto não encontrado (id '+id+').'); }
+
+  const f = document.getElementById('formP');
   f.id.value=p.id||''; f.titulo.value=p.titulo||''; f.logo.value=p.logo||''; previewLogo(p.logo||'');
   f.tag.value=p.tag||''; f.tagClass.value=p.tagClass||''; setMulti('tipoSel',p.tipo||[]); setMulti('perfisSel',p.perfis||[]);
   f.vantagens.value=(p.vantagens||[]).join('\n'); f.link.value=p.link||''; f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
@@ -383,23 +432,33 @@ document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnCl
 </html>
 
 <!-- ==============================
-NOTA PARA AS FUNCTIONS DO NETLIFY
+FUNÇÕES NETLIFY (ajustes)
 ============================== -->
 <!--
-2) netlify/functions/publish.js (apenas o topo com paths)
----------------------------------------------------------
+1) netlify/functions/publish.js – ajuste os paths
+-------------------------------------------------
+Use:
+  const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN,
+          SUPABASE_URL, SUPABASE_SERVICE_KEY,
+          INDEX_PATH='index.html',
+          RESULTS_PATH='pages/resultados.html' } = process.env;
+
+2) netlify/functions/debug-env.js – para descobrir o que está faltando
+-----------------------------------------------------------------------
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Content-Type': 'application/json'
 };
-exports.handler = async function (event) {
+exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido.' }) };
-  try {
-    const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY, INDEX_PATH='index.html', RESULTS_PATH='pages/resultados.html' } = process.env;
-    // ... resto igual ao que te enviei antes
-  } catch (e) { /* ... */ }
+  const ok = (k)=> Boolean(process.env[k]);
+  const mask = (v)=> v? (v.slice(0,4) + '...' + v.slice(-4)) : null;
+  const out = {
+    GH_OWNER: ok('GH_OWNER'), GH_REPO: ok('GH_REPO'), GH_BRANCH: ok('GH_BRANCH'), GITHUB_TOKEN: ok('GITHUB_TOKEN'),
+    SUPABASE_URL: ok('SUPABASE_URL'), SUPABASE_ANON_KEY: ok('SUPABASE_ANON_KEY'), SUPABASE_SERVICE_KEY: ok('SUPABASE_SERVICE_KEY')
+  };
+  return { statusCode:200, headers, body: JSON.stringify(out) };
 };
 -->
