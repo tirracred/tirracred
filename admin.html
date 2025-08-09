@@ -1,38 +1,69 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Admin – Ofertas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  body{font-family:Inter,sans-serif;background:#fafafa;margin:0;color:#111}
-  header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
-  h1{font-size:18px;margin:0}
-  .wrap{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
-  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}
-  label{display:block;font-size:12px;color:#666;margin-bottom:6px}
-  input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-  button{padding:10px 14px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}
-  button.primary{background:#111;color:#fff;border-color:#111}
-  table{width:100%;border-collapse:collapse} th,td{border-top:1px solid #eee;padding:8px;text-align:left}
-  .grid{display:grid;gap:12px} .g2{grid-template-columns:1fr 1fr}
-  .row{display:flex;gap:10px;align-items:center}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin – Ofertas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body{font-family:Inter,sans-serif;background:#fafafa;margin:0;color:#111}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
+    h1{font-size:18px;margin:0}
+    .wrap{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
+    .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}
+    label{display:block;font-size:12px;color:#666;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+    button{padding:10px 14px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}
+    button.primary{background:#111;color:#fff;border-color:#111}
+    table{width:100%;border-collapse:collapse} th,td{border-top:1px solid #eee;padding:8px;text-align:left}
+    .grid{display:grid;gap:12px} .g2{grid-template-columns:1fr 1fr}
+    .row{display:flex;gap:10px;align-items:center}
+    .hidden{display:none}
+  </style>
 </head>
 <body>
+
+<!-- Se quiser o mesmo header do site, copie o header do index.html e cole aqui -->
 <header>
   <h1>Admin – Ofertas</h1>
   <div class="row">
     <span id="authState">Desconectado</span>
-    <button id="btnSignIn">Entrar</button>
-    <button id="btnSignOut" style="display:none">Sair</button>
+    <button id="btnSignOut" class="hidden">Sair</button>
   </div>
 </header>
 
-<div class="wrap">
+<!-- ===== LOGIN ===== -->
+<div id="loginBox" class="wrap" style="max-width:520px">
+  <div class="card">
+    <h2 style="margin:0 0 4px;font-size:22px">Acessar painel</h2>
+    <p style="color:#666;margin:0 0 12px">Use seu e-mail e senha cadastrados.</p>
+    <div class="grid">
+      <div>
+        <label>E-mail</label>
+        <input id="email" type="email" placeholder="voce@empresa.com">
+      </div>
+      <div>
+        <label>Senha</label>
+        <input id="password" type="password" placeholder="••••••••">
+      </div>
+      <div>
+        <label>Restringir domínio (opcional)</label>
+        <input id="allowDomain" placeholder="@tirracred.com.br">
+      </div>
+      <div class="row">
+        <button id="loginBtn" class="primary">Entrar</button>
+        <button id="magicBtn">Link mágico</button>
+      </div>
+      <p id="loginMsg" style="color:#b00020;margin:0"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP (OCULTO ATÉ LOGAR) ===== -->
+<div id="app" class="wrap hidden">
   <!-- Config mínima -->
   <div class="card">
     <h2 style="margin:0 0 10px">Config de acesso</h2>
@@ -102,52 +133,78 @@
 <script>
 let sb=null, user=null;
 
-/* ====== boot com /.netlify/functions/config ====== */
+/* ===== Supabase via /.netlify/functions/config ===== */
 async function bootSupabase(){
   const r = await fetch('/.netlify/functions/config', { cache:'no-store' });
-  if(!r.ok){ alert('Config não disponível'); throw new Error('config failed'); }
+  if(!r.ok) throw new Error('Config não disponível');
   const { supabaseUrl, supabaseAnonKey } = await r.json();
   sb = supabase.createClient(supabaseUrl, supabaseAnonKey);
 }
 
-async function initSupabase(){
+/* ===== Gate: só mostra app logado ===== */
+async function guard(){
   if(!sb) await bootSupabase();
   const { data:{ user:u } } = await sb.auth.getUser();
-  user = u; updateAuthUI();
+  user = u;
+  document.getElementById('app').classList.toggle('hidden', !user);
+  document.getElementById('loginBox').classList.toggle('hidden', !!user);
+  document.getElementById('authState').textContent = user ? `Conectado: ${user.email}` : 'Desconectado';
+  document.getElementById('btnSignOut').classList.toggle('hidden', !user);
+  if(user){ loadP(); loadR(); }
 }
 
-function updateAuthUI(){
-  const s = document.getElementById('authState');
-  const inB = document.getElementById('btnSignIn');
-  const outB= document.getElementById('btnSignOut');
-  if(user){ s.textContent = `Conectado: ${user.email}`; inB.style.display='none'; outB.style.display='inline-block'; }
-  else{ s.textContent='Desconectado'; inB.style.display='inline-block'; outB.style.display='none'; }
+/* ===== Auth ===== */
+function emailOkForDomain(email){
+  const dom = (document.getElementById('allowDomain').value || '').trim() || (document.getElementById('ALLOW_DOMAIN')?.value || '').trim();
+  return !dom || email.endsWith(dom);
 }
 
-async function signIn(){
-  const email = prompt('Seu e-mail:'); if(!email) return;
-  const dom = document.getElementById('ALLOW_DOMAIN').value.trim();
-  if(dom && !email.endsWith(dom)) return alert('Domínio não permitido.');
-  const { error } = await sb.auth.signInWithOtp({ email });
-  if(error) return alert(error.message);
-  alert('Link enviado. Abra pelo mesmo navegador e recarregue a página.');
+async function loginWithPassword(){
+  try{
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    if(!emailOkForDomain(email)) throw new Error('Domínio não permitido.');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    await guard();
+  }catch(e){
+    document.getElementById('loginMsg').textContent = e.message || 'Falha no login';
+  }
 }
-async function signOut(){ await sb.auth.signOut(); user=null; updateAuthUI(); }
 
-/* ====== PRODUCTS ====== */
+async function loginMagic(){
+  try{
+    const email = document.getElementById('email').value.trim();
+    if(!emailOkForDomain(email)) throw new Error('Domínio não permitido.');
+    const redirectTo = `${location.origin}/admin.html`;
+    const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+    if (error) throw error;
+    document.getElementById('loginMsg').textContent = 'Link enviado. Abra o e-mail neste navegador.';
+  }catch(e){
+    document.getElementById('loginMsg').textContent = e.message || 'Falha no login';
+  }
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  await guard();
+}
+
+/* ===== PRODUCTS ===== */
 async function loadP(){
   const { data, error } = await sb.from('products').select('*').order('ordem',{ascending:true,nullsFirst:true}).order('id',{ascending:true});
   if(error) return alert(error.message);
   const tb = document.querySelector('#tblP tbody'); tb.innerHTML='';
   (data||[]).forEach(p=>{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${p.id}</td><td>${p.titulo||''}</td><td>${(p.tipo||[]).join(',')}</td><td>${(p.perfis||[]).join(',')}</td><td>${p.tag||''}</td><td>${p.ordem??''}</td>
+    tr.innerHTML = `<td>${p.id}</td><td>${p.titulo||''}</td><td>${(p.tipo||[]).join(', ')}</td><td>${(p.perfis||[]).join(', ')}</td><td>${p.tag||''}</td><td>${p.ordem??''}</td>
       <td><button data-id="${p.id}" class="editP">Editar</button><button data-id="${p.id}" class="delP">Excluir</button></td>`;
     tb.appendChild(tr);
   });
   tb.querySelectorAll('.editP').forEach(b=>b.onclick=()=>editP(+b.dataset.id));
   tb.querySelectorAll('.delP').forEach(b=>b.onclick=()=>delP(+b.dataset.id));
 }
+
 async function editP(id){
   const { data, error } = await sb.from('products').select('*').eq('id',id).single();
   if(error) return alert(error.message);
@@ -158,7 +215,13 @@ async function editP(id){
   f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
   f.ordem.value=p.ordem??''; f.ativo.value=(p.ativo??true)?'true':'false';
 }
-async function delP(id){ if(!confirm('Excluir?'))return; const { error }=await sb.from('products').delete().eq('id',id); if(error) alert(error.message); else loadP(); }
+
+async function delP(id){
+  if(!confirm('Excluir?'))return;
+  const { error }=await sb.from('products').delete().eq('id',id);
+  if(error) alert(error.message); else loadP();
+}
+
 document.getElementById('formP').onsubmit = async (e)=>{
   e.preventDefault(); const f=e.target;
   const payload = {
@@ -171,12 +234,13 @@ document.getElementById('formP').onsubmit = async (e)=>{
     ordem: f.ordem.value?+f.ordem.value:null, ativo: f.ativo.value==='true'
   };
   const { error } = await sb.from('products').upsert(payload).select().single();
-  if(error) return alert(error.message); f.reset(); loadP();
+  if(error) return alert(error.message);
+  f.reset(); loadP();
 };
 document.getElementById('novoP').onclick = ()=> document.getElementById('formP').reset();
 document.getElementById('reloadP').onclick = loadP;
 
-/* ====== RULES ====== */
+/* ===== RULES ===== */
 async function loadR(){
   const { data, error } = await sb.from('rules').select('*').order('nome');
   if(error) return alert(error.message);
@@ -184,7 +248,7 @@ async function loadR(){
   (data||[]).forEach(r=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${r.nome}</td>
-      <td>${(r.priority_ids||[]).join(',')}</td>
+      <td>${(r.priority_ids||[]).join(', ')}</td>
       <td>${r.ab_split ?? ''}</td>
       <td>${r.chance_min ?? ''}–${r.chance_max ?? ''}</td>
       <td>${r.tipo_chance_override||''}:${r.tipo_chance_value??''}</td>
@@ -194,16 +258,25 @@ async function loadR(){
   tb.querySelectorAll('.editR').forEach(b=>b.onclick=()=>editR(b.dataset.n));
   tb.querySelectorAll('.delR').forEach(b=>b.onclick=()=>delR(b.dataset.n));
 }
+
 async function editR(nome){
   const { data, error } = await sb.from('rules').select('*').eq('nome', nome).single();
   if(error) return alert(error.message);
   const f=document.getElementById('formR'); const r=data;
   f.nome.value=r.nome; f.ab_split.value=r.ab_split ?? '';
-  f.priority_ids.value=(r.priority_ids||[]).join(','); f.ab_a_ids.value=(r.ab_a_ids||[]).join(','); f.ab_b_ids.value=(r.ab_b_ids||[]).join(',');
+  f.priority_ids.value=(r.priority_ids||[]).join(', ');
+  f.ab_a_ids.value=(r.ab_a_ids||[]).join(', ');
+  f.ab_b_ids.value=(r.ab_b_ids||[]).join(', ');
   f.chance_min.value=r.chance_min ?? ''; f.chance_max.value=r.chance_max ?? '';
   f.tipo_chance_override.value=r.tipo_chance_override || ''; f.tipo_chance_value.value=r.tipo_chance_value ?? '';
 }
-async function delR(nome){ if(!confirm('Excluir regra '+nome+'?'))return; const { error }=await sb.from('rules').delete().eq('nome', nome); if(error) alert(error.message); else loadR(); }
+
+async function delR(nome){
+  if(!confirm('Excluir regra '+nome+'?'))return;
+  const { error }=await sb.from('rules').delete().eq('nome', nome);
+  if(error) alert(error.message); else loadR();
+}
+
 document.getElementById('formR').onsubmit = async (e)=>{
   e.preventDefault(); const f=e.target;
   const toArr = (s)=> s.split(',').map(x=>x.trim()).filter(Boolean).map(Number);
@@ -219,11 +292,12 @@ document.getElementById('formR').onsubmit = async (e)=>{
     tipo_chance_value: f.tipo_chance_value.value ? Number(f.tipo_chance_value.value) : null
   };
   const { error } = await sb.from('rules').upsert(payload).select().single();
-  if(error) return alert(error.message); f.reset(); loadR();
+  if(error) return alert(error.message);
+  f.reset(); loadR();
 };
-document.getElementById('reloadR').onclick = loadR;
 
-/* ====== Publish (chama Netlify function) ====== */
+
+/* ===== Publicar (serverless) ===== */
 async function publish(){
   const { data:{ session } } = await sb.auth.getSession();
   if(!session?.access_token) return alert('Faça login para publicar.');
@@ -235,12 +309,15 @@ async function publish(){
   alert('Publicado! O Netlify deve iniciar o deploy em instantes.');
 }
 
-/* ====== wires ====== */
-document.getElementById('btnPublish').onclick = publish;
-document.getElementById('btnSignIn').onclick = async ()=>{ await initSupabase(); signIn(); };
+/* ===== Wires ===== */
+document.getElementById('loginBtn').onclick  = loginWithPassword;
+document.getElementById('magicBtn').onclick  = loginMagic;
 document.getElementById('btnSignOut').onclick = signOut;
+document.getElementById('btnPublish').onclick = publish;
 
-initSupabase().then(()=>{ loadP(); loadR(); });
+
+/* Boot */
+bootSupabase().then(guard);
 </script>
 </body>
 </html>
