@@ -89,14 +89,10 @@
       </div>
       <form id="formP" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="hidden" name="id">
-
-        
         <div>
           <label class="block text-sm font-medium mb-1">Título</label>
           <input name="titulo" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Logo (URL)</label>
           <input name="logo" placeholder="https://..." class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white" oninput="previewLogo(this.value)">
@@ -105,20 +101,14 @@
           <img id="logoPreview" alt="Prévia do logo" class="h-10 w-auto hidden">
           <span class="text-xs text-gray-500">Pré-visualização</span>
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Tag</label>
           <input name="tag" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Classe da Tag (opcional)</label>
           <input name="tagClass" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white" placeholder="green|yellow|red">
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Tipos</label>
           <select id="tipoSel" multiple size="7" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
@@ -131,11 +121,7 @@
             <option value="seguro">Seguro</option>
             <option value="renegociar">Renegociar</option>
           </select>
-
-
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Perfis</label>
           <select id="perfisSel" multiple size="6" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
@@ -146,31 +132,22 @@
             <option value="aposentado">Aposentado</option>
           </select>
         </div>
-
-
         <div class="md:col-span-2">
           <label class="block text-sm font-medium mb-1">Vantagens (uma por linha)</label>
           <textarea name="vantagens" rows="4" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white"></textarea>
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Link</label>
           <input name="link" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
-
-
         <div>
           <label class="block text-sm font-medium mb-1">Botão Primário</label>
           <input name="btnPrimario" value="Acessar" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
-
         <div>
           <label class="block text-sm font-medium mb-1">Botão Secundário</label>
           <input name="btnSecundario" value="Detalhes" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
-
-
         <div class="md:col-span-2 flex items-center gap-6 mt-2">
           <label class="inline-flex items-center gap-2">
             <input type="checkbox" id="show_index" checked class="rounded border-gray-300">
@@ -181,19 +158,12 @@
             <span>Mostrar em <strong>Resultados</strong></span>
           </label>
         </div>
-
         <div class="md:col-span-2 flex justify-end gap-2">
           <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Salvar</button>
           <button type="button" id="btnClearP" class="pill rounded-lg px-3 py-2">Limpar</button>
         </div>
       </form>
-
-
-
     </section>
-
-
-
   </main>
 
 <script>
@@ -236,14 +206,30 @@ document.getElementById('btnPublish').onclick = async ()=>{
 
 document.getElementById('btnLogout').onclick = async ()=>{ await sb.auth.signOut(); location.href='login.html'; };
 
+// ===== utils =====
+function toArrayMaybe(v){
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') return v.split(/[ ,]+/).map(s=>s.trim()).filter(Boolean);
+  if (v && typeof v === 'object') return Object.values(v).map(x=>String(x));
+  return [];
+}
+function normalizeProduct(p){
+  const tipo = toArrayMaybe(p.tipo);
+  const perfis = toArrayMaybe(p.perfis);
+  const id = Number(p.id)||p.id;
+  return { ...p, id, tipo, perfis };
+}
+
 // ===== UI helpers =====
-function card(p){
+function card(pRaw){
+  const p = normalizeProduct(pRaw);
+  const tiposText = p.tipo.map(t=>String(t)).join(', ');
   return `
   <li class="card fade-in bg-white border border-gray-200 rounded-xl p-2 flex items-center gap-3" data-id="${p.id}">
     <img src="${p.logo||''}" class="h-10 w-10 object-contain rounded bg-gray-50 p-1" onerror="this.style.display='none'">
     <div class="flex-1 min-w-0">
       <div class="font-semibold truncate">${p.titulo||'(sem título)'} <span class="text-[10px] text-gray-500">#${p.id}</span></div>
-      <div class="text-[11px] text-gray-500 truncate">${(p.tipo||[]).join(', ')}</div>
+      <div class="text-[11px] text-gray-500 truncate">${tiposText}</div>
     </div>
     <button class="edit-btn text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50" title="Editar">✏️</button>
     <button class="kill-btn text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50" title="Inativar">🗑</button>
@@ -255,7 +241,7 @@ function wireCardButtons(root){
     btn.onclick = (e)=>{ const id=Number(e.target.closest('li').dataset.id); editP(id); window.scrollTo({top:0,behavior:'smooth'}); };
   });
   root.querySelectorAll('.kill-btn').forEach(btn=>{
-    btn.onclick = async (e)=>{ const id = Number(e.target.closest('li').dataset.id); if(!confirm('Inativar #'+id+'?')) return; await sb.from('products').update({ativo:false}).eq('id',id); await hydrateFromHtmlOrDb(); };
+    btn.onclick = async (e)=>{ const id = Number(e.target.closest('li').dataset.id); if(!confirm('Inativar #'+id+'?')) return; await sb.from('products').upsert({id,ativo:false}); await hydrateFromHtmlOrDb(); };
   });
 }
 
@@ -266,7 +252,7 @@ function setCount(){
   document.getElementById('countTrash').textContent   = c('#listTrash');
 }
 
-// ===== Dados: tenta ler const allProducts dos HTMLs; fallback Supabase =====
+// ===== Dados: lê const allProducts dos HTMLs (JS, não JSON) com fallback Supabase =====
 async function tryReadAllProductsFrom(path){
   try{
     const r = await fetch(path,{cache:'no-store'});
@@ -274,8 +260,14 @@ async function tryReadAllProductsFrom(path){
     const html = await r.text();
     const m = html.match(/const\s+allProducts\s*=\s*(\[[\s\S]*?\])\s*;/);
     if(!m) return null;
-    return JSON.parse(m[1]);
-  }catch{ return null }
+    // ⚠️ Usa Function pra avaliar como JS válido (suporta chaves sem aspas e aspas simples)
+    const arr = (new Function('return ' + m[1]))();
+    if (!Array.isArray(arr)) return null;
+    return arr.map(normalizeProduct);
+  }catch(e){
+    console.warn('Falha ao ler', path, e.message);
+    return null;
+  }
 }
 
 async function hydrateFromHtmlOrDb(){
@@ -285,12 +277,15 @@ async function hydrateFromHtmlOrDb(){
   if(!indexArr && !resultsArr){
     const { data, error } = await sb.from('products').select('*');
     if(error){ alert(error.message); return; }
-    indexArr   = data.filter(p=>p.ativo!==false && p.show_in_index!==false).sort((a,b)=>(a.ordem_index??9999)-(b.ordem_index??9999)||a.id-b.id);
-    resultsArr = data.filter(p=>p.ativo!==false && p.show_in_resultados!==false).sort((a,b) => (a.ordem_resultados??9999)-(b.ordem_resultados??9999)||a.id-b.id);
+    const norm = data.map(normalizeProduct);
+    indexArr   = norm.filter(p=>p.ativo!==false && p.show_in_index!==false).sort((a,b)=>(a.ordem_index??9999)-(b.ordem_index??9999)||a.id-b.id);
+    resultsArr = norm.filter(p=>p.ativo!==false && p.show_in_resultados!==false).sort((a,b) => (a.ordem_resultados??9999)-(b.ordem_resultados??9999)||a.id-b.id);
   }
 
   renderLists(indexArr||[], resultsArr||[]);
 }
+
+document.getElementById('btnImport').onclick = hydrateFromHtmlOrDb;
 
 function renderLists(indexArr, resultsArr){
   const lIndex  = document.getElementById('listIndex');
@@ -348,13 +343,10 @@ async function saveOrder(page){
   const { error } = await sb.from('products').upsert(rows);
   if(error) return alert(error.message);
   alert('Ordem salva!');
-
 }
 
 document.getElementById('saveIndex').onclick   = ()=> saveOrder('index');
 document.getElementById('saveResults').onclick = ()=> saveOrder('results');
-
-document.getElementById('btnImport').onclick = hydrateFromHtmlOrDb;
 
 // ===== Form CRUD =====
 function setMulti(id, values){ const sel=document.getElementById(id); const set=new Set(values||[]); Array.from(sel.options).forEach(o=>o.selected=set.has(o.value)); }
@@ -363,7 +355,7 @@ function getMulti(id){ return Array.from(document.getElementById(id).selectedOpt
 async function editP(id){
   const { data, error } = await sb.from('products').select('*').eq('id',id).single();
   if(error) return alert(error.message);
-  const f = document.getElementById('formP'); const p=data;
+  const f = document.getElementById('formP'); const p=normalizeProduct(data);
   f.id.value=p.id||''; f.titulo.value=p.titulo||''; f.logo.value=p.logo||''; previewLogo(p.logo||'');
   f.tag.value=p.tag||''; f.tagClass.value=p.tagClass||''; setMulti('tipoSel',p.tipo||[]); setMulti('perfisSel',p.perfis||[]);
   f.vantagens.value=(p.vantagens||[]).join('\n'); f.link.value=p.link||''; f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
@@ -394,23 +386,8 @@ document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnCl
 NOTA PARA AS FUNCTIONS DO NETLIFY
 ============================== -->
 <!--
-1) netlify/functions/config.js
---------------------------------
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json'
-};
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
-  const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return { statusCode:500, headers, body: JSON.stringify({ error:'Config ausente' }) };
-  return { statusCode:200, headers, body: JSON.stringify({ supabaseUrl: SUPABASE_URL, supabaseAnonKey: SUPABASE_ANON_KEY }) };
-};
-
-2) netlify/functions/publish.js
---------------------------------
+2) netlify/functions/publish.js (apenas o topo com paths)
+---------------------------------------------------------
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -422,29 +399,7 @@ exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido.' }) };
   try {
     const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY, INDEX_PATH='index.html', RESULTS_PATH='pages/resultados.html' } = process.env;
-    if (!GH_OWNER || !GH_REPO || !GITHUB_TOKEN) throw new Error('Env faltando: GH_OWNER, GH_REPO ou GITHUB_TOKEN');
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) throw new Error('Env faltando: SUPABASE_URL ou SUPABASE_SERVICE_KEY');
-    let accessToken=null; try{ const body=event.body?JSON.parse(event.body):{}; accessToken = body?.accessToken || null; }catch{}
-    if(!accessToken) return { statusCode:401, headers, body: JSON.stringify({ error:'Unauthorized' }) };
-    const u = await fetch(`${SUPABASE_URL}/auth/v1/user`,{ headers:{ Authorization:`Bearer ${accessToken}`, apikey: SUPABASE_SERVICE_KEY } });
-    if(!u.ok) return { statusCode:401, headers, body: JSON.stringify({ error:'Unauthorized' }) };
-    const pr = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`,{ headers:{ apikey: SUPABASE_SERVICE_KEY, Authorization:`Bearer ${SUPABASE_SERVICE_KEY}` } });
-    if(!pr.ok) throw new Error(`Falha ao ler products: ${pr.status} ${await pr.text()}`);
-    const products = await pr.json();
-    const mapFront = (p)=>({ id:p.id, tipo:p.tipo, perfis:p.perfis, logo:p.logo, tag:p.tag, tagClass:p.tagClass||undefined, titulo:p.titulo, vantagens:p.vantagens, link:p.link, btnPrimario:p.btnPrimario, btnSecundario:p.btnSecundario });
-    const arrayFor = (page)=>{ const flag=page==='index'?'show_in_index':'show_in_resultados'; const ord=page==='index'?'ordem_index':'ordem_resultados'; return (products||[]).filter(p=>p.ativo!==false && p[flag]!==false).sort((a,b)=>(a[ord]??9999)-(b[ord]??9999)||a.id-b.id).map(mapFront) };
-    const jsIndex   = 'const allProducts = '+JSON.stringify(arrayFor('index'),null,2)+';';
-    const jsResults = 'const allProducts = '+JSON.stringify(arrayFor('results'),null,2)+';';
-    const ghHeaders = { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' };
-    const getFile = async (path)=>{ const url=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(GH_BRANCH)}`; const r=await fetch(url,{headers:ghHeaders}); if(!r.ok) throw new Error(`GitHub GET ${path}: ${r.status} ${await r.text()}`); const j=await r.json(); const content=Buffer.from((j.content||'').replace(/\n/g,''),'base64').toString('utf8'); return { sha:j.sha, content } };
-    const replaceAllProducts = (txt,newJs)=>{ const idx=txt.indexOf('const allProducts'); if(idx===-1) return null; const eq=txt.indexOf('=',idx); const open=txt.indexOf('[',eq); if(eq===-1||open===-1) throw new Error('Início do array allProducts não encontrado.'); let i=open, depth=0; for(; i<txt.length; i++){ const ch=txt[i]; if(ch==='[') depth++; else if(ch===']'){ depth--; if(depth===0){ let end=i+1; while(end<txt.length && /\s/.test(txt[end])) end++; if(txt[end]===';') end++; return txt.slice(0,idx)+newJs+txt.slice(end); } } } throw new Error('Fim do array allProducts não encontrado.'); };
-    const putFile = async (path, content, sha)=>{ const url=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`; const body={ message:`chore(admin): atualizar ofertas (allProducts -> ${path})`, content: Buffer.from(content,'utf8').toString('base64'), sha, branch: GH_BRANCH }; const r=await fetch(url,{method:'PUT',headers:ghHeaders,body:JSON.stringify(body)}); if(!r.ok) throw new Error(`GitHub PUT ${path}: ${r.status} ${await r.text()}`); return r.json() };
-    const targets=[ { path: INDEX_PATH,   js: jsIndex }, { path: RESULTS_PATH, js: jsResults } ];
-    let commits=0; for(const t of targets){ try{ const file=await getFile(t.path); const replaced=replaceAllProducts(file.content,t.js); if(replaced===null){ console.log(`[publish] ${t.path} não contém const allProducts. Pulando.`); continue; } if(replaced!==file.content){ await putFile(t.path,replaced,file.sha); commits++; } }catch(err){ console.warn(`[publish] Falha em ${t.path}:`,err.message); } }
-    return { statusCode:200, headers, body: JSON.stringify({ ok:true, commits }) };
-  } catch (e) {
-    console.error('[publish] erro:', e);
-    return { statusCode:500, headers, body: JSON.stringify({ ok:false, error:String(e.message||e) }) };
-  }
+    // ... resto igual ao que te enviei antes
+  } catch (e) { /* ... */ }
 };
 -->
