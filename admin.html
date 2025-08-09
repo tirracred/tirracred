@@ -3,25 +3,38 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin – Ofertas</title>
+<title>Admin – Ofertas (Drag & Drop com Imagens)</title>
 <link rel="icon" type="image/png" href="public/favincon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>body{font-family:Inter,sans-serif;background:#f0fdf4}</style>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+  :root{--bg:#f0fdf4}
+  body{font-family:Inter,sans-serif;background:var(--bg)}
+  .card{transition:transform .15s ease, box-shadow .15s ease}
+  .card:hover{transform:translateY(-2px);box-shadow:0 18px 30px -15px rgba(0,0,0,.25)}
+  .fade-in{animation:fade .22s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ghost{opacity:.45}
+  .dragging{transform:rotate(.6deg) scale(1.02)}
+  .dropzone{min-height:200px}
+  .pill{border:1px solid #e5e7eb;background:#fff}
+</style>
 </head>
 <body class="text-gray-800">
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <a href="index.html" class="flex items-center">
+        <a href="/" class="flex items-center gap-2">
           <img src="public/logo.png" alt="TirraCred" class="h-8 w-auto">
+          <span class="hidden sm:inline text-sm text-gray-500">Admin de Ofertas</span>
         </a>
-        <div class="flex items-center gap-3">
-          <span id="who" class="text-sm text-gray-600"></span>
-          <button id="btnPublish" class="hidden sm:inline-flex bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Publicar</button>
+        <div class="flex items-center gap-2">
+          <span id="who" class="hidden sm:inline text-sm text-gray-600"></span>
+          <button id="btnPublish" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Publicar</button>
           <button id="btnLogout" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Sair</button>
         </div>
       </div>
@@ -30,43 +43,81 @@
 
   <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
-    <!-- Produtos -->
+    <!-- Painel visual de arrastar -->
     <section class="bg-white rounded-2xl shadow p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">Produtos</h2>
-        <button id="btnNewP" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Novo</button>
+        <h2 class="text-xl font-bold">Prioridades por página (arraste os cards)</h2>
+        <div class="flex gap-2">
+          <button id="btnImport" class="pill rounded-lg px-3 py-2" title="Carregar do HTML (index e pages/resultados)">↻ Importar do HTML</button>
+          <button id="saveIndex" class="pill rounded-lg px-3 py-2">Salvar ordem Index</button>
+          <button id="saveResults" class="pill rounded-lg px-3 py-2">Salvar ordem Resultados</button>
+        </div>
       </div>
 
-      <!-- Form produto -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Index</h3>
+            <span id="countIndex" class="text-xs text-gray-500">0</span>
+          </div>
+          <ul id="listIndex" class="dropzone space-y-2 p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Resultados</h3>
+            <span id="countResults" class="text-xs text-gray-500">0</span>
+          </div>
+          <ul id="listResults" class="dropzone space-y-2 p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Lixeira</h3>
+            <span id="countTrash" class="text-xs text-gray-500">0</span>
+          </div>
+          <ul id="listTrash" class="dropzone space-y-2 p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+        </div>
+      </div>
+
+      <p class="text-xs text-gray-500 mt-4">Arraste entre as colunas. ✏️ edita o item; 🗑 inativa. Salve a ordem de cada página para gravar a prioridade visual.</p>
+    </section>
+
+    <!-- Form produto (edição rápida) -->
+    <section class="bg-white rounded-2xl shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">Produto</h2>
+        <button id="btnNewP" class="pill rounded-lg px-3 py-2">Novo</button>
+      </div>
       <form id="formP" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="hidden" name="id">
 
+        
         <div>
           <label class="block text-sm font-medium mb-1">Título</label>
           <input name="titulo" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
 
+
         <div>
           <label class="block text-sm font-medium mb-1">Logo (URL)</label>
           <input name="logo" placeholder="https://..." class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white" oninput="previewLogo(this.value)">
         </div>
-
-        <div class="md:col-span-2">
-          <div class="flex items-center gap-3">
-            <img id="logoPreview" alt="Prévia do logo" class="h-10 w-auto hidden">
-            <span class="text-xs text-gray-500">Pré-visualização</span>
-          </div>
+        <div class="md:col-span-2 flex items-center gap-3">
+          <img id="logoPreview" alt="Prévia do logo" class="h-10 w-auto hidden">
+          <span class="text-xs text-gray-500">Pré-visualização</span>
         </div>
+
 
         <div>
           <label class="block text-sm font-medium mb-1">Tag</label>
           <input name="tag" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
 
+
         <div>
           <label class="block text-sm font-medium mb-1">Classe da Tag (opcional)</label>
-          <input name="tagClass" placeholder="red, blue, yellow..." class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+          <input name="tagClass" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white" placeholder="green|yellow|red">
         </div>
+
 
         <div>
           <label class="block text-sm font-medium mb-1">Tipos</label>
@@ -80,8 +131,10 @@
             <option value="seguro">Seguro</option>
             <option value="renegociar">Renegociar</option>
           </select>
-          <small class="text-xs text-gray-500">Segure CTRL/⌘ para selecionar várias.</small>
+
+
         </div>
+
 
         <div>
           <label class="block text-sm font-medium mb-1">Perfis</label>
@@ -94,15 +147,18 @@
           </select>
         </div>
 
+
         <div class="md:col-span-2">
           <label class="block text-sm font-medium mb-1">Vantagens (uma por linha)</label>
           <textarea name="vantagens" rows="4" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white"></textarea>
         </div>
 
+
         <div>
           <label class="block text-sm font-medium mb-1">Link</label>
           <input name="link" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
+
 
         <div>
           <label class="block text-sm font-medium mb-1">Botão Primário</label>
@@ -114,20 +170,7 @@
           <input name="btnSecundario" value="Detalhes" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
         </div>
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Ordem</label>
-          <input name="ordem" type="number" min="0" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
 
-        <div>
-          <label class="block text-sm font-medium mb-1">Ativo</label>
-          <select name="ativo" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-            <option value="true">true</option>
-            <option value="false">false</option>
-          </select>
-        </div>
-
-        <!-- Onde aparece -->
         <div class="md:col-span-2 flex items-center gap-6 mt-2">
           <label class="inline-flex items-center gap-2">
             <input type="checkbox" id="show_index" checked class="rounded border-gray-300">
@@ -141,119 +184,20 @@
 
         <div class="md:col-span-2 flex justify-end gap-2">
           <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Salvar</button>
-          <button type="button" id="btnClearP" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Limpar</button>
+          <button type="button" id="btnClearP" class="pill rounded-lg px-3 py-2">Limpar</button>
         </div>
       </form>
 
-      <!-- Tabela -->
-      <div class="mt-6 overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead><tr class="text-left text-gray-600">
-            <th class="py-2 pr-4">ID</th><th class="py-2 pr-4">Título</th><th class="py-2 pr-4">Tipos</th><th class="py-2 pr-4">Perfis</th><th class="py-2 pr-4">Index/Res</th><th class="py-2 pr-4">Ordem</th><th class="py-2 pr-4">Ações</th>
-          </tr></thead>
-          <tbody id="tblP" class="align-top"></tbody>
-        </table>
-      </div>
-      <!-- Prioridades (arrastar e soltar) -->
-        <section class="bg-white rounded-2xl shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold">Prioridades (arraste para ordenar)</h2>
-            <div class="flex gap-2">
-            <button id="saveIndex" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 py-2">Salvar ordem Index</button>
-            <button id="saveResults" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 py-2">Salvar ordem Resultados</button>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-            <h3 class="font-semibold mb-2">Index</h3>
-            <ul id="listIndex" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
-            </div>
-
-            <div>
-            <h3 class="font-semibold mb-2">Resultados</h3>
-            <ul id="listResults" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
-            </div>
-
-            <div>
-            <h3 class="font-semibold mb-2">Lixeira (arraste aqui para ocultar)</h3>
-            <ul id="listTrash" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
-            </div>
-        </div>
-
-        <p class="text-xs text-gray-500 mt-4">
-            Lápis = editar o produto. Lixeira = enviar para inativo. Arrastar para a Lixeira de uma coluna só oculta naquela página (Index/Resultados).
-        </p>
-        </section>
 
     </section>
-    
 
-    <!-- Regras -->
-    <section class="bg-white rounded-2xl shadow p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">Regras (prioridade/chance/A-B)</h2>
-      </div>
 
-      <form id="formR" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Perfil (nome)</label>
-          <input name="nome" placeholder="default, negativado..." required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">ab_split (0–1)</label>
-          <input name="ab_split" type="number" step="0.01" min="0" max="1" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">priority_ids (CSV)</label>
-          <input name="priority_ids" placeholder="1,2,3" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">ab_a_ids (CSV)</label>
-          <input name="ab_a_ids" placeholder="1,2,3" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">ab_b_ids (CSV)</label>
-          <input name="ab_b_ids" placeholder="4,5,6" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">chance_min</label>
-          <input name="chance_min" type="number" min="0" max="100" value="75" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">chance_max</label>
-          <input name="chance_max" type="number" min="0" max="100" value="98" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">tipo_chance_override</label>
-          <input name="tipo_chance_override" placeholder="fgts" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">tipo_chance_value</label>
-          <input name="tipo_chance_value" type="number" min="0" max="100" value="99" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
-        </div>
-        <div class="md:col-span-2 flex justify-end gap-2">
-          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Salvar</button>
-          <button type="button" id="reloadR" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Recarregar</button>
-        </div>
-      </form>
 
-      <div class="mt-6 overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead><tr class="text-left text-gray-600">
-            <th class="py-2 pr-4">Perfil</th><th class="py-2 pr-4">priority_ids</th><th class="py-2 pr-4">A/B</th><th class="py-2 pr-4">Chance</th><th class="py-2 pr-4">Override</th><th class="py-2 pr-4">Ações</th>
-          </tr></thead>
-          <tbody id="tblR" class="align-top"></tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
 <script>
-let sb, user;
-
-const toArr = (s)=> s.split(',').map(x=>x.trim()).filter(Boolean);
-const toNumArr = (s)=> toArr(s).map(Number).filter(n=>!isNaN(n));
+let sb, user; // supabase client + user
 
 function previewLogo(url){
   const img = document.getElementById('logoPreview');
@@ -261,7 +205,7 @@ function previewLogo(url){
   img.src = url; img.classList.remove('hidden');
 }
 
-/* ===== boot + guard ===== */
+// ===== boot (pega env seguro do Netlify) =====
 async function boot(){
   const r = await fetch('/.netlify/functions/config',{cache:'no-store'});
   if(!r.ok){ alert('Config indisponível'); return; }
@@ -273,321 +217,234 @@ async function boot(){
   user = session.user;
   document.getElementById('who').textContent = user.email || '';
 
-  await loadProducts();
-  await loadRules();
+  await hydrateFromHtmlOrDb(); // carrega listas
 }
 boot();
 
-/* ===== logout ===== */
-document.getElementById('btnLogout').onclick = async ()=>{
-  await sb.auth.signOut();
-  location.href='login.html';
-};
-
-/* ===== Products ===== */
-function setMulti(id, values){
-  const sel = document.getElementById(id);
-  const set = new Set(values);
-  Array.from(sel.options).forEach(o=> o.selected = set.has(o.value));
-}
-function getMulti(id){
-  return Array.from(document.getElementById(id).selectedOptions).map(o=>o.value);
-}
-
-async function loadProducts(){
-  const { data, error } = await sb.from('products').select('*').order('ordem',{ascending:true,nullsFirst:true}).order('id',{ascending:true});
-  if(error) return alert(error.message);
-  const tb = document.getElementById('tblP'); tb.innerHTML='';
-  (data||[]).forEach(p=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="py-2 pr-4">${p.id}</td>
-      <td class="py-2 pr-4">${p.titulo||''}</td>
-      <td class="py-2 pr-4">${(p.tipo||[]).join(', ')}</td>
-      <td class="py-2 pr-4">${(p.perfis||[]).join(', ')}</td>
-      <td class="py-2 pr-4">${p.show_in_index!==false?'✓':'×'} / ${p.show_in_resultados!==false?'✓':'×'}</td>
-      <td class="py-2 pr-4">${p.ordem ?? ''}</td>
-      <td class="py-2 pr-4">
-        <button class="underline text-green-700" onclick="editP(${p.id})">Editar</button>
-        <span class="mx-1">·</span>
-        <button class="underline text-red-600" onclick="delP(${p.id})">Excluir</button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-
-async function editP(id){
-  const { data, error } = await sb.from('products').select('*').eq('id',id).single();
-  if(error) return alert(error.message);
-  const f = document.getElementById('formP'); const p = data;
-  f.id.value = p.id || '';
-  f.titulo.value = p.titulo || '';
-  f.logo.value = p.logo || '';
-  previewLogo(p.logo || '');
-  f.tag.value = p.tag || '';
-  f.tagClass.value = p.tagClass || '';
-  setMulti('tipoSel', p.tipo || []);
-  setMulti('perfisSel', p.perfis || []);
-  f.vantagens.value = (p.vantagens||[]).join('\n');
-  f.link.value = p.link || '';
-  f.btnPrimario.value = p.btnPrimario || 'Acessar';
-  f.btnSecundario.value = p.btnSecundario || 'Detalhes';
-  f.ordem.value = p.ordem ?? '';
-  f.ativo.value = (p.ativo ?? true) ? 'true' : 'false';
-  document.getElementById('show_index').checked = p.show_in_index !== false;
-  document.getElementById('show_resultados').checked = p.show_in_resultados !== false;
-}
-
-async function delP(id){
-  if(!confirm('Excluir produto '+id+'?')) return;
-  const { error } = await sb.from('products').delete().eq('id', id);
-  if(error) alert(error.message); else loadProducts();
-}
-
-document.getElementById('formP').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const f = e.target;
-  const payload = {
-    id: f.id.value ? +f.id.value : undefined,
-    titulo: f.titulo.value.trim(),
-    logo: f.logo.value.trim(),
-    tag: f.tag.value.trim(),
-    tagClass: f.tagClass.value.trim() || null,
-    tipo: getMulti('tipoSel'),
-    perfis: getMulti('perfisSel'),
-    vantagens: f.vantagens.value.split('\n').map(s=>s.trim()).filter(Boolean),
-    link: f.link.value.trim(),
-    btnPrimario: f.btnPrimario.value.trim() || 'Acessar',
-    btnSecundario: f.btnSecundario.value.trim() || 'Detalhes',
-    ordem: f.ordem.value ? +f.ordem.value : null,
-    ativo: f.ativo.value === 'true',
-    show_in_index: document.getElementById('show_index').checked,
-    show_in_resultados: document.getElementById('show_resultados').checked
-  };
-  const { error } = await sb.from('products').upsert(payload).select().single();
-  if(error) return alert(error.message);
-  f.reset(); previewLogo('');
-  setMulti('tipoSel', []); setMulti('perfisSel', []);
-  document.getElementById('show_index').checked = true;
-  document.getElementById('show_resultados').checked = true;
-  loadProducts();
-});
-
-document.getElementById('btnClearP').onclick = ()=>{
-  const f = document.getElementById('formP');
-  f.reset(); previewLogo('');
-  setMulti('tipoSel', []); setMulti('perfisSel', []);
-  document.getElementById('show_index').checked = true;
-  document.getElementById('show_resultados').checked = true;
-};
-document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnClearP').click();
-
-/* ===== Regras ===== */
-async function loadRules(){
-  const { data, error } = await sb.from('rules').select('*').order('nome');
-  if(error) return alert(error.message);
-  const tb = document.getElementById('tblR'); tb.innerHTML='';
-  (data||[]).forEach(r=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="py-2 pr-4">${r.nome}</td>
-      <td class="py-2 pr-4">${(r.priority_ids||[]).join(',')}</td>
-      <td class="py-2 pr-4">${r.ab_split ?? ''} (A: ${(r.ab_a_ids||[]).join(',')} / B: ${(r.ab_b_ids||[]).join(',')})</td>
-      <td class="py-2 pr-4">${r.chance_min ?? ''}–${r.chance_max ?? ''}</td>
-      <td class="py-2 pr-4">${r.tipo_chance_override||''}:${r.tipo_chance_value??''}</td>
-      <td class="py-2 pr-4">
-        <button class="underline text-green-700" onclick="editR('${r.nome.replace(/'/g,"\\'")}')">Editar</button>
-        <span class="mx-1">·</span>
-        <button class="underline text-red-600" onclick="delR('${r.nome.replace(/'/g,"\\'")}')">Excluir</button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-
-async function editR(nome){
-  const { data, error } = await sb.from('rules').select('*').eq('nome', nome).single();
-  if(error) return alert(error.message);
-  const f = document.getElementById('formR'); const r = data;
-  f.nome.value = r.nome;
-  f.ab_split.value = r.ab_split ?? '';
-  f.priority_ids.value = (r.priority_ids||[]).join(',');
-  f.ab_a_ids.value = (r.ab_a_ids||[]).join(',');
-  f.ab_b_ids.value = (r.ab_b_ids||[]).join(',');
-  f.chance_min.value = r.chance_min ?? '';
-  f.chance_max.value = r.chance_max ?? '';
-  f.tipo_chance_override.value = r.tipo_chance_override || '';
-  f.tipo_chance_value.value = r.tipo_chance_value ?? '';
-}
-
-async function delR(nome){
-  if(!confirm('Excluir regra '+nome+'?')) return;
-  const { error } = await sb.from('rules').delete().eq('nome', nome);
-  if(error) alert(error.message); else loadRules();
-}
-
-document.getElementById('formR').addEventListener('submit', async (e)=>{
-  e.preventDefault(); const f=e.target;
-  const payload = {
-    nome: f.nome.value.trim(),
-    ab_split: f.ab_split.value ? Number(f.ab_split.value) : null,
-    priority_ids: toNumArr(f.priority_ids.value),
-    ab_a_ids: toNumArr(f.ab_a_ids.value),
-    ab_b_ids: toNumArr(f.ab_b_ids.value),
-    chance_min: f.chance_min.value ? Number(f.chance_min.value) : null,
-    chance_max: f.chance_max.value ? Number(f.chance_max.value) : null,
-    tipo_chance_override: f.tipo_chance_override.value.trim() || null,
-    tipo_chance_value: f.tipo_chance_value.value ? Number(f.tipo_chance_value.value) : null
-  };
-  const { error } = await sb.from('rules').upsert(payload).select().single();
-  if(error) return alert(error.message);
-  f.reset(); loadRules();
-});
-
-/* ===== Publish ===== */
+// ===== Publish via function (usa env server-side) =====
 document.getElementById('btnPublish').onclick = async ()=>{
   const { data:{ session } } = await sb.auth.getSession();
   if(!session?.access_token) return alert('Faça login novamente.');
-  const resp = await fetch('/.netlify/functions/publish', {
-    method:'POST', headers:{ 'content-type':'application/json' },
+  const resp = await fetch('/.netlify/functions/publish',{
+    method:'POST',headers:{'content-type':'application/json'},
     body: JSON.stringify({ accessToken: session.access_token })
   });
-  if(!resp.ok) return alert('Falha na publicação: '+await resp.text());
-  alert('Publicado! O Netlify deve iniciar o deploy em instantes.');
-
-  
+  const t = await resp.text();
+  try{ const j = JSON.parse(t); if(!resp.ok || j.ok===false) throw new Error(j.error||t); alert('Publicado!'); }
+  catch(e){ alert('Falha na publicação: '+ t); }
 };
 
+document.getElementById('btnLogout').onclick = async ()=>{ await sb.auth.signOut(); location.href='login.html'; };
 
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script>
-// === Cartinhas ===
-function cardHTML(p) {
+// ===== UI helpers =====
+function card(p){
   return `
-  <li class="bg-white border border-gray-200 rounded-lg p-2 flex items-center gap-2" data-id="${p.id}">
-    <img src="${p.logo || ''}" class="h-8 w-8 object-contain rounded" onerror="this.style.display='none'">
+  <li class="card fade-in bg-white border border-gray-200 rounded-xl p-2 flex items-center gap-3" data-id="${p.id}">
+    <img src="${p.logo||''}" class="h-10 w-10 object-contain rounded bg-gray-50 p-1" onerror="this.style.display='none'">
     <div class="flex-1 min-w-0">
-      <div class="font-semibold truncate">${p.titulo || '(sem título)'} <span class="text-xs text-gray-500">#${p.id}</span></div>
-      <div class="text-xs text-gray-500 truncate">${(p.tipo||[]).join(', ')}</div>
+      <div class="font-semibold truncate">${p.titulo||'(sem título)'} <span class="text-[10px] text-gray-500">#${p.id}</span></div>
+      <div class="text-[11px] text-gray-500 truncate">${(p.tipo||[]).join(', ')}</div>
     </div>
-    <button class="edit-btn text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50">✏️</button>
-    <button class="kill-btn text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50">🗑</button>
+    <button class="edit-btn text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50" title="Editar">✏️</button>
+    <button class="kill-btn text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50" title="Inativar">🗑</button>
   </li>`;
 }
 
-async function loadLists() {
-  const { data, error } = await sb.from('products').select('*');
-  if (error) return alert(error.message);
+function wireCardButtons(root){
+  root.querySelectorAll('.edit-btn').forEach(btn=>{
+    btn.onclick = (e)=>{ const id=Number(e.target.closest('li').dataset.id); editP(id); window.scrollTo({top:0,behavior:'smooth'}); };
+  });
+  root.querySelectorAll('.kill-btn').forEach(btn=>{
+    btn.onclick = async (e)=>{ const id = Number(e.target.closest('li').dataset.id); if(!confirm('Inativar #'+id+'?')) return; await sb.from('products').update({ativo:false}).eq('id',id); await hydrateFromHtmlOrDb(); };
+  });
+}
 
-  const indexItems = data
-    .filter(p => p.ativo !== false && p.show_in_index !== false)
-    .sort((a,b) => (a.ordem_index ?? 9999) - (b.ordem_index ?? 9999) || (a.id - b.id));
+function setCount(){
+  const c = (sel)=> document.querySelectorAll(sel+'> li').length;
+  document.getElementById('countIndex').textContent   = c('#listIndex');
+  document.getElementById('countResults').textContent = c('#listResults');
+  document.getElementById('countTrash').textContent   = c('#listTrash');
+}
 
-  const resultsItems = data
-    .filter(p => p.ativo !== false && p.show_in_resultados !== false)
-    .sort((a,b) => (a.ordem_resultados ?? 9999) - (b.ordem_resultados ?? 9999) || (a.id - b.id));
+// ===== Dados: tenta ler const allProducts dos HTMLs; fallback Supabase =====
+async function tryReadAllProductsFrom(path){
+  try{
+    const r = await fetch(path,{cache:'no-store'});
+    if(!r.ok) return null;
+    const html = await r.text();
+    const m = html.match(/const\s+allProducts\s*=\s*(\[[\s\S]*?\])\s*;/);
+    if(!m) return null;
+    return JSON.parse(m[1]);
+  }catch{ return null }
+}
 
-  const trashItems = data.filter(p => p.ativo === false);
+async function hydrateFromHtmlOrDb(){
+  let indexArr   = await tryReadAllProductsFrom('/index.html');
+  let resultsArr = await tryReadAllProductsFrom('/pages/resultados.html');
 
+  if(!indexArr && !resultsArr){
+    const { data, error } = await sb.from('products').select('*');
+    if(error){ alert(error.message); return; }
+    indexArr   = data.filter(p=>p.ativo!==false && p.show_in_index!==false).sort((a,b)=>(a.ordem_index??9999)-(b.ordem_index??9999)||a.id-b.id);
+    resultsArr = data.filter(p=>p.ativo!==false && p.show_in_resultados!==false).sort((a,b) => (a.ordem_resultados??9999)-(b.ordem_resultados??9999)||a.id-b.id);
+  }
+
+  renderLists(indexArr||[], resultsArr||[]);
+}
+
+function renderLists(indexArr, resultsArr){
   const lIndex  = document.getElementById('listIndex');
   const lRes    = document.getElementById('listResults');
   const lTrash  = document.getElementById('listTrash');
 
-  lIndex.innerHTML  = indexItems.map(cardHTML).join('');
-  lRes.innerHTML    = resultsItems.map(cardHTML).join('');
-  lTrash.innerHTML  = trashItems.map(cardHTML).join('');
+  lIndex.innerHTML = ''; lRes.innerHTML=''; lTrash.innerHTML='';
 
-  // botões lápis / lixeira de cada card
-  [lIndex, lRes, lTrash].forEach(list => {
-    list.querySelectorAll('.edit-btn').forEach(btn=>{
-      btn.onclick = (e)=>{
-        const id = Number(e.target.closest('li').dataset.id);
-        editP(id);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-    });
-    list.querySelectorAll('.kill-btn').forEach(btn=>{
-      btn.onclick = async (e)=>{
-        const id = Number(e.target.closest('li').dataset.id);
-        if (!confirm('Enviar produto #'+id+' para a lixeira (inativo)?')) return;
-        const { error } = await sb.from('products').update({ ativo:false }).eq('id', id);
-        if (error) return alert(error.message);
-        loadProducts(); // sua tabela
-        loadLists();    // as listas
-      };
-    });
-  });
+  indexArr.forEach(p=> lIndex.insertAdjacentHTML('beforeend', card(p)));
+  resultsArr.forEach(p=> lRes.insertAdjacentHTML('beforeend', card(p)));
 
-  initSortables();
+  wireCardButtons(lIndex); wireCardButtons(lRes); wireCardButtons(lTrash);
+  initDnD(); setCount();
 }
 
-// === drag ===
+// ===== Drag & Drop =====
 let sortIndex, sortResults, sortTrash;
-
-function initSortables() {
+function initDnD(){
   sortIndex && sortIndex.destroy();
   sortResults && sortResults.destroy();
   sortTrash && sortTrash.destroy();
 
-  sortIndex = new Sortable(document.getElementById('listIndex'), {
-    animation: 150,
-    group: { name: 'index', put: ['results', 'trash'] },
-    onAdd: async (evt)=> {
-      const id = Number(evt.item.dataset.id);
-      await sb.from('products').update({ show_in_index: true, ativo: true }).eq('id', id);
-    }
+  const common = { animation:180, ghostClass:'ghost', dragClass:'dragging' };
+
+  sortIndex = new Sortable(listIndex,{
+    ...common, group:{name:'index', put:['results','trash']},
+    onAdd: async (evt)=>{ const id=+evt.item.dataset.id; await sb.from('products').upsert({id,show_in_index:true,ativo:true}); setCount(); },
+    onSort: ()=> setCount()
   });
-  sortResults = new Sortable(document.getElementById('listResults'), {
-    animation: 150,
-    group: { name: 'results', put: ['index', 'trash'] },
-    onAdd: async (evt)=> {
-      const id = Number(evt.item.dataset.id);
-      await sb.from('products').update({ show_in_resultados: true, ativo: true }).eq('id', id);
-    }
+
+  sortResults = new Sortable(listResults,{
+    ...common, group:{name:'results', put:['index','trash']},
+    onAdd: async (evt)=>{ const id=+evt.item.dataset.id; await sb.from('products').upsert({id,show_in_resultados:true,ativo:true}); setCount(); },
+    onSort: ()=> setCount()
   });
-  sortTrash = new Sortable(document.getElementById('listTrash'), {
-    animation: 150,
-    group: { name: 'trash', put: ['index','results'] },
-    onAdd: async (evt)=> {
-      const id = Number(evt.item.dataset.id);
-      // se veio do Index, oculta no Index; se veio de Resultados, oculta lá; se já estava inativo, mantém
-      const fromId = evt.from.id;
-      if (fromId === 'listIndex') {
-        await sb.from('products').update({ show_in_index: false }).eq('id', id);
-      } else if (fromId === 'listResults') {
-        await sb.from('products').update({ show_in_resultados: false }).eq('id', id);
-      } else {
-        await sb.from('products').update({ ativo: false }).eq('id', id);
-      }
+
+  sortTrash = new Sortable(listTrash,{
+    ...common, group:{name:'trash', put:['index','results']},
+    onAdd: async (evt)=>{
+      const id=+evt.item.dataset.id; const from=evt.from.id;
+      if(from==='listIndex') await sb.from('products').upsert({id,show_in_index:false});
+      else if(from==='listResults') await sb.from('products').upsert({id,show_in_resultados:false});
+      else await sb.from('products').upsert({id,ativo:false});
+      setCount();
     }
   });
 }
 
-// === salvar ordens ===
+// ===== Salvar ordem =====
 async function saveOrder(page){
-  const listId = page === 'index' ? 'listIndex' : 'listResults';
-  const ordField = page === 'index' ? 'ordem_index' : 'ordem_resultados';
-  const ids = Array.from(document.querySelectorAll(`#${listId} > li`))
-    .map((li, idx)=> ({ id: Number(li.dataset.id), [ordField]: idx+1 }));
-
-  if (!ids.length) { alert('Nada para salvar.'); return; }
-
-  const { error } = await sb.from('products').upsert(ids);
-  if (error) return alert(error.message);
+  const listId = page==='index'?'listIndex':'listResults';
+  const ordField = page==='index'?'ordem_index':'ordem_resultados';
+  const rows = Array.from(document.querySelectorAll(`#${listId} > li`)).map((li,i)=>({ id:+li.dataset.id, [ordField]: i+1 }));
+  if(!rows.length){ alert('Nada para salvar.'); return; }
+  const { error } = await sb.from('products').upsert(rows);
+  if(error) return alert(error.message);
   alert('Ordem salva!');
-  loadProducts();
-  loadLists();
+
 }
 
 document.getElementById('saveIndex').onclick   = ()=> saveOrder('index');
 document.getElementById('saveResults').onclick = ()=> saveOrder('results');
 
-// após seu boot:
-const _oldBoot = boot;
-boot = async function(){
-  await _oldBoot();
-  await loadLists();
-};
+document.getElementById('btnImport').onclick = hydrateFromHtmlOrDb;
+
+// ===== Form CRUD =====
+function setMulti(id, values){ const sel=document.getElementById(id); const set=new Set(values||[]); Array.from(sel.options).forEach(o=>o.selected=set.has(o.value)); }
+function getMulti(id){ return Array.from(document.getElementById(id).selectedOptions).map(o=>o.value); }
+
+async function editP(id){
+  const { data, error } = await sb.from('products').select('*').eq('id',id).single();
+  if(error) return alert(error.message);
+  const f = document.getElementById('formP'); const p=data;
+  f.id.value=p.id||''; f.titulo.value=p.titulo||''; f.logo.value=p.logo||''; previewLogo(p.logo||'');
+  f.tag.value=p.tag||''; f.tagClass.value=p.tagClass||''; setMulti('tipoSel',p.tipo||[]); setMulti('perfisSel',p.perfis||[]);
+  f.vantagens.value=(p.vantagens||[]).join('\n'); f.link.value=p.link||''; f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
+  document.getElementById('show_index').checked = p.show_in_index!==false;
+  document.getElementById('show_resultados').checked = p.show_in_resultados!==false;
+}
+
+async function delP(id){ if(!confirm('Excluir produto '+id+'?')) return; const {error}=await sb.from('products').delete().eq('id',id); if(error) alert(error.message); else hydrateFromHtmlOrDb(); }
+
+document.getElementById('formP').addEventListener('submit', async (e)=>{
+  e.preventDefault(); const f=e.target;
+  const payload={ id: f.id.value?+f.id.value:undefined, titulo:f.titulo.value.trim(), logo:f.logo.value.trim(), tag:f.tag.value.trim(), tagClass:f.tagClass.value.trim()||null, tipo:getMulti('tipoSel'), perfis:getMulti('perfisSel'), vantagens:f.vantagens.value.split('\n').map(s=>s.trim()).filter(Boolean), link:f.link.value.trim(), btnPrimario:f.btnPrimario.value.trim()||'Acessar', btnSecundario:f.btnSecundario.value.trim()||'Detalhes', show_in_index: document.getElementById('show_index').checked, show_in_resultados: document.getElementById('show_resultados').checked, ativo:true };
+  const { error } = await sb.from('products').upsert(payload).select().single();
+  if(error) return alert(error.message);
+  f.reset(); previewLogo(''); setMulti('tipoSel',[]); setMulti('perfisSel',[]);
+  document.getElementById('show_index').checked = true; document.getElementById('show_resultados').checked = true;
+  await hydrateFromHtmlOrDb();
+});
+
+document.getElementById('btnClearP').onclick = ()=>{ const f=document.getElementById('formP'); f.reset(); previewLogo(''); setMulti('tipoSel',[]); setMulti('perfisSel',[]); document.getElementById('show_index').checked=true; document.getElementById('show_resultados').checked=true; };
+
+document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnClearP').click();
 </script>
 </body>
 </html>
+
+<!-- ==============================
+NOTA PARA AS FUNCTIONS DO NETLIFY
+============================== -->
+<!--
+1) netlify/functions/config.js
+--------------------------------
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Content-Type': 'application/json'
+};
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return { statusCode:500, headers, body: JSON.stringify({ error:'Config ausente' }) };
+  return { statusCode:200, headers, body: JSON.stringify({ supabaseUrl: SUPABASE_URL, supabaseAnonKey: SUPABASE_ANON_KEY }) };
+};
+
+2) netlify/functions/publish.js
+--------------------------------
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
+};
+exports.handler = async function (event) {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método não permitido.' }) };
+  try {
+    const { GH_OWNER, GH_REPO, GH_BRANCH='main', GITHUB_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY, INDEX_PATH='index.html', RESULTS_PATH='pages/resultados.html' } = process.env;
+    if (!GH_OWNER || !GH_REPO || !GITHUB_TOKEN) throw new Error('Env faltando: GH_OWNER, GH_REPO ou GITHUB_TOKEN');
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) throw new Error('Env faltando: SUPABASE_URL ou SUPABASE_SERVICE_KEY');
+    let accessToken=null; try{ const body=event.body?JSON.parse(event.body):{}; accessToken = body?.accessToken || null; }catch{}
+    if(!accessToken) return { statusCode:401, headers, body: JSON.stringify({ error:'Unauthorized' }) };
+    const u = await fetch(`${SUPABASE_URL}/auth/v1/user`,{ headers:{ Authorization:`Bearer ${accessToken}`, apikey: SUPABASE_SERVICE_KEY } });
+    if(!u.ok) return { statusCode:401, headers, body: JSON.stringify({ error:'Unauthorized' }) };
+    const pr = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`,{ headers:{ apikey: SUPABASE_SERVICE_KEY, Authorization:`Bearer ${SUPABASE_SERVICE_KEY}` } });
+    if(!pr.ok) throw new Error(`Falha ao ler products: ${pr.status} ${await pr.text()}`);
+    const products = await pr.json();
+    const mapFront = (p)=>({ id:p.id, tipo:p.tipo, perfis:p.perfis, logo:p.logo, tag:p.tag, tagClass:p.tagClass||undefined, titulo:p.titulo, vantagens:p.vantagens, link:p.link, btnPrimario:p.btnPrimario, btnSecundario:p.btnSecundario });
+    const arrayFor = (page)=>{ const flag=page==='index'?'show_in_index':'show_in_resultados'; const ord=page==='index'?'ordem_index':'ordem_resultados'; return (products||[]).filter(p=>p.ativo!==false && p[flag]!==false).sort((a,b)=>(a[ord]??9999)-(b[ord]??9999)||a.id-b.id).map(mapFront) };
+    const jsIndex   = 'const allProducts = '+JSON.stringify(arrayFor('index'),null,2)+';';
+    const jsResults = 'const allProducts = '+JSON.stringify(arrayFor('results'),null,2)+';';
+    const ghHeaders = { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' };
+    const getFile = async (path)=>{ const url=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(GH_BRANCH)}`; const r=await fetch(url,{headers:ghHeaders}); if(!r.ok) throw new Error(`GitHub GET ${path}: ${r.status} ${await r.text()}`); const j=await r.json(); const content=Buffer.from((j.content||'').replace(/\n/g,''),'base64').toString('utf8'); return { sha:j.sha, content } };
+    const replaceAllProducts = (txt,newJs)=>{ const idx=txt.indexOf('const allProducts'); if(idx===-1) return null; const eq=txt.indexOf('=',idx); const open=txt.indexOf('[',eq); if(eq===-1||open===-1) throw new Error('Início do array allProducts não encontrado.'); let i=open, depth=0; for(; i<txt.length; i++){ const ch=txt[i]; if(ch==='[') depth++; else if(ch===']'){ depth--; if(depth===0){ let end=i+1; while(end<txt.length && /\s/.test(txt[end])) end++; if(txt[end]===';') end++; return txt.slice(0,idx)+newJs+txt.slice(end); } } } throw new Error('Fim do array allProducts não encontrado.'); };
+    const putFile = async (path, content, sha)=>{ const url=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`; const body={ message:`chore(admin): atualizar ofertas (allProducts -> ${path})`, content: Buffer.from(content,'utf8').toString('base64'), sha, branch: GH_BRANCH }; const r=await fetch(url,{method:'PUT',headers:ghHeaders,body:JSON.stringify(body)}); if(!r.ok) throw new Error(`GitHub PUT ${path}: ${r.status} ${await r.text()}`); return r.json() };
+    const targets=[ { path: INDEX_PATH,   js: jsIndex }, { path: RESULTS_PATH, js: jsResults } ];
+    let commits=0; for(const t of targets){ try{ const file=await getFile(t.path); const replaced=replaceAllProducts(file.content,t.js); if(replaced===null){ console.log(`[publish] ${t.path} não contém const allProducts. Pulando.`); continue; } if(replaced!==file.content){ await putFile(t.path,replaced,file.sha); commits++; } }catch(err){ console.warn(`[publish] Falha em ${t.path}:`,err.message); } }
+    return { statusCode:200, headers, body: JSON.stringify({ ok:true, commits }) };
+  } catch (e) {
+    console.error('[publish] erro:', e);
+    return { statusCode:500, headers, body: JSON.stringify({ ok:false, error:String(e.message||e) }) };
+  }
+};
+-->
