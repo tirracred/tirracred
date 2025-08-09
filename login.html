@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Entrar – TirraCred Admin</title>
+<link rel="icon" type="image/png" href="public/favincon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{font-family:Inter,sans-serif;background:#f0fdf4}
+</style>
+</head>
+<body class="text-gray-800">
+  <!-- Header igual ao index (compacto) -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="index.html" class="flex items-center">
+          <img src="public/logo.png" alt="TirraCred" class="h-8 w-auto">
+        </a>
+        <nav class="hidden md:flex gap-6">
+          <a href="index.html" class="text-gray-600 hover:text-green-600 font-medium">Início</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
+    <div class="bg-white/90 backdrop-blur-sm shadow-2xl rounded-2xl w-full max-w-md p-6 sm:p-8">
+      <h1 class="text-2xl font-extrabold text-gray-900 text-center mb-1">Acessar painel</h1>
+      <p class="text-sm text-gray-500 text-center mb-6">Use seu e-mail e senha do admin</p>
+
+      <form id="authForm" class="space-y-4" novalidate>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+          <input id="email" type="email" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+          <input id="password" type="password" required minlength="6" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none bg-white">
+        </div>
+
+        <button id="btnLogin" type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2.5">
+          Entrar
+        </button>
+        <button id="btnSignup" type="button" class="w-full border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium rounded-lg px-4 py-2">
+          Criar conta (admin)
+        </button>
+
+        <p id="msg" class="text-center text-sm text-red-600 h-5"></p>
+      </form>
+    </div>
+  </main>
+
+<script>
+let sb;
+
+async function boot() {
+  const r = await fetch('/.netlify/functions/config', { cache:'no-store' });
+  if (!r.ok) { document.getElementById('msg').textContent='Config indisponível'; return; }
+  const { supabaseUrl, supabaseAnonKey } = await r.json();
+  sb = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+  // Já logado? Vai direto pro admin.
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) location.href = 'admin.html';
+}
+boot();
+
+document.getElementById('authForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  document.getElementById('msg').textContent='';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) document.getElementById('msg').textContent = error.message;
+  else location.href = 'admin.html';
+});
+
+document.getElementById('btnSignup').addEventListener('click', async ()=>{
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return document.getElementById('msg').textContent='Preencha e-mail e senha';
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) document.getElementById('msg').textContent = error.message;
+  else document.getElementById('msg').textContent = 'Conta criada. Verifique seu e-mail e depois entre.';
+});
+</script>
+</body>
+</html>

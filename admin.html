@@ -1,291 +1,383 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title>Admin – Ofertas</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body{font-family:Inter,sans-serif;background:#fafafa;margin:0;color:#111}
-    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #eee}
-    h1{font-size:18px;margin:0}
-    .wrap{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;gap:16px}
-    .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}
-    label{display:block;font-size:12px;color:#666;margin-bottom:6px}
-    input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-    button{padding:10px 14px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}
-    button.primary{background:#111;color:#fff;border-color:#111}
-    table{width:100%;border-collapse:collapse} th,td{border-top:1px solid #eee;padding:8px;text-align:left}
-    .grid{display:grid;gap:12px} .g2{grid-template-columns:1fr 1fr}
-    .row{display:flex;gap:10px;align-items:center}
-    .hidden{display:none}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin – Ofertas</title>
+<link rel="icon" type="image/png" href="public/favincon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>body{font-family:Inter,sans-serif;background:#f0fdf4}</style>
 </head>
-<body>
-
-<!-- Se quiser o mesmo header do site, copie o header do index.html e cole aqui -->
-<header>
-  <h1>Admin – Ofertas</h1>
-  <div class="row">
-    <span id="authState">Desconectado</span>
-    <button id="btnSignOut" class="hidden">Sair</button>
-  </div>
-</header>
-
-<!-- ===== LOGIN ===== -->
-<div id="loginBox" class="wrap" style="max-width:520px">
-  <div class="card">
-    <h2 style="margin:0 0 4px;font-size:22px">Acessar painel</h2>
-    <p style="color:#666;margin:0 0 12px">Use seu e-mail e senha cadastrados.</p>
-    <div class="grid">
-      <div>
-        <label>E-mail</label>
-        <input id="email" type="email" placeholder="voce@empresa.com">
+<body class="text-gray-800">
+  <!-- Header igual ao site -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="index.html" class="flex items-center">
+          <img src="public/logo.png" alt="TirraCred" class="h-8 w-auto">
+        </a>
+        <div class="flex items-center gap-3">
+          <span id="who" class="text-sm text-gray-600"></span>
+          <button id="btnPublish" class="hidden sm:inline-flex bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Publicar</button>
+          <button id="btnLogout" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Sair</button>
+        </div>
       </div>
-      <div>
-        <label>Senha</label>
-        <input id="password" type="password" placeholder="••••••••">
-      </div>
-      <div>
-        <label>Restringir domínio (opcional)</label>
-        <input id="allowDomain" placeholder="@tirracred.com.br">
-      </div>
-      <div class="row">
-        <button id="loginBtn" class="primary">Entrar</button>
-        <button id="magicBtn">Link mágico</button>
-      </div>
-      <p id="loginMsg" style="color:#b00020;margin:0"></p>
     </div>
-  </div>
-</div>
+  </header>
 
-<!-- ===== APP (OCULTO ATÉ LOGAR) ===== -->
-<div id="app" class="wrap hidden">
-  <!-- Config mínima -->
-  <div class="card">
-    <h2 style="margin:0 0 10px">Config de acesso</h2>
-    <div class="grid g2">
-      <div><label>Domínio permitido (opcional)</label><input id="ALLOW_DOMAIN" placeholder="@seu-dominio.com"></div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <button id="btnPublish" class="primary">Publicar no site</button>
-    </div>
-  </div>
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
-  <!-- PRODUCTS -->
-  <div class="card">
-    <h2 style="margin:0 0 10px">Products</h2>
-    <form id="formP" class="grid g2">
-      <input type="hidden" name="id">
-      <div><label>Título</label><input name="titulo" required></div>
-      <div><label>Logo (URL)</label><input name="logo" required></div>
-      <div><label>Tag</label><input name="tag"></div>
-      <div><label>tagClass</label><input name="tagClass"></div>
-      <div><label>Tipo (vírgula)</label><input name="tipo" placeholder="emprestimo, cartao, fgts"></div>
-      <div><label>Perfis (vírgula)</label><input name="perfis" placeholder="negativado, aposentado, clt"></div>
-      <div class="grid" style="grid-column:1/-1">
-        <label>Vantagens (uma por linha)</label>
-        <textarea name="vantagens" rows="4"></textarea>
+    <!-- Produtos -->
+    <section class="bg-white rounded-2xl shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">Produtos</h2>
+        <button id="btnNewP" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Novo</button>
       </div>
-      <div><label>Link</label><input name="link" required></div>
-      <div><label>Botão Primário</label><input name="btnPrimario" value="Acessar"></div>
-      <div><label>Botão Secundário</label><input name="btnSecundario" value="Detalhes"></div>
-      <div><label>Ordem</label><input name="ordem" type="number" min="0"></div>
-      <div><label>Ativo</label><select name="ativo"><option value="true">true</option><option value="false">false</option></select></div>
-      <div style="grid-column:1/-1" class="row">
-        <button class="primary">Salvar</button>
-        <button type="button" id="novoP">Novo</button>
-        <button type="button" id="reloadP">Recarregar</button>
-      </div>
-    </form>
-    <table id="tblP"><thead><tr>
-      <th>ID</th><th>Título</th><th>Tipo</th><th>Perfis</th><th>Tag</th><th>Ordem</th><th>Ações</th>
-    </tr></thead><tbody></tbody></table>
-  </div>
 
-  <!-- RULES -->
-  <div class="card">
-    <h2 style="margin:0 0 10px">Rules (prioridade/chance/A-B)</h2>
-    <form id="formR" class="grid g2">
-      <div><label>Nome (perfil)</label><input name="nome" placeholder="default, negativado, aposentado" required></div>
-      <div><label>ab_split (0–1)</label><input name="ab_split" type="number" step="0.01" min="0" max="1"></div>
-      <div><label>priority_ids (CSV)</label><input name="priority_ids" placeholder="1,2,3"></div>
-      <div><label>ab_a_ids (CSV)</label><input name="ab_a_ids" placeholder="1,2,3"></div>
-      <div><label>ab_b_ids (CSV)</label><input name="ab_b_ids" placeholder="4,5,6"></div>
-      <div><label>chance_min</label><input name="chance_min" type="number" min="0" max="100" value="75"></div>
-      <div><label>chance_max</label><input name="chance_max" type="number" min="0" max="100" value="98"></div>
-      <div><label>tipo_chance_override</label><input name="tipo_chance_override" placeholder="fgts"></div>
-      <div><label>tipo_chance_value</label><input name="tipo_chance_value" type="number" min="0" max="100" value="99"></div>
-      <div style="grid-column:1/-1" class="row">
-        <button class="primary">Salvar</button>
-        <button type="button" id="reloadR">Recarregar</button>
+      <!-- Form produto -->
+      <form id="formP" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="id">
+        <div>
+          <label class="block text-sm font-medium mb-1">Título</label>
+          <input name="titulo" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Logo (URL)</label>
+          <input name="logo" placeholder="https://..." class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white" oninput="previewLogo(this.value)">
+        </div>
+
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-3">
+            <img id="logoPreview" alt="Prévia do logo" class="h-10 w-auto hidden">
+            <span class="text-xs text-gray-500">Pré-visualização</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Tag</label>
+          <input name="tag" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Classe da Tag (opcional)</label>
+          <input name="tagClass" placeholder="red, blue, yellow..." class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Tipos</label>
+          <select id="tipoSel" multiple class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+            <option value="emprestimo">Empréstimo</option>
+            <option value="emprestimocomgarantia">Empréstimo com Garantia</option>
+            <option value="cartao">Cartão</option>
+            <option value="contas">Conta</option>
+            <option value="fgts">FGTS</option>
+            <option value="bolsafamilia">Bolsa Família</option>
+            <option value="seguro">Seguro</option>
+            <option value="renegociar">Renegociar</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Perfis</label>
+          <select id="perfisSel" multiple class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+            <option value="negativado">Negativado</option>
+            <option value="score-baixo">Score Baixo</option>
+            <option value="score-regular">Score Regular</option>
+            <option value="autonomo">Autônomo</option>
+            <option value="aposentado">Aposentado</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Vantagens (uma por linha)</label>
+          <textarea name="vantagens" rows="4" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Link</label>
+          <input name="link" required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Botão Primário</label>
+          <input name="btnPrimario" value="Acessar" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Botão Secundário</label>
+          <input name="btnSecundario" value="Detalhes" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Ordem</label>
+          <input name="ordem" type="number" min="0" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Ativo</label>
+          <select name="ativo" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end gap-2">
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Salvar</button>
+          <button type="button" id="btnClearP" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Limpar</button>
+        </div>
+      </form>
+
+      <!-- Tabela -->
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead><tr class="text-left text-gray-600">
+            <th class="py-2 pr-4">ID</th><th class="py-2 pr-4">Título</th><th class="py-2 pr-4">Tipos</th><th class="py-2 pr-4">Perfis</th><th class="py-2 pr-4">Ordem</th><th class="py-2 pr-4">Ações</th>
+          </tr></thead>
+          <tbody id="tblP" class="align-top"></tbody>
+        </table>
       </div>
-    </form>
-    <table id="tblR"><thead><tr>
-      <th>nome</th><th>priority_ids</th><th>ab_split</th><th>chance</th><th>override</th><th>Ações</th>
-    </tr></thead><tbody></tbody></table>
-  </div>
-</div>
+    </section>
+
+    <!-- Regras -->
+    <section class="bg-white rounded-2xl shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">Regras (prioridade/chance/A-B)</h2>
+      </div>
+
+      <form id="formR" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Perfil (nome)</label>
+          <input name="nome" placeholder="default, negativado..." required class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">ab_split (0–1)</label>
+          <input name="ab_split" type="number" step="0.01" min="0" max="1" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">priority_ids (CSV)</label>
+          <input name="priority_ids" placeholder="1,2,3" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">ab_a_ids (CSV)</label>
+          <input name="ab_a_ids" placeholder="1,2,3" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">ab_b_ids (CSV)</label>
+          <input name="ab_b_ids" placeholder="4,5,6" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">chance_min</label>
+          <input name="chance_min" type="number" min="0" max="100" value="75" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">chance_max</label>
+          <input name="chance_max" type="number" min="0" max="100" value="98" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">tipo_chance_override</label>
+          <input name="tipo_chance_override" placeholder="fgts" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">tipo_chance_value</label>
+          <input name="tipo_chance_value" type="number" min="0" max="100" value="99" class="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white">
+        </div>
+        <div class="md:col-span-2 flex justify-end gap-2">
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-4 py-2">Salvar</button>
+          <button type="button" id="reloadR" class="border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2">Recarregar</button>
+        </div>
+      </form>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead><tr class="text-left text-gray-600">
+            <th class="py-2 pr-4">Perfil</th><th class="py-2 pr-4">priority_ids</th><th class="py-2 pr-4">A/B</th><th class="py-2 pr-4">Chance</th><th class="py-2 pr-4">Override</th><th class="py-2 pr-4">Ações</th>
+          </tr></thead>
+          <tbody id="tblR" class="align-top"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
 <script>
-let sb=null, user=null;
+let sb, user;
 
-/* ===== Supabase via /.netlify/functions/config ===== */
-async function bootSupabase(){
-  const r = await fetch('/.netlify/functions/config', { cache:'no-store' });
-  if(!r.ok) throw new Error('Config não disponível');
+const toArr = (s)=> s.split(',').map(x=>x.trim()).filter(Boolean);
+const toNumArr = (s)=> toArr(s).map(Number).filter(n=>!isNaN(n));
+
+function previewLogo(url){
+  const img = document.getElementById('logoPreview');
+  if (!url) { img.classList.add('hidden'); return; }
+  img.src = url; img.classList.remove('hidden');
+}
+
+/* ===== boot + guard ===== */
+async function boot(){
+  const r = await fetch('/.netlify/functions/config',{cache:'no-store'});
+  if(!r.ok){ alert('Config indisponível'); return; }
   const { supabaseUrl, supabaseAnonKey } = await r.json();
   sb = supabase.createClient(supabaseUrl, supabaseAnonKey);
-}
 
-/* ===== Gate: só mostra app logado ===== */
-async function guard(){
-  if(!sb) await bootSupabase();
-  const { data:{ user:u } } = await sb.auth.getUser();
-  user = u;
-  document.getElementById('app').classList.toggle('hidden', !user);
-  document.getElementById('loginBox').classList.toggle('hidden', !!user);
-  document.getElementById('authState').textContent = user ? `Conectado: ${user.email}` : 'Desconectado';
-  document.getElementById('btnSignOut').classList.toggle('hidden', !user);
-  if(user){ loadP(); loadR(); }
-}
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ location.href='login.html'; return; }
+  user = session.user;
+  document.getElementById('who').textContent = user.email || '';
 
-/* ===== Auth ===== */
-function emailOkForDomain(email){
-  const dom = (document.getElementById('allowDomain').value || '').trim() || (document.getElementById('ALLOW_DOMAIN')?.value || '').trim();
-  return !dom || email.endsWith(dom);
+  await loadProducts();
+  await loadRules();
 }
+boot();
 
-async function loginWithPassword(){
-  try{
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    if(!emailOkForDomain(email)) throw new Error('Domínio não permitido.');
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    await guard();
-  }catch(e){
-    document.getElementById('loginMsg').textContent = e.message || 'Falha no login';
-  }
-}
-
-async function loginMagic(){
-  try{
-    const email = document.getElementById('email').value.trim();
-    if(!emailOkForDomain(email)) throw new Error('Domínio não permitido.');
-    const redirectTo = `${location.origin}/admin.html`;
-    const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
-    if (error) throw error;
-    document.getElementById('loginMsg').textContent = 'Link enviado. Abra o e-mail neste navegador.';
-  }catch(e){
-    document.getElementById('loginMsg').textContent = e.message || 'Falha no login';
-  }
-}
-
-async function signOut(){
+/* ===== logout ===== */
+document.getElementById('btnLogout').onclick = async ()=>{
   await sb.auth.signOut();
-  await guard();
-}
+  location.href='login.html';
+};
 
-/* ===== PRODUCTS ===== */
-async function loadP(){
+/* ===== Produtos ===== */
+async function loadProducts(){
   const { data, error } = await sb.from('products').select('*').order('ordem',{ascending:true,nullsFirst:true}).order('id',{ascending:true});
   if(error) return alert(error.message);
-  const tb = document.querySelector('#tblP tbody'); tb.innerHTML='';
+  const tb = document.getElementById('tblP'); tb.innerHTML='';
   (data||[]).forEach(p=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${p.id}</td><td>${p.titulo||''}</td><td>${(p.tipo||[]).join(', ')}</td><td>${(p.perfis||[]).join(', ')}</td><td>${p.tag||''}</td><td>${p.ordem??''}</td>
-      <td><button data-id="${p.id}" class="editP">Editar</button><button data-id="${p.id}" class="delP">Excluir</button></td>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="py-2 pr-4">${p.id}</td>
+      <td class="py-2 pr-4">${p.titulo||''}</td>
+      <td class="py-2 pr-4">${(p.tipo||[]).join(', ')}</td>
+      <td class="py-2 pr-4">${(p.perfis||[]).join(', ')}</td>
+      <td class="py-2 pr-4">${p.ordem ?? ''}</td>
+      <td class="py-2 pr-4">
+        <button class="underline text-green-700" onclick="editP(${p.id})">Editar</button>
+        <span class="mx-1">·</span>
+        <button class="underline text-red-600" onclick="delP(${p.id})">Excluir</button>
+      </td>`;
     tb.appendChild(tr);
   });
-  tb.querySelectorAll('.editP').forEach(b=>b.onclick=()=>editP(+b.dataset.id));
-  tb.querySelectorAll('.delP').forEach(b=>b.onclick=()=>delP(+b.dataset.id));
 }
 
 async function editP(id){
   const { data, error } = await sb.from('products').select('*').eq('id',id).single();
   if(error) return alert(error.message);
-  const f=document.getElementById('formP'); const p=data;
-  f.id.value=p.id||''; f.titulo.value=p.titulo||''; f.logo.value=p.logo||''; f.tag.value=p.tag||''; f.tagClass.value=p.tagClass||'';
-  f.tipo.value=(p.tipo||[]).join(', '); f.perfis.value=(p.perfis||[]).join(', ');
-  f.vantagens.value=(p.vantagens||[]).join('\n'); f.link.value=p.link||'';
-  f.btnPrimario.value=p.btnPrimario||'Acessar'; f.btnSecundario.value=p.btnSecundario||'Detalhes';
-  f.ordem.value=p.ordem??''; f.ativo.value=(p.ativo??true)?'true':'false';
+  const f = document.getElementById('formP'); const p = data;
+  f.id.value = p.id || '';
+  f.titulo.value = p.titulo || '';
+  f.logo.value = p.logo || '';
+  previewLogo(p.logo || '');
+  f.tag.value = p.tag || '';
+  f.tagClass.value = p.tagClass || '';
+
+  // selects múltiplos
+  setMulti('tipoSel', p.tipo || []);
+  setMulti('perfisSel', p.perfis || []);
+
+  f.vantagens.value = (p.vantagens||[]).join('\n');
+  f.link.value = p.link || '';
+  f.btnPrimario.value = p.btnPrimario || 'Acessar';
+  f.btnSecundario.value = p.btnSecundario || 'Detalhes';
+  f.ordem.value = p.ordem ?? '';
+  f.ativo.value = (p.ativo ?? true) ? 'true' : 'false';
+}
+
+function setMulti(id, values){
+  const sel = document.getElementById(id);
+  const set = new Set(values);
+  Array.from(sel.options).forEach(o=> o.selected = set.has(o.value));
+}
+function getMulti(id){
+  return Array.from(document.getElementById(id).selectedOptions).map(o=>o.value);
 }
 
 async function delP(id){
-  if(!confirm('Excluir?'))return;
-  const { error }=await sb.from('products').delete().eq('id',id);
-  if(error) alert(error.message); else loadP();
+  if(!confirm('Excluir produto '+id+'?')) return;
+  const { error } = await sb.from('products').delete().eq('id', id);
+  if(error) alert(error.message); else loadProducts();
 }
 
-document.getElementById('formP').onsubmit = async (e)=>{
-  e.preventDefault(); const f=e.target;
+document.getElementById('formP').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const f = e.target;
   const payload = {
-    id: f.id.value?+f.id.value:undefined,
-    titulo: f.titulo.value.trim(), logo:f.logo.value.trim(), tag:f.tag.value.trim(), tagClass:f.tagClass.value.trim()||null,
-    tipo: f.tipo.value.split(',').map(s=>s.trim()).filter(Boolean),
-    perfis: f.perfis.value.split(',').map(s=>s.trim()).filter(Boolean),
+    id: f.id.value ? +f.id.value : undefined,
+    titulo: f.titulo.value.trim(),
+    logo: f.logo.value.trim(),
+    tag: f.tag.value.trim(),
+    tagClass: f.tagClass.value.trim() || null,
+    tipo: getMulti('tipoSel'),
+    perfis: getMulti('perfisSel'),
     vantagens: f.vantagens.value.split('\n').map(s=>s.trim()).filter(Boolean),
-    link: f.link.value.trim(), btnPrimario: f.btnPrimario.value.trim()||'Acessar', btnSecundario: f.btnSecundario.value.trim()||'Detalhes',
-    ordem: f.ordem.value?+f.ordem.value:null, ativo: f.ativo.value==='true'
+    link: f.link.value.trim(),
+    btnPrimario: f.btnPrimario.value.trim() || 'Acessar',
+    btnSecundario: f.btnSecundario.value.trim() || 'Detalhes',
+    ordem: f.ordem.value ? +f.ordem.value : null,
+    ativo: f.ativo.value === 'true'
   };
   const { error } = await sb.from('products').upsert(payload).select().single();
   if(error) return alert(error.message);
-  f.reset(); loadP();
-};
-document.getElementById('novoP').onclick = ()=> document.getElementById('formP').reset();
-document.getElementById('reloadP').onclick = loadP;
+  f.reset(); previewLogo(''); loadProducts();
+});
 
-/* ===== RULES ===== */
-async function loadR(){
+document.getElementById('btnClearP').onclick = ()=>{
+  const f = document.getElementById('formP');
+  f.reset(); previewLogo('');
+  setMulti('tipoSel', []); setMulti('perfisSel', []);
+};
+document.getElementById('btnNewP').onclick = ()=> document.getElementById('btnClearP').click();
+
+/* ===== Regras ===== */
+async function loadRules(){
   const { data, error } = await sb.from('rules').select('*').order('nome');
   if(error) return alert(error.message);
-  const tb=document.querySelector('#tblR tbody'); tb.innerHTML='';
+  const tb = document.getElementById('tblR'); tb.innerHTML='';
   (data||[]).forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.nome}</td>
-      <td>${(r.priority_ids||[]).join(', ')}</td>
-      <td>${r.ab_split ?? ''}</td>
-      <td>${r.chance_min ?? ''}–${r.chance_max ?? ''}</td>
-      <td>${r.tipo_chance_override||''}:${r.tipo_chance_value??''}</td>
-      <td><button class="editR" data-n="${r.nome}">Editar</button><button class="delR" data-n="${r.nome}">Excluir</button></td>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="py-2 pr-4">${r.nome}</td>
+      <td class="py-2 pr-4">${(r.priority_ids||[]).join(',')}</td>
+      <td class="py-2 pr-4">${r.ab_split ?? ''} (A: ${(r.ab_a_ids||[]).join(',')} / B: ${(r.ab_b_ids||[]).join(',')})</td>
+      <td class="py-2 pr-4">${r.chance_min ?? ''}–${r.chance_max ?? ''}</td>
+      <td class="py-2 pr-4">${r.tipo_chance_override||''}:${r.tipo_chance_value??''}</td>
+      <td class="py-2 pr-4">
+        <button class="underline text-green-700" onclick="editR('${r.nome.replace(/'/g,"\\'")}')">Editar</button>
+        <span class="mx-1">·</span>
+        <button class="underline text-red-600" onclick="delR('${r.nome.replace(/'/g,"\\'")}')">Excluir</button>
+      </td>`;
     tb.appendChild(tr);
   });
-  tb.querySelectorAll('.editR').forEach(b=>b.onclick=()=>editR(b.dataset.n));
-  tb.querySelectorAll('.delR').forEach(b=>b.onclick=()=>delR(b.dataset.n));
 }
 
 async function editR(nome){
   const { data, error } = await sb.from('rules').select('*').eq('nome', nome).single();
   if(error) return alert(error.message);
-  const f=document.getElementById('formR'); const r=data;
-  f.nome.value=r.nome; f.ab_split.value=r.ab_split ?? '';
-  f.priority_ids.value=(r.priority_ids||[]).join(', ');
-  f.ab_a_ids.value=(r.ab_a_ids||[]).join(', ');
-  f.ab_b_ids.value=(r.ab_b_ids||[]).join(', ');
-  f.chance_min.value=r.chance_min ?? ''; f.chance_max.value=r.chance_max ?? '';
-  f.tipo_chance_override.value=r.tipo_chance_override || ''; f.tipo_chance_value.value=r.tipo_chance_value ?? '';
+  const f = document.getElementById('formR'); const r = data;
+  f.nome.value = r.nome;
+  f.ab_split.value = r.ab_split ?? '';
+  f.priority_ids.value = (r.priority_ids||[]).join(',');
+  f.ab_a_ids.value = (r.ab_a_ids||[]).join(',');
+  f.ab_b_ids.value = (r.ab_b_ids||[]).join(',');
+  f.chance_min.value = r.chance_min ?? '';
+  f.chance_max.value = r.chance_max ?? '';
+  f.tipo_chance_override.value = r.tipo_chance_override || '';
+  f.tipo_chance_value.value = r.tipo_chance_value ?? '';
 }
 
 async function delR(nome){
-  if(!confirm('Excluir regra '+nome+'?'))return;
-  const { error }=await sb.from('rules').delete().eq('nome', nome);
-  if(error) alert(error.message); else loadR();
+  if(!confirm('Excluir regra '+nome+'?')) return;
+  const { error } = await sb.from('rules').delete().eq('nome', nome);
+  if(error) alert(error.message); else loadRules();
 }
 
-document.getElementById('formR').onsubmit = async (e)=>{
+document.getElementById('formR').addEventListener('submit', async (e)=>{
   e.preventDefault(); const f=e.target;
-  const toArr = (s)=> s.split(',').map(x=>x.trim()).filter(Boolean).map(Number);
   const payload = {
     nome: f.nome.value.trim(),
     ab_split: f.ab_split.value ? Number(f.ab_split.value) : null,
-    priority_ids: toArr(f.priority_ids.value),
-    ab_a_ids: toArr(f.ab_a_ids.value),
-    ab_b_ids: toArr(f.ab_b_ids.value),
+    priority_ids: toNumArr(f.priority_ids.value),
+    ab_a_ids: toNumArr(f.ab_a_ids.value),
+    ab_b_ids: toNumArr(f.ab_b_ids.value),
     chance_min: f.chance_min.value ? Number(f.chance_min.value) : null,
     chance_max: f.chance_max.value ? Number(f.chance_max.value) : null,
     tipo_chance_override: f.tipo_chance_override.value.trim() || null,
@@ -293,31 +385,20 @@ document.getElementById('formR').onsubmit = async (e)=>{
   };
   const { error } = await sb.from('rules').upsert(payload).select().single();
   if(error) return alert(error.message);
-  f.reset(); loadR();
-};
+  f.reset(); loadRules();
+});
 
-
-/* ===== Publicar (serverless) ===== */
-async function publish(){
+/* ===== Publicar ===== */
+document.getElementById('btnPublish').onclick = async ()=>{
   const { data:{ session } } = await sb.auth.getSession();
-  if(!session?.access_token) return alert('Faça login para publicar.');
+  if(!session?.access_token) return alert('Faça login novamente.');
   const resp = await fetch('/.netlify/functions/publish', {
     method:'POST', headers:{ 'content-type':'application/json' },
     body: JSON.stringify({ accessToken: session.access_token })
   });
   if(!resp.ok) return alert('Falha na publicação: '+await resp.text());
   alert('Publicado! O Netlify deve iniciar o deploy em instantes.');
-}
-
-/* ===== Wires ===== */
-document.getElementById('loginBtn').onclick  = loginWithPassword;
-document.getElementById('magicBtn').onclick  = loginMagic;
-document.getElementById('btnSignOut').onclick = signOut;
-document.getElementById('btnPublish').onclick = publish;
-
-
-/* Boot */
-bootSupabase().then(guard);
+};
 </script>
 </body>
 </html>
