@@ -6,7 +6,9 @@ const headers = {
 };
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers, body: '' };
+  }
 
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
