@@ -1,5 +1,5 @@
 const headers = {
-  'Access-Control-Allow-Origin': '*', // em prod restrinja ao seu domínio
+  'Access-Control-Allow-Origin': '*', // Em produção, restrinja ao seu domínio
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
@@ -21,6 +21,7 @@ exports.handler = async function (event) {
       RESULTS_PATH = 'resultados.html'
     } = process.env;
 
+    // —— checagem de envs (tudo via Netlify, nada hardcoded) ——
     if (!GH_OWNER || !GH_REPO || !GITHUB_TOKEN) {
       throw new Error('Env faltando: GH_OWNER, GH_REPO ou GITHUB_TOKEN');
     }
@@ -28,14 +29,12 @@ exports.handler = async function (event) {
       throw new Error('Env faltando: SUPABASE_URL ou SUPABASE_SERVICE_KEY');
     }
 
-    // ---- auth opcional (mantido): checa accessToken do Supabase ----
+    // —— auth do Supabase via accessToken (usuário logado no admin) ——
     let accessToken = null;
     try {
       const body = event.body ? JSON.parse(event.body) : {};
-      accessToken = (body && body.accessToken) ? String(body.accessToken) : null;
-    } catch {
-      // se o body vier inválido, trata igual "sem token"
-    }
+      accessToken = body?.accessToken ? String(body.accessToken) : null;
+    } catch {}
     if (!accessToken) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
@@ -47,33 +46,41 @@ exports.handler = async function (event) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
-    // ---- lê products do Supabase (service role, ignora RLS) ----
+    // —— lê products com service role (ignora RLS) ——
     const pr = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
       headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}` }
     });
     if (!pr.ok) throw new Error(`Falha ao ler products do Supabase: ${pr.status} ${await pr.text()}`);
     const products = await pr.json();
 
-    // ---- monta allProducts compatível com o front ----
-    const active = (products || [])
-      .filter(p => p.ativo !== false)
-      .sort((a, b) => (a.ordem ?? 9999) - (b.ordem ?? 9999) || (a.id - b.id))
-      .map(p => ({
-        id: p.id,
-        tipo: p.tipo,
-        perfis: p.perfis,
-        logo: p.logo,
-        tag: p.tag,
-        tagClass: p.tagClass || undefined,
-        titulo: p.titulo,
-        vantagens: p.vantagens,
-        link: p.link,
-        btnPrimario: p.btnPrimario,
-        btnSecundario: p.btnSecundario
-      }));
-    const newArrayJS = 'const allProducts = ' + JSON.stringify(active, null, 2) + ';';
+    // —— monta arrays SEPARADOS (Index x Resultados) ——
+    const mapFront = (p) => ({
+      id: p.id,
+      tipo: p.tipo,
+      perfis: p.perfis,
+      logo: p.logo,
+      tag: p.tag,
+      tagClass: p.tagClass || undefined,
+      titulo: p.titulo,
+      vantagens: p.vantagens,
+      link: p.link,
+      btnPrimario: p.btnPrimario,
+      btnSecundario: p.btnSecundario
+    });
 
-    // ---- helpers GitHub (mantidos) ----
+    const arrayFor = (page) => {
+      const flag = page === 'index' ? 'show_in_index' : 'show_in_resultados';
+      const ord  = page === 'index' ? 'ordem_index'   : 'ordem_resultados';
+      return (products || [])
+        .filter(p => p.ativo !== false && p[flag] !== false)
+        .sort((a, b) => (a[ord] ?? 9999) - (b[ord] ?? 9999) || (a.id - b.id))
+        .map(mapFront);
+    };
+
+    const jsIndex    = 'const allProducts = ' + JSON.stringify(arrayFor('index'),    null, 2) + ';';
+    const jsResults  = 'const allProducts = ' + JSON.stringify(arrayFor('results'),  null, 2) + ';';
+
+    // —— helpers GitHub ——
     const ghHeaders = { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' };
 
     const getFile = async (path) => {
@@ -85,17 +92,13 @@ exports.handler = async function (event) {
       return { sha: j.sha, content };
     };
 
-    const replaceAllProducts = (txt) => {
+    const replaceAllProducts = (txt, newJs) => {
       const idx = txt.indexOf('const allProducts');
-      if (idx === -1) {
-        // NÃO quebra o fluxo: retorna null para indicar "sem bloco"
-        return null;
-      }
+      if (idx === -1) return null; // não quebra se não achar
       const eq = txt.indexOf('=', idx);
       const open = txt.indexOf('[', eq);
-      if (eq === -1 || open === -1) {
-        throw new Error('Início do array allProducts não encontrado.');
-      }
+      if (eq === -1 || open === -1) throw new Error('Início do array allProducts não encontrado.');
+
       let i = open, depth = 0;
       for (; i < txt.length; i++) {
         const ch = txt[i];
@@ -106,7 +109,7 @@ exports.handler = async function (event) {
             let end = i + 1;
             while (end < txt.length && /\s/.test(txt[end])) end++;
             if (txt[end] === ';') end++;
-            return txt.slice(0, idx) + newArrayJS + txt.slice(end);
+            return txt.slice(0, idx) + newJs + txt.slice(end);
           }
         }
       }
@@ -116,7 +119,7 @@ exports.handler = async function (event) {
     const putFile = async (path, content, sha) => {
       const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
       const body = {
-        message: `chore(admin): atualizar ofertas (allProducts)`,
+        message: `chore(admin): atualizar ofertas (allProducts -> ${path})`,
         content: Buffer.from(content, 'utf8').toString('base64'),
         sha,
         branch: GH_BRANCH
@@ -126,19 +129,19 @@ exports.handler = async function (event) {
       return r.json();
     };
 
-    // ---- processa arquivos (sem travar se um deles não tiver o bloco) ----
+    
     const targets = [
-      { path: INDEX_PATH, label: 'index' },
-      { path: RESULTS_PATH, label: 'results' }
+      { path: INDEX_PATH,    js: jsIndex },
+      { path: RESULTS_PATH,  js: jsResults }
     ];
 
     let commits = 0;
     for (const t of targets) {
       try {
         const file = await getFile(t.path);
-        const replaced = replaceAllProducts(file.content);
+        const replaced = replaceAllProducts(file.content, t.js);
         if (replaced === null) {
-          // sem bloco: log leve e segue
+
           console.log(`[publish] ${t.path} não contém "const allProducts". Pulando.`);
           continue;
         }
@@ -149,18 +152,11 @@ exports.handler = async function (event) {
           console.log(`[publish] ${t.path} já estava atualizado.`);
         }
       } catch (err) {
-        // não derruba a publicação inteira se apenas um arquivo falhar
+
         console.warn(`[publish] Falha ao processar ${t.path}:`, err.message);
       }
     }
 
-    if (commits === 0) {
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ ok: true, note: 'Nenhum arquivo atualizado (ou não há bloco allProducts nos alvos).' })
-      };
-    }
 
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, commits }) };
   } catch (e) {

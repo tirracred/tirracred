@@ -154,7 +154,40 @@
           <tbody id="tblP" class="align-top"></tbody>
         </table>
       </div>
+      <!-- Prioridades (arrastar e soltar) -->
+        <section class="bg-white rounded-2xl shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Prioridades (arraste para ordenar)</h2>
+            <div class="flex gap-2">
+            <button id="saveIndex" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 py-2">Salvar ordem Index</button>
+            <button id="saveResults" class="bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg px-3 py-2">Salvar ordem Resultados</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+            <h3 class="font-semibold mb-2">Index</h3>
+            <ul id="listIndex" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+            </div>
+
+            <div>
+            <h3 class="font-semibold mb-2">Resultados</h3>
+            <ul id="listResults" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+            </div>
+
+            <div>
+            <h3 class="font-semibold mb-2">Lixeira (arraste aqui para ocultar)</h3>
+            <ul id="listTrash" class="space-y-2 min-h-[100px] p-2 rounded-lg border border-gray-200 bg-gray-50"></ul>
+            </div>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-4">
+            Lápis = editar o produto. Lixeira = enviar para inativo. Arrastar para a Lixeira de uma coluna só oculta naquela página (Index/Resultados).
+        </p>
+        </section>
+
     </section>
+    
 
     <!-- Regras -->
     <section class="bg-white rounded-2xl shadow p-6">
@@ -420,6 +453,140 @@ document.getElementById('btnPublish').onclick = async ()=>{
   });
   if(!resp.ok) return alert('Falha na publicação: '+await resp.text());
   alert('Publicado! O Netlify deve iniciar o deploy em instantes.');
+
+  
+};
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+// === Cartinhas ===
+function cardHTML(p) {
+  return `
+  <li class="bg-white border border-gray-200 rounded-lg p-2 flex items-center gap-2" data-id="${p.id}">
+    <img src="${p.logo || ''}" class="h-8 w-8 object-contain rounded" onerror="this.style.display='none'">
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold truncate">${p.titulo || '(sem título)'} <span class="text-xs text-gray-500">#${p.id}</span></div>
+      <div class="text-xs text-gray-500 truncate">${(p.tipo||[]).join(', ')}</div>
+    </div>
+    <button class="edit-btn text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-50">✏️</button>
+    <button class="kill-btn text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50">🗑</button>
+  </li>`;
+}
+
+async function loadLists() {
+  const { data, error } = await sb.from('products').select('*');
+  if (error) return alert(error.message);
+
+  const indexItems = data
+    .filter(p => p.ativo !== false && p.show_in_index !== false)
+    .sort((a,b) => (a.ordem_index ?? 9999) - (b.ordem_index ?? 9999) || (a.id - b.id));
+
+  const resultsItems = data
+    .filter(p => p.ativo !== false && p.show_in_resultados !== false)
+    .sort((a,b) => (a.ordem_resultados ?? 9999) - (b.ordem_resultados ?? 9999) || (a.id - b.id));
+
+  const trashItems = data.filter(p => p.ativo === false);
+
+  const lIndex  = document.getElementById('listIndex');
+  const lRes    = document.getElementById('listResults');
+  const lTrash  = document.getElementById('listTrash');
+
+  lIndex.innerHTML  = indexItems.map(cardHTML).join('');
+  lRes.innerHTML    = resultsItems.map(cardHTML).join('');
+  lTrash.innerHTML  = trashItems.map(cardHTML).join('');
+
+  // botões lápis / lixeira de cada card
+  [lIndex, lRes, lTrash].forEach(list => {
+    list.querySelectorAll('.edit-btn').forEach(btn=>{
+      btn.onclick = (e)=>{
+        const id = Number(e.target.closest('li').dataset.id);
+        editP(id);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    });
+    list.querySelectorAll('.kill-btn').forEach(btn=>{
+      btn.onclick = async (e)=>{
+        const id = Number(e.target.closest('li').dataset.id);
+        if (!confirm('Enviar produto #'+id+' para a lixeira (inativo)?')) return;
+        const { error } = await sb.from('products').update({ ativo:false }).eq('id', id);
+        if (error) return alert(error.message);
+        loadProducts(); // sua tabela
+        loadLists();    // as listas
+      };
+    });
+  });
+
+  initSortables();
+}
+
+// === drag ===
+let sortIndex, sortResults, sortTrash;
+
+function initSortables() {
+  sortIndex && sortIndex.destroy();
+  sortResults && sortResults.destroy();
+  sortTrash && sortTrash.destroy();
+
+  sortIndex = new Sortable(document.getElementById('listIndex'), {
+    animation: 150,
+    group: { name: 'index', put: ['results', 'trash'] },
+    onAdd: async (evt)=> {
+      const id = Number(evt.item.dataset.id);
+      await sb.from('products').update({ show_in_index: true, ativo: true }).eq('id', id);
+    }
+  });
+  sortResults = new Sortable(document.getElementById('listResults'), {
+    animation: 150,
+    group: { name: 'results', put: ['index', 'trash'] },
+    onAdd: async (evt)=> {
+      const id = Number(evt.item.dataset.id);
+      await sb.from('products').update({ show_in_resultados: true, ativo: true }).eq('id', id);
+    }
+  });
+  sortTrash = new Sortable(document.getElementById('listTrash'), {
+    animation: 150,
+    group: { name: 'trash', put: ['index','results'] },
+    onAdd: async (evt)=> {
+      const id = Number(evt.item.dataset.id);
+      // se veio do Index, oculta no Index; se veio de Resultados, oculta lá; se já estava inativo, mantém
+      const fromId = evt.from.id;
+      if (fromId === 'listIndex') {
+        await sb.from('products').update({ show_in_index: false }).eq('id', id);
+      } else if (fromId === 'listResults') {
+        await sb.from('products').update({ show_in_resultados: false }).eq('id', id);
+      } else {
+        await sb.from('products').update({ ativo: false }).eq('id', id);
+      }
+    }
+  });
+}
+
+// === salvar ordens ===
+async function saveOrder(page){
+  const listId = page === 'index' ? 'listIndex' : 'listResults';
+  const ordField = page === 'index' ? 'ordem_index' : 'ordem_resultados';
+  const ids = Array.from(document.querySelectorAll(`#${listId} > li`))
+    .map((li, idx)=> ({ id: Number(li.dataset.id), [ordField]: idx+1 }));
+
+  if (!ids.length) { alert('Nada para salvar.'); return; }
+
+  const { error } = await sb.from('products').upsert(ids);
+  if (error) return alert(error.message);
+  alert('Ordem salva!');
+  loadProducts();
+  loadLists();
+}
+
+document.getElementById('saveIndex').onclick   = ()=> saveOrder('index');
+document.getElementById('saveResults').onclick = ()=> saveOrder('results');
+
+// após seu boot:
+const _oldBoot = boot;
+boot = async function(){
+  await _oldBoot();
+  await loadLists();
 };
 </script>
 </body>
