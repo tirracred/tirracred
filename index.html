@@ -507,7 +507,7 @@ crossorigin="anonymous"></script>
                     <span class="ml-2 text-gray-600">Score Baixo</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    <input type="checkbox" data-filter="perfil" value="aposentado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                     <span class="ml-2 text-gray-600">Aposentado</span>
                 </label>
                 <label class="flex items-center cursor-pointer">
@@ -1298,187 +1298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-  // ===================================================
-// 3. PRODUCT FILTER & PAGINATION (VERSÃO CORRIGIDA)
-// ===================================================
-
-const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// --- Seletores de Elementos ---
-const productListContainer = document.getElementById('product-list');
-const paginationTopContainer = document.getElementById('pagination-top');
-const paginationBottomContainer = document.getElementById('pagination');
-const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-const filterBtnMobile = document.getElementById('filter-button');
-const filterPanelMobile = document.getElementById('filter-panel');
-const closeBtnMobile = document.getElementById('filter-close');
-
-let allProducts = []; // A lista global de produtos, será preenchida pelo Supabase
-const productState = {
-    itemsPerPage: 8,
-    currentPage: 1,
-    filteredCards: []
-};
-
-// --- Overlay para o painel de filtros mobile ---
-const overlay = document.createElement('div');
-overlay.id = 'filter-overlay';
-Object.assign(overlay.style, {
-    position: 'fixed', inset: '0', backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: '40', display: 'none', transition: 'opacity .3s ease-in-out'
-});
-document.body.appendChild(overlay);
-
-
-// --- Função para criar o HTML de um card de produto ---
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card'; // Classe principal para o hover
-    
-    let tagColorClass = 'bg-green-100 text-green-800'; // Cor padrão
-    if (product.tagClass === 'red') tagColorClass = 'bg-red-100 text-red-800';
-    if (product.tagClass === 'blue') tagColorClass = 'bg-blue-100 text-blue-800';
-    if (product.tagClass === 'yellow') tagColorClass = 'bg-yellow-100 text-yellow-800';
-    if (product.tagClass === 'purple') tagColorClass = 'bg-purple-100 text-purple-800';
-
-    const vantagensHTML = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-800 mr-2 shadow">✓</span><span>${v}</span></li>`).join('');
-
-    // HTML completo do card, incluindo as classes de borda e sombra que estavam em falta
-    card.innerHTML = `
-      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
-        <div class="flex flex-col lg:flex-row gap-6">
-          <div class="flex-shrink-0 flex justify-center lg:justify-start">
-            <div class="p-3 border rounded-lg bg-gray-50">
-              <img src="${product.logo}" alt="Logo ${product.titulo}" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
-            </div>
-          </div>
-          <div class="flex-grow">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div class="flex-grow">
-                <span class="inline-block ${tagColorClass} text-xs font-semibold px-3 py-1 rounded-full mb-3">${product.tag}</span>
-                <h4 class="text-xl font-bold text-gray-800 mb-3">${product.titulo}</h4>
-                <ul class="space-y-2 text-gray-600 mb-4">${vantagensHTML}</ul>
-              </div>
-              <div class="flex-shrink-0 mt-4 sm:mt-0">
-                <div class="product-actions flex flex-col gap-2">
-                  <a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-primary text-center">${product.btnPrimario}</a>
-                  <a href="${product.link}" target="_blank" rel="noopener noreferrer" class="btn-secondary text-center">${product.btnSecundario}</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    return card;
-}
-
-// --- Função para renderizar os produtos da página atual ---
-function renderPage(pageNumber) {
-    productState.currentPage = pageNumber;
-    productListContainer.innerHTML = '';
-    const startIndex = (pageNumber - 1) * productState.itemsPerPage;
-    const endIndex = startIndex + productState.itemsPerPage;
-    const pageItems = productState.filteredCards.slice(startIndex, endIndex);
-    
-    if (pageItems.length === 0) {
-        productListContainer.innerHTML = '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
-    } else {
-        pageItems.forEach(product => productListContainer.appendChild(createProductCard(product)));
-    }
-    renderPagination();
-}
-
-// --- Função para criar os botões de paginação ---
-function renderPagination() {
-    const totalPages = Math.ceil(productState.filteredCards.length / productState.itemsPerPage);
-    const containers = [paginationTopContainer, paginationBottomContainer];
-    
-    containers.forEach(c => { if(c) c.innerHTML = '' });
-
-    if (totalPages <= 1) return;
-
-    const createButton = (text, page) => {
-        const isCurrent = page === productState.currentPage;
-        const isDisabled = page < 1 || page > totalPages;
-        const btn = document.createElement('button');
-        btn.innerText = text;
-        btn.disabled = isDisabled || isCurrent;
-        
-        let baseClass = 'px-3 py-1 rounded-lg text-sm font-medium border';
-        if (isCurrent) btn.className = `${baseClass} border-green-600 bg-green-600 text-white`;
-        else if (isDisabled) btn.className = `${baseClass} text-gray-400 border-gray-300 cursor-not-allowed`;
-        else {
-            btn.className = `${baseClass} text-gray-700 border-gray-300 hover:bg-gray-100`;
-            btn.addEventListener('click', () => {
-                renderPage(page);
-                document.getElementById('home-filters')?.scrollIntoView({ behavior: 'smooth' });
-            });
-        }
-        return btn;
-    };
-    
-    containers.forEach(container => {
-        if (!container) return;
-        container.appendChild(createButton('Anterior', productState.currentPage - 1));
-        for (let i = 1; i <= totalPages; i++) {
-            container.appendChild(createButton(i, i));
-        }
-        container.appendChild(createButton('Próximo', productState.currentPage + 1));
-    });
-}
-
-// --- Função para aplicar os filtros selecionados ---
-function applyFilters() {
-    const selectedType = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-    const selectedProfiles = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(cb => cb.value);
-
-    productState.filteredCards = allProducts.filter(card => {
-        const typeMatch = (selectedType === 'all') || (card.tipo && card.tipo.includes(selectedType));
-        const profileMatch = (selectedProfiles.length === 0) || (card.perfis && selectedProfiles.every(p => card.perfis.includes(p)));
-        return typeMatch && profileMatch;
-    });
-    renderPage(1); // Volta sempre para a primeira página ao aplicar um filtro
-}
-
-// --- Lógica do painel de filtros mobile ---
-const openPanelMobile = () => {
-    if (filterPanelMobile) filterPanelMobile.classList.remove('translate-x-full');
-    overlay.style.display = 'block';
-};
-const closePanelMobile = () => {
-    if (filterPanelMobile) filterPanelMobile.classList.add('translate-x-full');
-    overlay.style.display = 'none';
-};
-
-if (filterBtnMobile) filterBtnMobile.addEventListener('click', openPanelMobile);
-if (closeBtnMobile) closeBtnMobile.addEventListener('click', closePanelMobile);
-overlay.addEventListener('click', closePanelMobile);
-
-
-// --- Adiciona os "ouvintes" de eventos aos filtros ---
-filterInputs.forEach(input => input.addEventListener('change', () => {
-    applyFilters();
-    if (window.innerWidth < 1024) closePanelMobile();
-}));
-
-// --- Ponto de partida: Busca os produtos no Supabase ---
-
-(async () => {
-    if (productListContainer) productListContainer.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-    
-    // A sua chamada Supabase que já estava no código
-    const { data, error } = await supabase.from('products').select('*').order('priority_order', { ascending: true });
-
-    if (error) {
-        console.error("Erro ao buscar produtos:", error);
-        if (productListContainer) productListContainer.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
-    } else {
-        allProducts = data;
-        applyFilters(); // Inicia a renderização com os produtos carregados
-    }
-})();
+  
 
     // ===================================================
     // 4. "HOW IT WORKS" CAROUSEL
@@ -1781,6 +1601,143 @@ if (whatsappInput) {
 
     initializeCarousel();
 }
+const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const productList = document.getElementById('product-list');
+  const paginationTop = document.getElementById('pagination-top');
+  const paginationBottom = document.getElementById('pagination');
+
+  const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+
+  const state = { all: [], filtered: [], page: 1, perPage: 8 };
+
+  const normPgArray = (v) => {
+    if (Array.isArray(v)) return v.map(x => String(x).toLowerCase().trim());
+    if (typeof v === 'string') {
+      return v
+        .replace(/^\{|\}$/g, '')
+        .split(',')
+        .map(s => s.replace(/"/g,'').trim().toLowerCase())
+        .filter(Boolean);
+    }
+    return [];
+  };
+  const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
+
+  const tagClassToBadge = (cls) => ({
+    red: 'bg-red-100 text-red-800',
+    blue: 'bg-blue-100 text-blue-800',
+    yellow: 'bg-yellow-100 text-yellow-800',
+    purple: 'bg-purple-100 text-purple-800'
+  }[cls] || 'bg-green-100 text-green-800');
+
+  const card = (p) => {
+    const vHtml = (p.vantagens || []).map(v => `
+      <li class="flex items-start">
+        <span class="text-green-800 mr-2">✓</span><span>${v}</span>
+      </li>`).join('');
+    return `
+      <div class="product-card">
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
+          <div class="flex flex-col lg:flex-row gap-6">
+            <div class="flex-shrink-0 flex justify-center lg:justify-start">
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <img src="${fixLogo(p.logo)}" alt="Logo ${p.titulo}" class="w-32 h-auto object-contain"
+                     onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
+              </div>
+            </div>
+            <div class="flex-grow">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div class="flex-grow">
+                  <span class="inline-block ${tagClassToBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">${p.tag || ''}</span>
+                  <h4 class="text-xl font-bold text-gray-800 mb-3">${p.titulo || ''}</h4>
+                  <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
+                </div>
+                <div class="flex-shrink-0 mt-4 sm:mt-0">
+                  <div class="product-actions flex flex-col gap-2">
+                    <a href="${p.link}" target="_blank" rel="noopener" class="btn-primary text-center">${p.btnPrimario || 'Acessar'}</a>
+                    <a href="${p.link}" target="_blank" rel="noopener" class="btn-secondary text-center">${p.btnSecundario || 'Detalhes'}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  const renderPage = (page=1) => {
+    state.page = page;
+    const start = (page-1) * state.perPage;
+    const end = start + state.perPage;
+    const pageItems = state.filtered.slice(start, end);
+
+    productList.innerHTML = pageItems.length
+      ? pageItems.map(card).join('')
+      : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
+
+    const totalPages = Math.ceil(state.filtered.length / state.perPage);
+    [paginationTop, paginationBottom].forEach(container => {
+      if (!container) return;
+      container.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      const mkBtn = (txt, p, disabled=false, current=false) => {
+        const b = document.createElement('button');
+        b.textContent = txt;
+        b.disabled = disabled || current;
+        b.className = current
+          ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
+          : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
+        if (!b.disabled) b.addEventListener('click', ()=>renderPage(p));
+        return b;
+      };
+
+      container.appendChild(mkBtn('Anterior', page-1, page===1));
+      for (let i=1;i<=totalPages;i++) container.appendChild(mkBtn(String(i), i, false, i===page));
+      container.appendChild(mkBtn('Próximo', page+1, page===totalPages));
+    });
+  };
+
+  const applyFilters = () => {
+    const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+    const perfisSelecionados = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(c=>c.value);
+
+    state.filtered = state.all.filter(p => {
+      const tOk = (type==='all') || (p.tipo?.includes(type));
+      const perfOk = perfisSelecionados.length===0 || perfisSelecionados.every(v => p.perfis?.includes(v));
+      return tOk && perfOk;
+    });
+    renderPage(1);
+  };
+
+  filterInputs.forEach(i => i.addEventListener('change', applyFilters));
+
+  (async () => {
+    productList.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('priority_order', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao buscar produtos:', error);
+      productList.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
+      return;
+    }
+
+    // normaliza tipo/perfis e corrige logo
+    state.all = (data || []).map(p => ({
+      ...p,
+      tipo: normPgArray(p.tipo),
+      perfis: normPgArray(p.perfis),
+      logo: fixLogo(p.logo)
+    }));
+    applyFilters();
+  })();
 
 </script>
 

@@ -178,7 +178,7 @@ crossorigin="anonymous"></script>
                 return buildOrderedList(priorityOrder);
             }
             if (params.negativado) {
-                const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
+                priorityOrder = [15, 20, ...fgtsProductIds, 1, 2, 5, 7, 12];
                 const variationA = [18, 1, 2, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
                 const variationB = [2, 1, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
                 priorityOrder = (Math.random() < 0.7) ? variationA : variationB;
