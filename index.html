@@ -1364,9 +1364,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================
     // 5. INITIALIZATION
     // ===================================================
-    if(filterInputs.length > 0) {
-        filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-        applyFilters(); 
+    if (filterInputs.length > 0) {
+    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
+    applyFilters();
     }
     showPage('page-home');
 });
@@ -1605,40 +1605,44 @@ const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const productList = document.getElementById('product-list');
-  const paginationTop = document.getElementById('pagination-top');
-  const paginationBottom = document.getElementById('pagination');
+  // 2) Elementos
+  const listEl = document.getElementById('product-list');
+  const pagTop = document.getElementById('pagination-top');
+  const pagBottom = document.getElementById('pagination');
+  const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
-  const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-
+  // 3) Estado
   const state = { all: [], filtered: [], page: 1, perPage: 8 };
 
-  const normPgArray = (v) => {
-    if (Array.isArray(v)) return v.map(x => String(x).toLowerCase().trim());
+  // 4) Helpers de normalização
+  const toArray = (v, lower = false) => {
+    if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
     if (typeof v === 'string') {
-      return v
-        .replace(/^\{|\}$/g, '')
-        .split(',')
-        .map(s => s.replace(/"/g,'').trim().toLowerCase())
-        .filter(Boolean);
+      // tenta JSON
+      try { const j = JSON.parse(v); if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j; } catch(e){}
+      // converte text[] do PG: "{a,b}" -> ["a","b"]
+      const arr = v.replace(/^\{|\}$/g,'').split(',')
+        .map(s => s.replace(/"/g,'').trim()).filter(Boolean);
+      return lower ? arr.map(s => s.toLowerCase()) : arr;
     }
     return [];
   };
   const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
+  const tagBadge = (c) => ({ red:'bg-red-100 text-red-800', blue:'bg-blue-100 text-blue-800', yellow:'bg-yellow-100 text-yellow-800', purple:'bg-purple-100 text-purple-800' }[c] || 'bg-green-100 text-green-800');
 
-  const tagClassToBadge = (cls) => ({
-    red: 'bg-red-100 text-red-800',
-    blue: 'bg-blue-100 text-blue-800',
-    yellow: 'bg-yellow-100 text-yellow-800',
-    purple: 'bg-purple-100 text-purple-800'
-  }[cls] || 'bg-green-100 text-green-800');
+  // 5) Render
+  const render = () => {
+    const start = (state.page - 1) * state.perPage;
+    const end   = start + state.perPage;
+    const items = state.filtered.slice(start, end);
 
-  const card = (p) => {
-    const vHtml = (p.vantagens || []).map(v => `
-      <li class="flex items-start">
-        <span class="text-green-800 mr-2">✓</span><span>${v}</span>
-      </li>`).join('');
-    return `
+    listEl.innerHTML = items.length ? items.map(p => {
+      const vantagens = toArray(p.vantagens, false);
+      const vHtml = vantagens.map(v => `
+        <li class="flex items-start">
+          <span class="mr-2 text-green-800">✓</span><span>${v}</span>
+        </li>`).join('');
+      return `
       <div class="product-card">
         <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
           <div class="flex flex-col lg:flex-row gap-6">
@@ -1651,7 +1655,7 @@ const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             <div class="flex-grow">
               <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div class="flex-grow">
-                  <span class="inline-block ${tagClassToBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">${p.tag || ''}</span>
+                  <span class="inline-block ${tagBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">${p.tag || ''}</span>
                   <h4 class="text-xl font-bold text-gray-800 mb-3">${p.titulo || ''}</h4>
                   <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
                 </div>
@@ -1666,77 +1670,57 @@ const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
           </div>
         </div>
       </div>`;
-  };
+    }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
 
-  const renderPage = (page=1) => {
-    state.page = page;
-    const start = (page-1) * state.perPage;
-    const end = start + state.perPage;
-    const pageItems = state.filtered.slice(start, end);
-
-    productList.innerHTML = pageItems.length
-      ? pageItems.map(card).join('')
-      : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
-
-    const totalPages = Math.ceil(state.filtered.length / state.perPage);
-    [paginationTop, paginationBottom].forEach(container => {
-      if (!container) return;
-      container.innerHTML = '';
-      if (totalPages <= 1) return;
-
-      const mkBtn = (txt, p, disabled=false, current=false) => {
+    // paginação
+    const total = Math.ceil(state.filtered.length / state.perPage);
+    [pagTop, pagBottom].forEach(c => {
+      if (!c) return; c.innerHTML = ''; if (total <= 1) return;
+      const mk = (label, p, dis=false, cur=false) => {
         const b = document.createElement('button');
-        b.textContent = txt;
-        b.disabled = disabled || current;
-        b.className = current
+        b.textContent = label; b.disabled = dis || cur;
+        b.className = cur
           ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-          : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
-        if (!b.disabled) b.addEventListener('click', ()=>renderPage(p));
+          : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
+                 : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
+        if (!b.disabled) b.addEventListener('click', () => { state.page = p; render(); });
         return b;
       };
-
-      container.appendChild(mkBtn('Anterior', page-1, page===1));
-      for (let i=1;i<=totalPages;i++) container.appendChild(mkBtn(String(i), i, false, i===page));
-      container.appendChild(mkBtn('Próximo', page+1, page===totalPages));
+      c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
+      for (let i=1;i<=total;i++) c.appendChild(mk(String(i), i, false, i === state.page));
+      c.appendChild(mk('Próximo', state.page + 1, state.page === total));
     });
   };
 
-  const applyFilters = () => {
+  // 6) Filtro
+  const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-    const perfisSelecionados = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked')).map(c=>c.value);
+    const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+                      .map(e => e.value.toLowerCase());
 
     state.filtered = state.all.filter(p => {
-      const tOk = (type==='all') || (p.tipo?.includes(type));
-      const perfOk = perfisSelecionados.length===0 || perfisSelecionados.every(v => p.perfis?.includes(v));
-      return tOk && perfOk;
+      const tipos  = toArray(p.tipo,   true);
+      const perfis = toArray(p.perfis, true);
+      const tOK   = (type === 'all') || tipos.includes(type.toLowerCase());
+      const perfOK = (perfisSel.length === 0) || perfisSel.every(v => perfis.includes(v));
+      return tOK && perfOK;
     });
-    renderPage(1);
+
+    state.page = 1;
+    render();
   };
 
-  filterInputs.forEach(i => i.addEventListener('change', applyFilters));
+  filters.forEach(f => f.addEventListener('change', apply));
 
+  // 7) Boot
   (async () => {
-    productList.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+    listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('priority_order', { ascending: true });
+    const { data, error } = await supabase.from('products').select('*').order('priority_order', { ascending: true });
+    if (error) { console.error(error); listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>'; return; }
 
-    if (error) {
-      console.error('Erro ao buscar produtos:', error);
-      productList.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
-      return;
-    }
-
-    // normaliza tipo/perfis e corrige logo
-    state.all = (data || []).map(p => ({
-      ...p,
-      tipo: normPgArray(p.tipo),
-      perfis: normPgArray(p.perfis),
-      logo: fixLogo(p.logo)
-    }));
-    applyFilters();
+    state.all = (data || []).map(p => ({ ...p, logo: fixLogo(p.logo) }));
+    apply();
   })();
 
 </script>
