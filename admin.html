@@ -147,9 +147,8 @@ const cardHTML = (p) => `
       <div class="mt-2 flex flex-wrap gap-2">
         <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm">Abrir</a>
         <button class="edit text-sm px-2 py-1 border rounded">Editar</button>
-        <button class="toggle-active text-sm px-2 py-1 border rounded ${p.ativo === false ? 'bg-white' : 'bg-white'}">
-          ${p.ativo === false ? 'Ativar' : 'Desativar'}
-        </button>
+        <button class="duplicate text-sm px-2 py-1 border rounded">Copiar</button>
+        <button class="toggle-active text-sm px-2 py-1 border rounded"> ${p.ativo === false ? 'Ativar' : 'Desativar'} </button>
         <button class="delete text-sm px-2 py-1 border rounded text-red-600 hover:bg-red-50">Excluir</button>
       </div>
     </div>
@@ -269,6 +268,41 @@ listEl.querySelectorAll('.delete').forEach(btn => {
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) { alert('Erro: ' + error.message); return; }
     load();
+  };
+});
+// duplicar
+listEl.querySelectorAll('.duplicate').forEach(btn => {
+  btn.onclick = async (e) => {
+    const id = Number(e.target.closest('[data-id]').dataset.id);
+    const src = items.find(x => Number(x.id) === id);
+    if (!src) return;
+
+    // prioridade nova = maior prioridade atual + 1
+    const nextPriority = items.reduce((m,p)=>Math.max(m, Number(p.priority_order)||0), -1) + 1;
+
+    // garante string para csv/texto caso o registro carregue como array
+    const asCsv   = (v) => Array.isArray(v) ? v.join(',') : (v || '');
+    const asText  = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
+
+    const payload = {
+      titulo: (src.titulo || 'Sem título') + ' (cópia)',
+      tag: src.tag || '',
+      tagClass: src.tagClass || null,
+      logo: src.logo || '',
+      link: src.link || '',
+      btnPrimario: src.btnPrimario || 'Acessar',
+      btnSecundario: src.btnSecundario || 'Detalhes',
+      vantagens: asText(src.vantagens),   // sua coluna é TEXT
+      tipo: asCsv(src.tipo),              // CSV em string
+      perfis: asCsv(src.perfis),          // CSV em string
+      ativo: src.ativo !== false,         // mantém estado (default true)
+      priority_order: nextPriority
+    };
+
+    statusEl.textContent = 'Copiando...';
+    const { error } = await supabase.from('products').insert(payload).select();
+    statusEl.textContent = error ? ('Erro ao copiar: ' + error.message) : 'Produto copiado!';
+    if (!error) load();
   };
 });
 
