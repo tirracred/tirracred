@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <title>Admin - TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/png" href="public/favincon.png"/>
+  <a href="index.html" class="h-8 inline-block" title="Voltar ao site">
+  <img src="public/logo.png" alt="logo" class="h-8"
+       onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
+</a>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -87,6 +90,12 @@
              <input id="tipo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
         <div><label class="text-sm">Perfis (ex: negativado,score-baixo,aposentado,...)</label>
              <input id="perfis" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+             <div class="md:col-span-2">
+  <label class="inline-flex items-center gap-2 text-sm">
+    <input id="ativo" type="checkbox" class="h-4 w-4">
+    Ativo (exibir no site)
+  </label>
+</div>
         <div><label class="text-sm">Prioridade</label><input id="priority_order" type="number" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
       </form>
       <div class="flex justify-end gap-2 mt-4">
@@ -119,18 +128,27 @@ const editCsv    = (v) => Array.isArray(v) ? v.join(',')    : (v || ''); // para
 const displayLines = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
 
 const cardHTML = (p) => `
-  <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start" data-id="${p.id}">
+  <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start ${p.ativo === false ? 'opacity-60' : ''}" data-id="${p.id}">
     <div class="cursor-move select-none px-2 py-1 bg-gray-100 rounded">⇅</div>
     <img src="${p.logo}" class="w-16 h-10 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';">
     <div class="flex-1">
       <div class="flex items-center justify-between">
         <h4 class="font-semibold">${p.titulo}</h4>
-        <span class="text-xs px-2 py-1 rounded ${p.tagClass ? 'bg-gray-100' : ''}">${p.tag || ''}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] px-2 py-0.5 rounded-full ${p.ativo === false ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}">
+            ${p.ativo === false ? 'Inativo' : 'Ativo'}
+          </span>
+          <span class="text-[11px] px-2 py-0.5 rounded ${p.tagClass ? 'bg-gray-100' : ''}">${p.tag || ''}</span>
+        </div>
       </div>
-        <p class="text-xs text-gray-500">#${p.priority_order} • ${ displayCsv(p.tipo) }</p>
-      <div class="mt-2 flex gap-2">
+      <p class="text-xs text-gray-500">#${p.priority_order} • ${ displayCsv(p.tipo) }</p>
+      <div class="mt-2 flex flex-wrap gap-2">
         <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm">Abrir</a>
         <button class="edit text-sm px-2 py-1 border rounded">Editar</button>
+        <button class="toggle-active text-sm px-2 py-1 border rounded ${p.ativo === false ? 'bg-white' : 'bg-white'}">
+          ${p.ativo === false ? 'Ativar' : 'Desativar'}
+        </button>
+        <button class="delete text-sm px-2 py-1 border rounded text-red-600 hover:bg-red-50">Excluir</button>
       </div>
     </div>
   </div>`;
@@ -142,6 +160,8 @@ const openModal = (p={}) => {
     $('tipo').value      = editCsv(p.tipo);
     $('perfis').value    = editCsv(p.perfis);
     $('vantagens').value = displayLines(p.vantagens);
+    $('ativo').checked = (p.ativo !== false); // default true quando não vier do BD
+
   modal.classList.remove('hidden');
 };
 const closeModal = () => modal.classList.add('hidden');
@@ -149,6 +169,20 @@ const closeModal = () => modal.classList.add('hidden');
 $('close').onclick = closeModal;
 
 $('save').onclick = async () => {
+  const btn = $('save');
+  const original = btn.innerHTML;
+
+  // estado "salvando"
+  btn.disabled = true;
+  btn.innerHTML = `
+    <span class="inline-flex items-center gap-2">
+      <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+        <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="3" class="opacity-75"></path>
+      </svg>
+      Salvando...
+    </span>`;
+
   const payload = {
     titulo: $('titulo').value,
     tag: $('tag').value,
@@ -157,20 +191,41 @@ $('save').onclick = async () => {
     link: $('link').value,
     btnPrimario: $('btnPrimario').value || 'Acessar',
     btnSecundario: $('btnSecundario').value || 'Detalhes',
-    vantagens:  normLines($('vantagens').value),             // linhas
-    tipo:       normCsv($('tipo').value.toLowerCase()),      // csv
-    perfis:     normCsv($('perfis').value.toLowerCase()),    // csv
+    vantagens:  normLines($('vantagens').value),
+    tipo:       normCsv($('tipo').value.toLowerCase()),
+    perfis:     normCsv($('perfis').value.toLowerCase()),
+    ativo:      $('ativo').checked,
+    priority_order: Number($('priority_order').value) || 0
+  };
 
-  priority_order: Number($('priority_order').value) || 0
-};
   const id = $('id').value;
   let resp;
-  if (id) resp = await supabase.from('products').update(payload).eq('id', id);
-  else     resp = await supabase.from('products').insert(payload).select();
+  try {
+    if (id) resp = await supabase.from('products').update(payload).eq('id', id);
+    else     resp = await supabase.from('products').insert(payload).select();
 
-  if (resp.error) { alert('Erro: ' + resp.error.message); return; }
-  closeModal();
-  await load();
+    if (resp.error) throw resp.error;
+
+    // sucesso (check + pulso breve)
+    btn.innerHTML = `
+      <span class="inline-flex items-center gap-2 animate-pulse">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Salvo!
+      </span>`;
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.disabled = false;
+      closeModal();
+      load();
+    }, 800);
+
+  } catch (err) {
+    alert('Erro: ' + (err?.message || err));
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
 };
 
 $('add').onclick = () => openModal({});
@@ -191,6 +246,29 @@ const load = async () => {
       openModal(p);
     };
   });
+  // ativar/desativar
+listEl.querySelectorAll('.toggle-active').forEach(btn => {
+  btn.onclick = async (e) => {
+    const id = Number(e.target.closest('[data-id]').dataset.id);
+    const p  = items.find(x => Number(x.id) === id);
+    const novo = !(p.ativo !== false); // true->false, false->true
+    const { error } = await supabase.from('products').update({ ativo: novo }).eq('id', id);
+    if (error) { alert('Erro: ' + error.message); return; }
+    load();
+  };
+});
+
+// excluir
+listEl.querySelectorAll('.delete').forEach(btn => {
+  btn.onclick = async (e) => {
+    const id = Number(e.target.closest('[data-id]').dataset.id);
+    const p  = items.find(x => Number(x.id) === id);
+    if (!confirm(`Excluir "${p.titulo}"? Esta ação não pode ser desfeita.`)) return;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) { alert('Erro: ' + error.message); return; }
+    load();
+  };
+});
 
   // drag and drop
   new Sortable(listEl, {
