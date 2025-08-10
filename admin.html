@@ -193,8 +193,8 @@ $('save').onclick = async () => {
     btnPrimario: $('btnPrimario').value || 'Acessar',
     btnSecundario: $('btnSecundario').value || 'Detalhes',
     vantagens:  normLines($('vantagens').value),
-    tipo:       normCsv($('tipo').value.toLowerCase()),
-    perfis:     normCsv($('perfis').value.toLowerCase()),
+    tipo:       normCsv($('tipo').value),
+perfis:     normCsv($('perfis').value),
     ativo:      $('ativo').checked,
     priority_order: Number($('priority_order').value) || 0
   };
