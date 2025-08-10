@@ -621,8 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ===================================================
      * 2. CRIAR CONTAINER DE PAGINAÇÃO INFERIOR (SE NECESSÁRIO)
      * =================================================== */
-    const paginationTop = document.getElementById('pagination-top');
-    if (paginationTop) {
+        if (paginationTop) {
         let paginationBottom = document.getElementById('pagination-bottom');
         if (!paginationBottom) {
             paginationBottom = document.createElement('div');
@@ -1431,7 +1430,7 @@ if (whatsappInput) {
   // 2) Elementos
   const listEl = document.getElementById('product-list');
   const pagTop = document.getElementById('pagination-top');
-  const pagBottom = document.getElementById('pagination');
+  const pagBottom = document.getElementById('pagination-bottom'); // agora usa o criado ao lado do top
   const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
   // 3) Estado
@@ -1523,9 +1522,9 @@ if (whatsappInput) {
             }
 
         
-        if (!b.disabled) b.addEventListener('click', (e) => {
+       if (!b.disabled) b.addEventListener('click', (e) => {
         e.preventDefault();
-        e.stopPropagation();           // <- ESTA LINHA É A NOVIDADE
+        e.stopPropagation();         // <- novo
         state.page = p;
         render();
         scrollToProductsTop();

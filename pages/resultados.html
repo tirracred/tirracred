@@ -6,7 +6,7 @@
      <title>Suas Recomendações de Crédito - TirraCred</title>
      <link rel="icon" type="image/png" href="../public/favincon.png"/>
      <script src="https://cdn.tailwindcss.com"></script>
-     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
      <link rel="preconnect" href="https://fonts.googleapis.com">
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -152,42 +152,46 @@ crossorigin="anonymous"></script>
             };
         }
 
-        function findProducts(criteria, sourceArray) {
+            function findProducts(criteria, sourceArray) {
             const key = Object.keys(criteria)[0];
-            const value = criteria[key];
-            return sourceArray.filter(product => product.tipo && product.tipo.includes(value));
-        }
+            const value = String(criteria[key]).toLowerCase();
+            return sourceArray.filter(p => toArray(p[key], true).includes(value));
+            }
 
 
-        function prioritizeProducts(products, params) {
+            function prioritizeProducts(products, params) {
+            const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id); // calcula no topo
             let priorityOrder = [];
+
             const buildOrderedList = (priorityIds) => {
-                const priorityProducts = priorityIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+                const priorityProducts = priorityIds
+                .map(id => products.find(p => p.id === id))
+                .filter(Boolean);
                 const priorityIdSet = new Set(priorityIds);
                 const otherProducts = products.filter(p => !priorityIdSet.has(p.id));
                 return [...priorityProducts, ...otherProducts];
             };
 
             if (params.aposentado) {
-                priorityOrder = [8, 20, 16, 2, 1, 5, 12]; // ID 8 é o do INSS
+                priorityOrder = [8, 20, 16, 2, 1, 5, 12];
                 return buildOrderedList(priorityOrder);
             }
+
             if (params.bolsafamilia) {
-                const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
                 priorityOrder = [15, 20, ...fgtsProductIds, 1, 2, 5, 7, 12];
                 return buildOrderedList(priorityOrder);
             }
+
             if (params.negativado) {
-                priorityOrder = [15, 20, ...fgtsProductIds, 1, 2, 5, 7, 12];
                 const variationA = [18, 1, 2, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
-                const variationB = [2, 1, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
+                const variationB = [ 2, 1, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
                 priorityOrder = (Math.random() < 0.7) ? variationA : variationB;
                 return buildOrderedList(priorityOrder);
             }
-            const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
+
             priorityOrder = [9, 1, 2, 5, 4, 10, 3, ...fgtsProductIds];
             return buildOrderedList(priorityOrder);
-        }
+            }
 
         // ========================================================================
         // III. BLOCO DE EXECUÇÃO PRINCIPAL
@@ -216,8 +220,8 @@ crossorigin="anonymous"></script>
 
         // 4. Enriquecer dados e renderizar
         const productsToRender = orderedProducts.map(product => {
-            let displayChance = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
-            if (product.tipo.includes('fgts')) displayChance = 99;
+        let displayChance = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
+        if (toArray(product.tipo, true).includes('fgts')) displayChance = 99;
             return { ...product, displayChance };
         });
 
@@ -237,7 +241,9 @@ crossorigin="anonymous"></script>
             if (resultsContent) resultsContent.style.display = 'block';
             if (productGrid && productsToRender.length > 0) {
                 productsToRender.forEach(product => {
-                    const vantagensHtml = product.vantagens.map(v => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>`).join('');
+                   const vantagensHtml = toArray(product.vantagens).map(v => `
+                    <li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>
+                    `).join('');
                     const chanceBadge = `<div class="absolute -top-3 -right-3 chance-badge bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">${product.displayChance}% DE CHANCE</div>`;
                     const cardHtml = `
                         <div class="product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative h-full">
@@ -260,6 +266,24 @@ crossorigin="anonymous"></script>
             }
         }, transitionTime);
     });
+
+    // Converte text[], JSON string ou string simples em array
+        function toArray(v, lower = false) {
+        if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
+        if (typeof v === 'string') {
+            // tenta JSON
+            try {
+            const j = JSON.parse(v);
+            if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j;
+            } catch (e) {}
+            // tenta formato Postgres text[] -> "{a,b}""
+            const arr = v.replace(/^\{|\}$/g,'').split(',')
+            .map(s => s.replace(/"/g,'').trim())
+            .filter(Boolean);
+            return lower ? arr.map(s => s.toLowerCase()) : arr;
+        }
+        return [];
+        }
 
 </script>
 
