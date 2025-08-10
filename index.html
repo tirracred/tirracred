@@ -528,7 +528,7 @@ crossorigin="anonymous"></script>
 
                 <div class="lg:col-span-3">
                 <!-- Navegação de páginas (topo da lista) -->
-                <div id="pagination-top" class="flex justify-center gap-2 mb-4"></div>
+                <div id="pagination-top" class="flex w-full justify-center gap-2 mb-4"></div>
 
                 <!-- Lista de Produtos -->
                 <div class="lg:col-span-3">
@@ -705,21 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeBtn) closeBtn.addEventListener('click', closePanel);
     overlay.addEventListener('click', closePanel);
 
-    /* ===================================================
-     * 2. CRIAR CONTAINER DE PAGINAÇÃO INFERIOR (SE NECESSÁRIO)
-     * =================================================== */
-    const paginationTop = document.getElementById('pagination-top');
-    if (paginationTop) {
-        let paginationBottom = document.getElementById('pagination-bottom');
-        if (!paginationBottom) {
-            paginationBottom = document.createElement('div');
-            paginationBottom.id = 'pagination-bottom';
-            paginationBottom.className = 'flex justify-center gap-2 mt-4';
-            paginationTop.parentNode.appendChild(paginationBottom);
-        }
-    }
-
-});
+    
 
 </script>
             
