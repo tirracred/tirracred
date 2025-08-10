@@ -1650,6 +1650,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const paginationContainer = document.getElementById('pagination');
     const filterInputs = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
     
+<<<<<<< HEAD
     const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1671,6 +1672,60 @@ async function fetchProducts() {
         applyFilters(); 
     }
 }
+=======
+    const allProducts = [
+  {
+    "id": 1,
+    "tipo": "[\"emprestimocomgarantia\",\"cartao\",\"contas\"]",
+    "perfis": [
+      "negativado",
+      "score-baixo",
+      "autonomo"
+    ],
+    "logo": "",
+    "tag": "Crédito CLT",
+    "tagClass": "yellow",
+    "titulo": "Empréstimo para Pessoas Trabalhadoras",
+    "vantagens": "[\"Crédito para Trabalhadores\",\"Empréstimo em Instantes\",\"Solicite Já!\"]",
+    "link": "linktr.ee/tirra",
+    "btnPrimario": "Acessar",
+    "btnSecundario": "Detalhes"
+  },
+  {
+    "id": 2,
+    "tipo": "[\"cartao\"]",
+    "perfis": [
+      "score-regular",
+      "autonomo"
+    ],
+    "logo": "",
+    "tag": "Crédito CLT",
+    "tagClass": "yellow",
+    "titulo": "Empréstimo para Pessoas Trabalhadoras",
+    "vantagens": "[\"999\",\"999\",\"999\",\"99\"]",
+    "link": "linktr.ee/tirra",
+    "btnPrimario": "Acessar",
+    "btnSecundario": "Detalhes"
+  },
+  {
+    "id": 3,
+    "tipo": "[\"emprestimocomgarantia\",\"cartao\",\"contas\",\"fgts\"]",
+    "perfis": [
+      "negativado",
+      "score-baixo",
+      "score-regular"
+    ],
+    "logo": "",
+    "tag": "credito clt",
+    "tagClass": "yellow",
+    "titulo": "Empréstimo para Pessoas Trabalhadoras",
+    "vantagens": "[\"123\",\"456\",\"789\"]",
+    "link": "linktr.ee/tirra",
+    "btnPrimario": "Acessar",
+    "btnSecundario": "Detalhes"
+  }
+];
+>>>>>>> 5216ac477a380439b7c9332f8e4bf02f7fbafd07
 
 // Chama a função para buscar os produtos quando o script carregar
 fetchProducts();
