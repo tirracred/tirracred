@@ -574,8 +574,7 @@ crossorigin="anonymous"></script>
 
 </div>
 
-<!-- Âncora para o menu -->
-<section id="renegociacao" class="py-0 bg-gray-800 text-white"></section>
+
 
 <!-- Bloco da Renegociação -->
 <section class="py-16 bg-gray-800 text-white">
@@ -704,8 +703,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterBtn) filterBtn.addEventListener('click', openPanel);
     if (closeBtn) closeBtn.addEventListener('click', closePanel);
     overlay.addEventListener('click', closePanel);
+}); 
 
-    
+
 
 </script>
             
@@ -1612,7 +1612,7 @@ if (whatsappInput) {
     });
   };
 
-  // 6) Filtro
+  
   const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
     const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
