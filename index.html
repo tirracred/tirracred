@@ -1658,7 +1658,7 @@ if (whatsappInput) {
 
     state.filtered = state.all.filter(p => {
       // Se o item for um anúncio, mantenha-o na lista sempre.
-      if (toArray(p.tipo, true).includes('anuncio_google')) {
+      if (p.tipo === 'anuncio_google') {
         return true;
       }
 
