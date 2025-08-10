@@ -1430,7 +1430,7 @@ if (whatsappInput) {
   // 2) Elementos
   const listEl = document.getElementById('product-list');
   const pagTop = document.getElementById('pagination-top');
-  const pagBottom = document.getElementById('pagination-bottom') || document.getElementById('pagination');
+  const pagBottom = document.getElementById('pagination-bottom'); // agora usa o criado ao lado do top
   const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
   // 3) Estado
@@ -1522,12 +1522,13 @@ if (whatsappInput) {
             }
 
         
-       if (!b.disabled) btn.addEventListener('click', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  goToPage(p);          // ou sua função render() / state.page = p
-  scrollToProductsTop();// se você usa esse helper
-});
+        if (!b.disabled) b.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();           // <- ESTA LINHA É A NOVIDADE
+        state.page = p;
+        render();
+        scrollToProductsTop();
+        });
 
         return b;
       };
