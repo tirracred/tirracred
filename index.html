@@ -398,24 +398,7 @@ crossorigin="anonymous"></script>
 
         </main>
     </div>
-
-      <title>Carrossel Como Funciona</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* Estilos adicionais para a transição suave e aparência */
-        .carousel-track {
-            transition: transform 0.5s ease-in-out;
-        }
-        .dot {
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-        .dot.active {
-            transform: scale(0.50);
-        }
-    </style>
-</head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    
 
     
 
@@ -526,12 +509,14 @@ crossorigin="anonymous"></script>
                 </aside>
 
                 <div class="lg:col-span-3">
-                <!-- Navegação de páginas (topo da lista) -->
-                <div id="pagination-top" class="flex justify-center gap-2 mb-4"></div>
+  <!-- paginação top -->
+  <div id="pagination-top" class="flex justify-center gap-2 mb-4"></div>
 
-                <!-- Lista de Produtos -->
-                <div class="lg:col-span-3">
-                   <div id="product-list" class="space-y-6">
+  <!-- Lista de Produtos -->
+  <div id="product-list" class="space-y-6"></div>
+
+  <!-- paginação bottom (vazia; o JS preenche) -->
+  <div id="pagination-bottom" class="flex justify-center gap-2 mt-4"></div>
 </div>
     </section>
 
@@ -546,32 +531,7 @@ crossorigin="anonymous"></script>
   - Aumentado a margem superior (mt-8) para maior respiro.
   - O código foi formatado para melhor legibilidade.
 -->
-<div id="pagination" class="mt-2 flex items-center justify-center flex-wrap gap-3">
-    
-    <!-- Botão Anterior -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-500 cursor-not-allowed" 
-        disabled>
-        Anterior
-    </button>
-    
-    <!-- Números da Página -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white shadow-sm">
-        1
-    </button>
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
-        2
-    </button>
-    
-    <!-- Botão Próximo -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
-        Próximo
-    </button>
 
-</div>
 
             
   <script>
@@ -621,6 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ===================================================
      * 2. CRIAR CONTAINER DE PAGINAÇÃO INFERIOR (SE NECESSÁRIO)
      * =================================================== */
+        const paginationTop = document.getElementById('pagination-top');
         if (paginationTop) {
         let paginationBottom = document.getElementById('pagination-bottom');
         if (!paginationBottom) {
@@ -629,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
             paginationBottom.className = 'flex justify-center gap-2 mt-4';
             paginationTop.parentNode.appendChild(paginationBottom);
         }
-    }
+        }
 
 });
 
@@ -1430,7 +1391,7 @@ if (whatsappInput) {
   // 2) Elementos
   const listEl = document.getElementById('product-list');
   const pagTop = document.getElementById('pagination-top');
-  const pagBottom = document.getElementById('pagination-bottom'); // agora usa o criado ao lado do top
+  const pagBottom = document.getElementById('pagination-bottom') || document.getElementById('pagination');
   const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
   // 3) Estado
@@ -1522,13 +1483,12 @@ if (whatsappInput) {
             }
 
         
-       if (!b.disabled) b.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();         // <- novo
-        state.page = p;
-        render();
-        scrollToProductsTop();
-        });
+       if (!b.disabled) btn.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  goToPage(p);          // ou sua função render() / state.page = p
+  scrollToProductsTop();// se você usa esse helper
+});
 
         return b;
       };
