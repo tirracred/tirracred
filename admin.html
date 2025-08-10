@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - TirraCred</title>
+    <link rel="icon" type="image/png" href="public/favincon.png"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; }
+        .sortable-ghost { opacity: 0.4; background: #c7d2fe; }
+        .sortable-chosen { cursor: grabbing; }
+        #edit-modal { background-color: rgba(0,0,0,0.5); }
+        .modal-body { max-height: 80vh; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- ===== TELA DE LOGIN ===== -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen bg-green-50">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
+            <img src="public/logo.png" alt="TirraCred Logo" class="w-40 mx-auto" onerror="this.onerror=null;this.src='https://placehold.co/160x50/ffffff/000000?text=TirraCred';">
+            <h2 class="text-2xl font-bold text-center text-gray-800">Acesso Restrito</h2>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="text-sm font-medium text-gray-700">Email</label>
+                    <input id="email" name="email" type="email" required class="w-full px-4 py-2 mt-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label for="password" class="text-sm font-medium text-gray-700">Senha</label>
+                    <input id="password" name="password" type="password" required class="w-full px-4 py-2 mt-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <button type="submit" class="w-full py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    Entrar
+                </button>
+                <p id="login-error" class="text-sm text-center text-red-600"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== PAINEL DE ADMINISTRAÇÃO (Oculto por padrão) ===== -->
+    <div id="admin-panel" class="hidden">
+        <!-- Header (igual ao do site) -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex-shrink-0">
+                        <a href="#" class="flex items-center">
+                            <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/cccccc/000000?text=TirraCred';">
+                        </a>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-700">Painel de Gestão</h2>
+                    <button id="logout-button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">Sair</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container p-4 mx-auto mt-8 sm:p-6 lg:p-8">
+            <div class="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center">
+                <h1 class="text-3xl font-bold text-gray-800">Gerenciar Produtos</h1>
+                <button id="save-order-button" class="w-full px-6 py-3 font-semibold text-white bg-green-600 rounded-lg shadow-md sm:w-auto hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Salvar Ordem de Prioridade
+                </button>
+            </div>
+            
+            <div class="p-4 mb-6 text-blue-800 bg-blue-100 border-l-4 border-blue-500 rounded-r-lg">
+                <p><strong>Instrução:</strong> Arraste e solte os cards para redefinir a ordem de prioridade que aparecerá na página de resultados. A nova ordem será salva para todos os cenários (negativado, aposentado, etc.). Clique em "Editar" para alterar os detalhes de um produto.</p>
+            </div>
+
+            <!-- Lista de Produtos -->
+            <div id="product-list-admin" class="space-y-4">
+                <!-- Cards de produtos serão inseridos aqui -->
+                <div id="loading-spinner" class="flex items-center justify-center py-20">
+                    <svg class="w-10 h-10 text-green-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <p class="ml-4 text-xl text-gray-600">Carregando produtos...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== MODAL DE EDIÇÃO (Oculto por padrão) ===== -->
+    <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden w-full h-full p-4 overflow-y-auto">
+        <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl">
+            <form id="edit-form">
+                <div class="flex items-center justify-between p-5 bg-gray-100 border-b rounded-t-2xl">
+                    <h3 class="text-2xl font-semibold text-gray-800">Editar Produto</h3>
+                    <button type="button" id="close-modal-button" class="text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 text-sm p-1.5 ml-auto inline-flex items-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-6 modal-body overflow-y-auto">
+                    <input type="hidden" id="edit-product-id">
+                    <!-- Linha 1: Título e Tag -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label for="edit-titulo" class="block mb-2 text-sm font-medium">Título</label>
+                            <input type="text" id="edit-titulo" class="w-full input-field" required>
+                        </div>
+                        <div>
+                            <label for="edit-tag" class="block mb-2 text-sm font-medium">Tag (Ex: Empréstimo Pessoal)</label>
+                            <input type="text" id="edit-tag" class="w-full input-field">
+                        </div>
+                    </div>
+                    <!-- Linha 2: Link de Afiliado e Logo -->
+                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label for="edit-link" class="block mb-2 text-sm font-medium">Link de Afiliado</label>
+                            <input type="url" id="edit-link" class="w-full input-field" required>
+                        </div>
+                        <div>
+                            <label for="edit-logo" class="block mb-2 text-sm font-medium">URL da Logo (Ex: public/facio.png)</label>
+                            <input type="text" id="edit-logo" class="w-full input-field">
+                        </div>
+                    </div>
+                    <!-- Linha 3: Vantagens -->
+                    <div>
+                        <label class="block mb-2 text-sm font-medium">Vantagens (use `<strong>` para negrito)</label>
+                        <div id="vantagens-container" class="space-y-2">
+                            <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 1">
+                            <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 2">
+                            <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 3">
+                        </div>
+                    </div>
+                    <!-- Linha 4: Botões -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label for="edit-btnPrimario" class="block mb-2 text-sm font-medium">Texto Botão Primário</label>
+                            <input type="text" id="edit-btnPrimario" class="w-full input-field">
+                        </div>
+                        <div>
+                            <label for="edit-btnSecundario" class="block mb-2 text-sm font-medium">Texto Botão Secundário</label>
+                            <input type="text" id="edit-btnSecundario" class="w-full input-field">
+                        </div>
+                    </div>
+                    <!-- Linha 5: Tipos e Perfis -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <h4 class="mb-3 font-semibold">Tipo de Produto</h4>
+                            <div id="edit-tipos" class="grid grid-cols-2 gap-2"></div>
+                        </div>
+                        <div>
+                            <h4 class="mb-3 font-semibold">Perfis Atendidos</h4>
+                            <div id="edit-perfis" class="grid grid-cols-2 gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center p-6 space-x-2 border-t rounded-b">
+                    <button type="submit" class="px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700">Salvar Alterações</button>
+                    <button type="button" id="cancel-modal-button" class="px-6 py-3 font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+    // ========================================================================
+    //  1. CONFIGURAÇÃO E INICIALIZAÇÃO
+    // ========================================================================
+    
+    const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- Seletores de Elementos do DOM ---
+    const loginScreen = document.getElementById('login-screen');
+    const adminPanel = document.getElementById('admin-panel');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const logoutButton = document.getElementById('logout-button');
+    const productListContainer = document.getElementById('product-list-admin');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const saveOrderButton = document.getElementById('save-order-button');
+    
+    // --- Elementos do Modal ---
+    const modal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+    const closeModalButton = document.getElementById('close-modal-button');
+    const cancelModalButton = document.getElementById('cancel-modal-button');
+
+    // --- Dados de Opções para o Modal ---
+    const ALL_TIPOS = ['emprestimo', 'emprestimocomgarantia', 'contas', 'cartao', 'seguro', 'fgts', 'bolsafamilia', 'renegociar'];
+    const ALL_PERFIS = ['negativado', 'score-baixo', 'aposentado', 'score-regular', 'autonomo'];
+
+    // ========================================================================
+    //  2. AUTENTICAÇÃO
+    // ========================================================================
+
+    // --- Evento de Login ---
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.textContent = '';
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            loginError.textContent = 'Falha no login. Verifique seu email e senha.';
+            console.error('Login Error:', error.message);
+        } else {
+            loginScreen.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            loadProducts();
+        }
+    });
+
+    // --- Evento de Logout ---
+    logoutButton.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        adminPanel.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+    });
+
+    // --- Checar estado da autenticação ao carregar a página ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            loginScreen.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            loadProducts();
+        }
+    });
+
+    // ========================================================================
+    //  3. LÓGICA DE GERENCIAMENTO DE PRODUTOS
+    // ========================================================================
+    let sortableInstance = null;
+
+    // --- Carregar e Renderizar Produtos ---
+    async function loadProducts() {
+        loadingSpinner.style.display = 'flex';
+        productListContainer.innerHTML = ''; // Limpa a lista antiga
+        productListContainer.appendChild(loadingSpinner);
+
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('priority_order', { ascending: true });
+
+        loadingSpinner.style.display = 'none';
+
+        if (error) {
+            console.error('Error fetching products:', error);
+            productListContainer.innerHTML = '<p class="text-red-500">Erro ao carregar produtos.</p>';
+            return;
+        }
+
+        products.forEach(product => {
+            const card = createProductCard(product);
+            productListContainer.appendChild(card);
+        });
+
+        // Inicializa o SortableJS para arrastar e soltar
+        if (sortableInstance) {
+            sortableInstance.destroy();
+        }
+        sortableInstance = new Sortable(productListContainer, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onUpdate: () => saveOrderButton.disabled = false,
+        });
+        saveOrderButton.disabled = true;
+    }
+
+    // --- Criar o HTML de um Card de Produto ---
+    function createProductCard(product) {
+        const card = document.createElement('div');
+        card.className = 'flex items-center p-4 bg-white border rounded-lg shadow-sm cursor-move';
+        card.dataset.id = product.id; // Armazena o ID do produto no elemento
+
+        card.innerHTML = `
+            <div class="flex-shrink-0 w-10 text-2xl text-center text-gray-400">☰</div>
+            <img src="../${product.logo}" alt="${product.titulo}" class="w-24 h-10 mx-4 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/96x40/f3f4f6/9ca3af?text=Logo';">
+            <div class="flex-grow">
+                <p class="font-bold text-gray-800">${product.titulo}</p>
+                <p class="text-sm text-gray-500">${product.tag}</p>
+            </div>
+            <button data-id="${product.id}" class="edit-btn px-4 py-2 ml-4 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600">Editar</button>
+        `;
+        return card;
+    }
+
+    // --- Salvar a Nova Ordem de Prioridade ---
+    saveOrderButton.addEventListener('click', async () => {
+        const cards = productListContainer.querySelectorAll('[data-id]');
+        const updates = Array.from(cards).map((card, index) => ({
+            id: parseInt(card.dataset.id),
+            priority_order: index
+        }));
+
+        saveOrderButton.textContent = 'Salvando...';
+        saveOrderButton.disabled = true;
+
+        const { error } = await supabase.from('products').upsert(updates);
+
+        if (error) {
+            console.error('Error saving order:', error);
+            alert('Erro ao salvar a ordem.');
+        } else {
+            // Feedback visual de sucesso
+            saveOrderButton.textContent = 'Ordem Salva!';
+            setTimeout(() => {
+                saveOrderButton.textContent = 'Salvar Ordem de Prioridade';
+            }, 2000);
+        }
+    });
+
+    // ========================================================================
+    //  4. LÓGICA DO MODAL DE EDIÇÃO
+    // ========================================================================
+
+    // --- Abrir Modal ---
+    productListContainer.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            const productId = e.target.dataset.id;
+            
+            const { data: product, error } = await supabase
+                .from('products')
+                .select('*')
+                .eq('id', productId)
+                .single();
+
+            if (error) {
+                return alert('Não foi possível carregar os dados do produto.');
+            }
+            
+            populateModal(product);
+            modal.classList.remove('hidden');
+        }
+    });
+
+    // --- Popular o formulário do modal com dados do produto ---
+    function populateModal(product) {
+        document.getElementById('edit-product-id').value = product.id;
+        document.getElementById('edit-titulo').value = product.titulo || '';
+        document.getElementById('edit-tag').value = product.tag || '';
+        document.getElementById('edit-link').value = product.link || '';
+        document.getElementById('edit-logo').value = product.logo || '';
+        document.getElementById('edit-btnPrimario').value = product.btnPrimario || '';
+        document.getElementById('edit-btnSecundario').value = product.btnSecundario || '';
+
+        // Vantagens
+        const vantagensInputs = document.querySelectorAll('#vantagens-container input');
+        vantagensInputs.forEach((input, index) => {
+            input.value = product.vantagens[index] || '';
+        });
+
+        // Tipos (Checkboxes)
+        const tiposContainer = document.getElementById('edit-tipos');
+        tiposContainer.innerHTML = '';
+        ALL_TIPOS.forEach(tipo => {
+            const isChecked = product.tipo.includes(tipo);
+            tiposContainer.innerHTML += `
+                <label class="flex items-center">
+                    <input type="checkbox" name="tipo" value="${tipo}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
+                    <span class="ml-2 text-sm">${tipo}</span>
+                </label>`;
+        });
+
+        // Perfis (Checkboxes)
+        const perfisContainer = document.getElementById('edit-perfis');
+        perfisContainer.innerHTML = '';
+        ALL_PERFIS.forEach(perfil => {
+            const isChecked = product.perfis.includes(perfil);
+            perfisContainer.innerHTML += `
+                <label class="flex items-center">
+                    <input type="checkbox" name="perfil" value="${perfil}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
+                    <span class="ml-2 text-sm">${perfil}</span>
+                </label>`;
+        });
+    }
+
+    // --- Fechar Modal ---
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+    closeModalButton.addEventListener('click', closeModal);
+    cancelModalButton.addEventListener('click', closeModal);
+
+    // --- Salvar Alterações do Modal ---
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const productId = document.getElementById('edit-product-id').value;
+
+        // Coletar valores dos checkboxes
+        const tipos = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(cb => cb.value);
+        const perfis = Array.from(document.querySelectorAll('input[name="perfil"]:checked')).map(cb => cb.value);
+        const vantagens = Array.from(document.querySelectorAll('input[name="vantagens"]')).map(input => input.value).filter(v => v);
+
+        const updatedProduct = {
+            titulo: document.getElementById('edit-titulo').value,
+            tag: document.getElementById('edit-tag').value,
+            link: document.getElementById('edit-link').value,
+            logo: document.getElementById('edit-logo').value,
+            btnPrimario: document.getElementById('edit-btnPrimario').value,
+            btnSecundario: document.getElementById('edit-btnSecundario').value,
+            vantagens: vantagens,
+            tipo: tipos,
+            perfis: perfis,
+        };
+        
+        const { error } = await supabase
+            .from('products')
+            .update(updatedProduct)
+            .eq('id', productId);
+
+        if (error) {
+            alert('Erro ao atualizar o produto.');
+            console.error('Update error:', error);
+        } else {
+            alert('Produto atualizado com sucesso!');
+            closeModal();
+            loadProducts(); // Recarrega a lista para mostrar as alterações
+        }
+    });
+
+    </script>
+</body>
+</html>
