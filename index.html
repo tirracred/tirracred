@@ -367,11 +367,12 @@ crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-50">
  <!-- Seção de Parceiros -->
-<section class="py-0 bg-white shadow-2xl"><span></span><div position:center class="flex justify-center mt=10 ml-1">
-  <h1 class="margin-top-5 bg-green-0 text-green-400 text-1xl font-bold px-2 py-1 rounded-xl shadow-sm">
-    Nossos Parceiros
-  </h1>
-</div>
+<section class="py-0 bg-white shadow-2xl">
+  <div class="flex justify-center mt-10 ml-1">
+    <h1 class="bg-green-0 text-green-400 text-1xl font-bold px-2 py-1 rounded-xl shadow-sm">
+      Nossos Parceiros
+    </h1>
+  </div>
                     <div class="logo-carousel">
                         <div class="logo-carousel-track">
                             <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
@@ -572,6 +573,92 @@ crossorigin="anonymous"></script>
     </button>
 
 </div>
+
+<!-- Âncora para o menu -->
+<section id="renegociacao" class="py-0 bg-gray-800 text-white"></section>
+
+<!-- Bloco da Renegociação -->
+<section class="py-16 bg-gray-800 text-white">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="text-3xl font-extrabold mb-4">
+      Negocie suas dívidas com até
+      <span class="text-green-400">99% de desconto</span>
+    </h2>
+    <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+      Consulte seu CPF gratuitamente e veja as ofertas para limpar seu nome.
+    </p>
+
+    <div class="max-w-md mx-auto">
+      <form class="flex-center flex-col sm:flex-row gap-3" action="https://bit.ly/4f9eMOv" target="_blank">
+        <button type="submit"
+          class="bg-green-500 text-white font-bold px-6 py-3 rounded-md hover:bg-green-600 transition">
+          Consultar CPF
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+<footer class="bg-green-900 text-white">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <h3 class="font-semibold mb-4">Para Você</h3>
+        <ul>
+          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo Pessoal</a></li>
+          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo para Negativado</a></li>
+          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="hover:text-green-400">Cartão de Crédito</a></li>
+          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('dividas-page')" class="hover:text-green-400">Renegociar Dívidas</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-4">Links Úteis</h3>
+        <ul>
+          <li class="mb-2"><a href="#" class="hover:text-green-400">Sobre Nós</a></li>
+          <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Termos de Uso</a></li>
+          <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Política de Privacidade</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-4">Fale Conosco</h3>
+        <p class="text-white-400">
+          <a href="mailto:atendimento@tirracred.com.br">atendimento@tirracred.com.br</a>
+        </p>
+
+        <a href="https://wa.me/34635555261" class="whatsapp-outline-button mt-3 inline-flex" target="_blank">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
+            <path fill="currentColor" d="..."></path>
+          </svg>
+          <span>WhatsApp</span>
+        </a>
+
+        <style>
+          .whatsapp-outline-button{border:2px solid #00A86B;color:#00A86B;background:transparent;border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600;text-decoration:none;transition:.2s}
+          .whatsapp-outline-button:hover{background:#00A86B;color:#fff}
+          .whatsapp-icon{width:22px;height:22px;margin-right:8px}
+        </style>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-4">Siga-nos</h3>
+        <div class="flex space-x-4">
+          <!-- seus ícones sociais -->
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-700 mt-8 pt-8">
+      <p class="text-xs text-gray-400 text-center">
+        TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 61.811.560/0001-10.
+        <br>As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
+      </p>
+      <p class="text-xs text-gray-500 text-center mt-2">© 2025 TirraCred. Todos os direitos reservados.</p>
+    </div>
+  </div>
+</footer>
+
+
 
             
   <script>
