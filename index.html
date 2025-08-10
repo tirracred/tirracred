@@ -1554,13 +1554,39 @@ if (whatsappInput) {
   const tagBadge = (c) => ({ red:'bg-red-100 text-red-800', blue:'bg-blue-100 text-blue-800', yellow:'bg-yellow-100 text-yellow-800', purple:'bg-purple-100 text-purple-800' }[c] || 'bg-green-100 text-green-800');
 
   // 5) Render
-  const render = () => {
+   const render = () => {
     const start = (state.page - 1) * state.perPage;
     const end   = start + state.perPage;
     const items = state.filtered.slice(start, end);
 
     listEl.innerHTML = items.length ? items.map(p => {
+      
+      // VERIFICA SE O ITEM É UM ANÚNCIO
+      if (toArray(p.tipo, true).includes('anuncio_google')) {
+        const adClient = p.tag;      // Pega o ca-pub da coluna 'tag'
+        const adSlot = p.link;     // Pega o slot da coluna 'link'
+        const adLayoutKey = p.tagClass; // Pega o layout-key da coluna 'tagClass'
+        
+        // Se não tiver os dados essenciais, não renderiza nada
+        if (!adClient || !adSlot) return ''; 
 
+        // Retorna o HTML do bloco de anúncio, agora com o layout-key
+        return `
+        <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
+            <!-- Anúncio: ${p.titulo} -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-format="fluid"
+                 ${adLayoutKey ? `data-ad-layout-key="${adLayoutKey}"` : ''}
+                 data-ad-client="${adClient}"
+                 data-ad-slot="${adSlot}"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+             </scr` + `ipt>
+        </div>`;
+      }
+
+      // Se não for um anúncio, a sua lógica original para renderizar o card do produto continua aqui
       const vantagens = toArray(p.vantagens, false);
       const vHtml = vantagens.map(v => `
         <li class="flex items-start">
@@ -1596,7 +1622,7 @@ if (whatsappInput) {
       </div>`;
     }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
 
-    // paginação
+    // A sua lógica original de paginação continua aqui, sem alterações
     const total = Math.ceil(state.filtered.length / state.perPage);
     [pagTop, pagBottom].forEach(c => {
       if (!c) return; c.innerHTML = ''; if (total <= 1) return;
@@ -1607,26 +1633,21 @@ if (whatsappInput) {
           ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
           : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
                  : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
-        // rola a viewport para o topo da lista (logo acima da paginação de cima)
+
             function scrollToProductsTop() {
             const header = document.getElementById('main-header');
-            const anchor =
-                document.getElementById('pagination-top') ||
-                document.getElementById('product-list') ||
-                document.getElementById('home-filters');
-
+            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
             const headerH = header ? header.offsetHeight : 0;
             const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
             const y = window.pageYOffset + rect.top - headerH - 8;
 
-            // rolagem suave e controlada
+
             window.scrollTo({ top: y, behavior: 'smooth' });
             }
 
-        
         if (!b.disabled) b.addEventListener('click', (e) => {
         e.preventDefault();
-        e.stopPropagation();           // <- ESTA LINHA É A NOVIDADE
+        e.stopPropagation();
         state.page = p;
         render();
         scrollToProductsTop();
@@ -1647,28 +1668,34 @@ if (whatsappInput) {
                       .map(e => e.value.toLowerCase());
 
     state.filtered = state.all.filter(p => {
+      // Se o item for um anúncio, mantenha-o na lista sempre.
+      if (toArray(p.tipo, true).includes('anuncio_google')) {
+        return true;
+      }
 
+      // Caso contrário, a sua lógica de filtro original continua aqui.
       const tipos  = toArray(p.tipo,   true);
       const perfis = toArray(p.perfis, true);
       const tOK   = (type === 'all') || tipos.includes(type.toLowerCase());
-
+      
 
       const perfOK = (perfisSel.length === 0) || perfisSel.every(v => perfis.includes(v));
       return tOK && perfOK;
     });
 
+    // O resto da sua função original continua aqui, sem alterações.
     state.page = 1;
     render();
     if (window.innerWidth < 1024) {
-  const panel   = document.getElementById('filter-panel');
-  const overlay = document.getElementById('filter-overlay');
-  panel?.classList.add('translate-x-full');
-  if (overlay) {
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-  }
-  document.body.style.overflow = '';
-}
+      const panel   = document.getElementById('filter-panel');
+      const overlay = document.getElementById('filter-overlay');
+      panel?.classList.add('translate-x-full');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+      }
+      document.body.style.overflow = '';
+    }
   };
 
   filters.forEach(f => f.addEventListener('change', apply));
@@ -1683,7 +1710,7 @@ if (whatsappInput) {
     state.all = (data || []).map(p => ({ ...p, logo: fixLogo(p.logo) }));
     apply();
   })();
-
+  
 </script>
 
 
