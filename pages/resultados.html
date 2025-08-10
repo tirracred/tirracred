@@ -134,8 +134,8 @@ crossorigin="anonymous"></script>
 
         // --- Configuração do Supabase ---
         const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ========================================================================
         // II. FUNÇÕES UTILITÁRIAS E DE PRIORIZAÇÃO (O seu código original)
@@ -145,7 +145,7 @@ crossorigin="anonymous"></script>
             return {
                 nome: params.get('nome') || 'Cliente',
                 valor: Number(params.get('valor')) || 0,
-                
+
                 negativado: params.get('negativado') === 'true',
                 aposentado: params.get('aposentado') === 'true',
                 bolsafamilia: params.get('bolsafamilia') === 'true',

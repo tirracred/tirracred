@@ -1302,6 +1302,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. PRODUCT FILTER & PAGINATION (VERSÃO CORRIGIDA)
 // ===================================================
 
+const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // --- Seletores de Elementos ---
 const productListContainer = document.getElementById('product-list');
 const paginationTopContainer = document.getElementById('pagination-top');
