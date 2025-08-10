@@ -452,7 +452,7 @@ crossorigin="anonymous"></script>
                 
                 <!-- Filtros (Painel Off-canvas em Mobile, Sidebar em Desktop) -->
                 <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
-                    
+
                     <div class="h-full flex flex-col">
                         <!-- Cabeçalho do Painel Mobile com Título e Botão de Fechar -->
                         <div class="flex items-center justify-between border-b p-4 lg:hidden">
@@ -1551,7 +1551,7 @@ if (whatsappInput) {
     listEl.innerHTML = items.length ? items.map(p => {
       
       // VERIFICA SE O ITEM É UM ANÚNCIO
-      if (toArray(p.tipo, true).includes('anuncio_google')) {
+        if (toArray(p.tipo, false).includes('anuncio_google')) {
         const adClient = p.tag;      // Pega o ca-pub da coluna 'tag'
         const adSlot = p.link;     // Pega o slot da coluna 'link'
         const adLayoutKey = p.tagClass; // Pega o layout-key da coluna 'tagClass'
