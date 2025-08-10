@@ -30,6 +30,7 @@
 @media (min-width: 768px) { #pagination { margin-bottom: 4rem; } }
 
 #pagination-top { margin-top: .5rem; margin-bottom: 2rem; }
+
 @media (min-width: 768px) { #pagination-top { margin-bottom: 2rem; } }
 
 
@@ -1543,25 +1544,7 @@ if (whatsappInput) {
     const items = state.filtered.slice(start, end);
 
     listEl.innerHTML = items.length ? items.map(p => {
-     if (p.tipo && toArray(p.tipo, true).includes('anuncio_google')) {
-            const adClient = p.tag || 'ca-pub-4935884639623224'; // Usa o seu ID como fallback
-            const adSlot = p.link; // Usamos o campo 'link' para o slot
-            if (!adSlot) return ''; // Não renderiza se não tiver o slot ID
-            
-            return `
-            <div class="product-card bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-center">
-                <!-- Anúncio: ${p.titulo} -->
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="${adClient}"
-                     data-ad-slot="${adSlot}"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                     (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>`;
-        }
+
       const vantagens = toArray(p.vantagens, false);
       const vHtml = vantagens.map(v => `
         <li class="flex items-start">
@@ -1648,21 +1631,13 @@ if (whatsappInput) {
                       .map(e => e.value.toLowerCase());
 
     state.filtered = state.all.filter(p => {
-      
-      // 1. PRIMEIRO, VERIFICAMOS SE O ITEM É UM ANÚNCIO
-      // Se o tipo do item for 'anuncio_google', nós dizemos para o filtro: "Mantenha este item!" (return true)
-      // e a verificação para este item específico para por aqui.
-      if (toArray(p.tipo, true).includes('anuncio_google')) {
-        return true; 
-      }
-       // 2. SE NÃO FOR UM ANÚNCIO, A LÓGICA ORIGINAL DE FILTRO CONTINUA
-      // Este código só é executado para os produtos reais.
+
       const tipos  = toArray(p.tipo,   true);
       const perfis = toArray(p.perfis, true);
       const tOK   = (type === 'all') || tipos.includes(type.toLowerCase());
+
+
       const perfOK = (perfisSel.length === 0) || perfisSel.every(v => perfis.includes(v));
-      
-      // O produto só será mantido se passar nas suas regras de filtro originais.
       return tOK && perfOK;
     });
 
