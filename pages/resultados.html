@@ -7,6 +7,7 @@
      <link rel="icon" type="image/png" href="../public/favincon.png"/>
      <script src="https://cdn.tailwindcss.com"></script>
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
      <link rel="preconnect" href="https://fonts.googleapis.com">
      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -99,66 +100,10 @@ crossorigin="anonymous"></script>
 
                  <div id="results-message" class="bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg my-8 max-w-4xl mx-auto fade-in"></div>
 
-<<<<<<< HEAD
+
                  <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-=======
-  <script>
-    // ========================================================================
-    // I. BANCO DE DADOS DE PRODUTOS
-    // ========================================================================
-    const allProducts = [
-  {
-    "id": 1,
-    "tipo": "[\"emprestimocomgarantia\",\"cartao\",\"contas\"]",
-    "perfis": [
-      "negativado",
-      "score-baixo",
-      "autonomo"
-    ],
-    "logo": "",
-    "tag": "Crédito CLT",
-    "tagClass": "yellow",
-    "titulo": "Empréstimo para Pessoas Trabalhadoras",
-    "vantagens": "[\"Crédito para Trabalhadores\",\"Empréstimo em Instantes\",\"Solicite Já!\"]",
-    "link": "linktr.ee/tirra",
-    "btnPrimario": "Acessar",
-    "btnSecundario": "Detalhes"
-  },
-  {
-    "id": 2,
-    "tipo": "[\"cartao\"]",
-    "perfis": [
-      "score-regular",
-      "autonomo"
-    ],
-    "logo": "",
-    "tag": "Crédito CLT",
-    "tagClass": "yellow",
-    "titulo": "Empréstimo para Pessoas Trabalhadoras",
-    "vantagens": "[\"999\",\"999\",\"999\",\"99\"]",
-    "link": "linktr.ee/tirra",
-    "btnPrimario": "Acessar",
-    "btnSecundario": "Detalhes"
-  },
-  {
-    "id": 3,
-    "tipo": "[\"emprestimocomgarantia\",\"cartao\",\"contas\",\"fgts\"]",
-    "perfis": [
-      "negativado",
-      "score-baixo",
-      "score-regular"
-    ],
-    "logo": "",
-    "tag": "credito clt",
-    "tagClass": "yellow",
-    "titulo": "Empréstimo para Pessoas Trabalhadoras",
-    "vantagens": "[\"123\",\"456\",\"789\"]",
-    "link": "linktr.ee/tirra",
-    "btnPrimario": "Acessar",
-    "btnSecundario": "Detalhes"
-  }
-];
->>>>>>> 5216ac477a380439b7c9332f8e4bf02f7fbafd07
+
+
 
                  <div class="text-center mt-12">
                      <a href="../index.html" class="btn-primary">
@@ -175,11 +120,8 @@ crossorigin="anonymous"></script>
             </div>
      </footer>
 
-    <script>
-    // Adicione o script do Supabase no <head> da sua página primeiro:
-    // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
-
-    document.addEventListener('DOMContentLoaded', async () => { // Adicionamos 'async' aqui
+     <script>
+    document.addEventListener('DOMContentLoaded', async () => {
         // ========================================================================
         // I. CONFIGURAÇÃO E ELEMENTOS DO DOM
         // ========================================================================
@@ -196,14 +138,14 @@ crossorigin="anonymous"></script>
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ========================================================================
-        // II. FUNÇÕES UTILITÁRIAS E HELPERS
+        // II. FUNÇÕES UTILITÁRIAS E DE PRIORIZAÇÃO (O seu código original)
         // ========================================================================
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
                 nome: params.get('nome') || 'Cliente',
                 valor: Number(params.get('valor')) || 0,
-                parcelas: Number(params.get('parcelas')) || 0,
+                
                 negativado: params.get('negativado') === 'true',
                 aposentado: params.get('aposentado') === 'true',
                 bolsafamilia: params.get('bolsafamilia') === 'true',
@@ -213,17 +155,10 @@ crossorigin="anonymous"></script>
         function findProducts(criteria, sourceArray) {
             const key = Object.keys(criteria)[0];
             const value = criteria[key];
-            return sourceArray.filter(product => {
-                if (Array.isArray(product[key])) {
-                    return product[key].includes(value);
-                }
-                return product[key] === value;
-            });
+            return sourceArray.filter(product => product.tipo && product.tipo.includes(value));
         }
 
-        // ========================================================================
-        // III. MOTOR DE PRIORIZAÇÃO DE PRODUTOS
-        // ========================================================================
+
         function prioritizeProducts(products, params) {
             let priorityOrder = [];
             const buildOrderedList = (priorityIds) => {
@@ -234,18 +169,18 @@ crossorigin="anonymous"></script>
             };
 
             if (params.aposentado) {
-                priorityOrder = [7, 20, 16, 2, 1, 4, 12];
+                priorityOrder = [8, 20, 16, 2, 1, 5, 12]; // ID 8 é o do INSS
                 return buildOrderedList(priorityOrder);
             }
             if (params.bolsafamilia) {
                 const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
-                priorityOrder = [14, 19, ...fgtsProductIds, 1, 2, 4, 6, 12];
+                priorityOrder = [15, 20, ...fgtsProductIds, 1, 2, 5, 7, 12];
                 return buildOrderedList(priorityOrder);
             }
             if (params.negativado) {
                 const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id);
-                const variationA = [18, 1, 2, 4, 5, 6, 10, 14, 12, 13, 3, ...fgtsProductIds];
-                const variationB = [2, 1, 4, 5, 6, 10, 14, 12, 13, 3, ...fgtsProductIds];
+                const variationA = [18, 1, 2, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
+                const variationB = [2, 1, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
                 priorityOrder = (Math.random() < 0.7) ? variationA : variationB;
                 return buildOrderedList(priorityOrder);
             }
@@ -255,7 +190,7 @@ crossorigin="anonymous"></script>
         }
 
         // ========================================================================
-        // IV. BLOCO DE EXECUÇÃO PRINCIPAL E RENDERIZAÇÃO
+        // III. BLOCO DE EXECUÇÃO PRINCIPAL
         // ========================================================================
 
         // 1. Ingerir parâmetros da URL
@@ -282,9 +217,7 @@ crossorigin="anonymous"></script>
         // 4. Enriquecer dados e renderizar
         const productsToRender = orderedProducts.map(product => {
             let displayChance = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
-            if (product.tipo.includes('fgts')) {
-                displayChance = 99;
-            }
+            if (product.tipo.includes('fgts')) displayChance = 99;
             return { ...product, displayChance };
         });
 
@@ -297,9 +230,7 @@ crossorigin="anonymous"></script>
             message = `<p class="font-bold text-lg mb-2">Análise para ${formatCurrency(params.valor)} concluída!</p>
                        <p>Com o seu perfil, você já tem acesso a ótimas condições! Vamos te mostrar ofertas com as maiores chances de aprovação para o valor que precisa no topo.</p>`;
         }
-        if (messageBox) {
-            messageBox.innerHTML = message;
-        }
+        if (messageBox) messageBox.innerHTML = message;
 
         setTimeout(() => {
             if (loadingState) loadingState.style.display = 'none';
@@ -313,17 +244,13 @@ crossorigin="anonymous"></script>
                             ${chanceBadge}
                             <div class="flex items-center justify-between">
                                 <div class="w-28 h-12 flex items-center justify-start">
-                                    <img src="${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                                    <img src="../${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
                                 </div>
                                 <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
                             </div>
                             <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
-                            <ul class="space-y-2 text-gray-600 text-sm flex-grow">
-                                ${vantagensHtml}
-                            </ul>
-                            <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">
-                                ${product.btnPrimario}
-                            </a>
+                            <ul class="space-y-2 text-gray-600 text-sm flex-grow">${vantagensHtml}</ul>
+                            <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">${product.btnPrimario}</a>
                         </div>
                     `;
                     productGrid.innerHTML += cardHtml;
@@ -333,52 +260,10 @@ crossorigin="anonymous"></script>
             }
         }, transitionTime);
     });
-<<<<<<< HEAD
+
 </script>
 
  </body>
- </html>
-=======
-  }
-  const url = new URL(window.location.href);
-  const perfil = url.searchParams.get('perfil'); // "negativado" | "aposentado" | "score-regular" | "bolsafamilia"
-  let arr = (window.allProducts||[]).map(normalize);
-  if(perfil){ arr = arr.filter(p=> p.perfis.includes(perfil)); }
-  if(perfil==='bolsafamilia'){
-    const bf = arr.filter(p=> p.tipo.includes('bolsafamilia'));
-    const others = arr.filter(p=> !p.tipo.includes('bolsafamilia'));
-    arr = [...bf, ...others];
-  }
-  if(window.prioByPerfil && perfil && prioByPerfil[perfil] && prioByPerfil[perfil].length){ arr = reorderBy(prioByPerfil[perfil], arr); }
-  window.allProducts = arr; // substitui para o renderer usar
-})();
-  
 
-// <<<PRIORITY_MAP_START>>>
-const prioByPerfil = {
-  "negativado": [],
-  "aposentado": [
-    7,
-    20,
-    16,
-    2,
-    1,
-    4,
-    12
-  ],
-  "score-regular": [],
-  "bolsafamilia": [
-    14,
-    19,
-    1,
-    2,
-    4,
-    6,
-    12
-  ]
-};
-// <<<PRIORITY_MAP_END>>>
-</script>
-</body>
-</html>
->>>>>>> 5216ac477a380439b7c9332f8e4bf02f7fbafd07
+ </html>
+

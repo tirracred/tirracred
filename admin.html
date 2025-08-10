@@ -95,38 +95,38 @@
                 </div>
                 <div class="p-6 space-y-6 modal-body overflow-y-auto">
                     <input type="hidden" id="edit-product-id">
-                    <!-- Linha 1: Título e Tag -->
+                    
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <label for="edit-titulo" class="block mb-2 text-sm font-medium">Título</label>
                             <input type="text" id="edit-titulo" class="w-full input-field" required>
                         </div>
                         <div>
-                            <label for="edit-tag" class="block mb-2 text-sm font-medium">Tag (Ex: Empréstimo Pessoal)</label>
+                            <label for="edit-tag" class="block mb-2 text-sm font-medium">Tag</label>
                             <input type="text" id="edit-tag" class="w-full input-field">
                         </div>
                     </div>
-                    <!-- Linha 2: Link de Afiliado e Logo -->
+
                      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <label for="edit-link" class="block mb-2 text-sm font-medium">Link de Afiliado</label>
                             <input type="url" id="edit-link" class="w-full input-field" required>
                         </div>
                         <div>
-                            <label for="edit-logo" class="block mb-2 text-sm font-medium">URL da Logo (Ex: public/facio.png)</label>
+                            <label for="edit-logo" class="block mb-2 text-sm font-medium">URL da Logo</label>
                             <input type="text" id="edit-logo" class="w-full input-field">
                         </div>
                     </div>
-                    <!-- Linha 3: Vantagens -->
+
                     <div>
-                        <label class="block mb-2 text-sm font-medium">Vantagens (use `<strong>` para negrito)</label>
+                        <label class="block mb-2 text-sm font-medium">Vantagens</label>
                         <div id="vantagens-container" class="space-y-2">
                             <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 1">
                             <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 2">
                             <input type="text" name="vantagens" class="w-full input-field" placeholder="Vantagem 3">
                         </div>
                     </div>
-                    <!-- Linha 4: Botões -->
+
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <label for="edit-btnPrimario" class="block mb-2 text-sm font-medium">Texto Botão Primário</label>
@@ -137,7 +137,7 @@
                             <input type="text" id="edit-btnSecundario" class="w-full input-field">
                         </div>
                     </div>
-                    <!-- Linha 5: Tipos e Perfis -->
+
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <h4 class="mb-3 font-semibold">Tipo de Produto</h4>
@@ -158,17 +158,19 @@
     </div>
 
 
-    <script>
+<script>
+// CORREÇÃO: Todo o código agora está dentro de um único 'DOMContentLoaded' para evitar conflitos.
+document.addEventListener('DOMContentLoaded', () => {
     // ========================================================================
     //  1. CONFIGURAÇÃO E INICIALIZAÇÃO
     // ========================================================================
-    
+
     const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
 
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- Seletores de Elementos do DOM ---
+    
     const loginScreen = document.getElementById('login-screen');
     const adminPanel = document.getElementById('admin-panel');
     const loginForm = document.getElementById('login-form');
@@ -177,22 +179,23 @@
     const productListContainer = document.getElementById('product-list-admin');
     const loadingSpinner = document.getElementById('loading-spinner');
     const saveOrderButton = document.getElementById('save-order-button');
-    
-    // --- Elementos do Modal ---
+
     const modal = document.getElementById('edit-modal');
+
     const editForm = document.getElementById('edit-form');
     const closeModalButton = document.getElementById('close-modal-button');
     const cancelModalButton = document.getElementById('cancel-modal-button');
 
-    // --- Dados de Opções para o Modal ---
+
     const ALL_TIPOS = ['emprestimo', 'emprestimocomgarantia', 'contas', 'cartao', 'seguro', 'fgts', 'bolsafamilia', 'renegociar'];
     const ALL_PERFIS = ['negativado', 'score-baixo', 'aposentado', 'score-regular', 'autonomo'];
+    let sortableInstance = null;
 
     // ========================================================================
     //  2. AUTENTICAÇÃO
     // ========================================================================
 
-    // --- Evento de Login ---
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         loginError.textContent = '';
@@ -202,7 +205,8 @@
         const { error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            loginError.textContent = 'Falha no login. Verifique seu email e senha.';
+            // CORREÇÃO: Mostra a mensagem de erro específica do Supabase.
+            loginError.textContent = `Falha no login: ${error.message}`;
             console.error('Login Error:', error.message);
         } else {
             loginScreen.classList.add('hidden');
@@ -211,32 +215,31 @@
         }
     });
 
-    // --- Evento de Logout ---
+
     logoutButton.addEventListener('click', async () => {
         await supabase.auth.signOut();
         adminPanel.classList.add('hidden');
         loginScreen.classList.remove('hidden');
+        window.location.reload(); // Recarrega a página para limpar o estado
     });
 
-    // --- Checar estado da autenticação ao carregar a página ---
-    document.addEventListener('DOMContentLoaded', async () => {
+    // Checa se já existe uma sessão ativa ao carregar a página
+    (async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
             loginScreen.classList.add('hidden');
             adminPanel.classList.remove('hidden');
             loadProducts();
         }
-    });
-
+    })();
+    
     // ========================================================================
     //  3. LÓGICA DE GERENCIAMENTO DE PRODUTOS
     // ========================================================================
-    let sortableInstance = null;
 
-    // --- Carregar e Renderizar Produtos ---
     async function loadProducts() {
         loadingSpinner.style.display = 'flex';
-        productListContainer.innerHTML = ''; // Limpa a lista antiga
+        productListContainer.innerHTML = '';
         productListContainer.appendChild(loadingSpinner);
 
         const { data: products, error } = await supabase
@@ -248,7 +251,7 @@
 
         if (error) {
             console.error('Error fetching products:', error);
-            productListContainer.innerHTML = '<p class="text-red-500">Erro ao carregar produtos.</p>';
+            productListContainer.innerHTML = `<p class="text-red-500">Erro ao carregar produtos: ${error.message}</p>`;
             return;
         }
 
@@ -257,10 +260,7 @@
             productListContainer.appendChild(card);
         });
 
-        // Inicializa o SortableJS para arrastar e soltar
-        if (sortableInstance) {
-            sortableInstance.destroy();
-        }
+        if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(productListContainer, {
             animation: 150,
             ghostClass: 'sortable-ghost',
@@ -270,11 +270,11 @@
         saveOrderButton.disabled = true;
     }
 
-    // --- Criar o HTML de um Card de Produto ---
+
     function createProductCard(product) {
         const card = document.createElement('div');
         card.className = 'flex items-center p-4 bg-white border rounded-lg shadow-sm cursor-move';
-        card.dataset.id = product.id; // Armazena o ID do produto no elemento
+        card.dataset.id = product.id;
 
         card.innerHTML = `
             <div class="flex-shrink-0 w-10 text-2xl text-center text-gray-400">☰</div>
@@ -288,7 +288,7 @@
         return card;
     }
 
-    // --- Salvar a Nova Ordem de Prioridade ---
+
     saveOrderButton.addEventListener('click', async () => {
         const cards = productListContainer.querySelectorAll('[data-id]');
         const updates = Array.from(cards).map((card, index) => ({
@@ -304,8 +304,9 @@
         if (error) {
             console.error('Error saving order:', error);
             alert('Erro ao salvar a ordem.');
+            saveOrderButton.textContent = 'Salvar Ordem de Prioridade';
         } else {
-            // Feedback visual de sucesso
+
             saveOrderButton.textContent = 'Ordem Salva!';
             setTimeout(() => {
                 saveOrderButton.textContent = 'Salvar Ordem de Prioridade';
@@ -317,27 +318,18 @@
     //  4. LÓGICA DO MODAL DE EDIÇÃO
     // ========================================================================
 
-    // --- Abrir Modal ---
+
     productListContainer.addEventListener('click', async (e) => {
         if (e.target.classList.contains('edit-btn')) {
             const productId = e.target.dataset.id;
-            
-            const { data: product, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', productId)
-                .single();
-
-            if (error) {
-                return alert('Não foi possível carregar os dados do produto.');
-            }
-            
+            const { data: product, error } = await supabase.from('products').select('*').eq('id', productId).single();
+            if (error) return alert('Não foi possível carregar os dados do produto.');
             populateModal(product);
             modal.classList.remove('hidden');
         }
     });
 
-    // --- Popular o formulário do modal com dados do produto ---
+
     function populateModal(product) {
         document.getElementById('edit-product-id').value = product.id;
         document.getElementById('edit-titulo').value = product.titulo || '';
@@ -347,50 +339,41 @@
         document.getElementById('edit-btnPrimario').value = product.btnPrimario || '';
         document.getElementById('edit-btnSecundario').value = product.btnSecundario || '';
 
-        // Vantagens
+
         const vantagensInputs = document.querySelectorAll('#vantagens-container input');
         vantagensInputs.forEach((input, index) => {
-            input.value = product.vantagens[index] || '';
+            input.value = product.vantagens ? (product.vantagens[index] || '') : '';
         });
 
-        // Tipos (Checkboxes)
+
         const tiposContainer = document.getElementById('edit-tipos');
-        tiposContainer.innerHTML = '';
-        ALL_TIPOS.forEach(tipo => {
-            const isChecked = product.tipo.includes(tipo);
-            tiposContainer.innerHTML += `
-                <label class="flex items-center">
-                    <input type="checkbox" name="tipo" value="${tipo}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
-                    <span class="ml-2 text-sm">${tipo}</span>
-                </label>`;
-        });
+        tiposContainer.innerHTML = ALL_TIPOS.map(tipo => {
+            const isChecked = product.tipo && product.tipo.includes(tipo);
+            return `<label class="flex items-center"><input type="checkbox" name="tipo" value="${tipo}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded"><span class="ml-2 text-sm">${tipo}</span></label>`;
+        }).join('');
 
-        // Perfis (Checkboxes)
         const perfisContainer = document.getElementById('edit-perfis');
-        perfisContainer.innerHTML = '';
-        ALL_PERFIS.forEach(perfil => {
-            const isChecked = product.perfis.includes(perfil);
-            perfisContainer.innerHTML += `
-                <label class="flex items-center">
-                    <input type="checkbox" name="perfil" value="${perfil}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded">
-                    <span class="ml-2 text-sm">${perfil}</span>
-                </label>`;
-        });
+        perfisContainer.innerHTML = ALL_PERFIS.map(perfil => {
+            const isChecked = product.perfis && product.perfis.includes(perfil);
+            return `<label class="flex items-center"><input type="checkbox" name="perfil" value="${perfil}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded"><span class="ml-2 text-sm">${perfil}</span></label>`;
+        }).join('');
     }
 
-    // --- Fechar Modal ---
+
     function closeModal() {
         modal.classList.add('hidden');
     }
     closeModalButton.addEventListener('click', closeModal);
     cancelModalButton.addEventListener('click', closeModal);
 
-    // --- Salvar Alterações do Modal ---
+
     editForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+
         const productId = document.getElementById('edit-product-id').value;
 
-        // Coletar valores dos checkboxes
+
         const tipos = Array.from(document.querySelectorAll('input[name="tipo"]:checked')).map(cb => cb.value);
         const perfis = Array.from(document.querySelectorAll('input[name="perfil"]:checked')).map(cb => cb.value);
         const vantagens = Array.from(document.querySelectorAll('input[name="vantagens"]')).map(input => input.value).filter(v => v);
@@ -402,15 +385,10 @@
             logo: document.getElementById('edit-logo').value,
             btnPrimario: document.getElementById('edit-btnPrimario').value,
             btnSecundario: document.getElementById('edit-btnSecundario').value,
-            vantagens: vantagens,
-            tipo: tipos,
-            perfis: perfis,
+            vantagens, tipos, perfis,
         };
         
-        const { error } = await supabase
-            .from('products')
-            .update(updatedProduct)
-            .eq('id', productId);
+        const { error } = await supabase.from('products').update(updatedProduct).eq('id', productId);
 
         if (error) {
             alert('Erro ao atualizar o produto.');
@@ -418,10 +396,10 @@
         } else {
             alert('Produto atualizado com sucesso!');
             closeModal();
-            loadProducts(); // Recarrega a lista para mostrar as alterações
+            loadProducts();
         }
     });
-
-    </script>
+});
+</script>
 </body>
 </html>
