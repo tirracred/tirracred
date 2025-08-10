@@ -1517,33 +1517,21 @@ if (whatsappInput) {
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // 2) Elementos
+  // Elementos da página
   const listEl = document.getElementById('product-list');
   const pagTop = document.getElementById('pagination-top');
   const pagBottom = document.getElementById('pagination');
   const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
-  // 3) Estado
+  // Estado da aplicação
   const state = { all: [], filtered: [], page: 1, perPage: 8 };
 
-  // 4) Helpers de normalização
-  const toArray = (v, lower = false) => {
-    if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
-    if (typeof v === 'string') {
-      // tenta JSON
-      try { const j = JSON.parse(v); if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j; } catch(e){}
-      // converte text[] do PG: "{a,b}" -> ["a","b"]
-      const arr = v.replace(/^\{|\}$/g,'').split(',')
-        .map(s => s.replace(/"/g,'').trim()).filter(Boolean);
-      return lower ? arr.map(s => s.toLowerCase()) : arr;
-    }
-    return [];
-  };
+  // Funções de ajuda (Helpers)
+  const splitLines = (txt = '') => txt.split('\n').map(s => s.trim()).filter(Boolean);
   const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
   const tagBadge = (c) => ({ red:'bg-red-100 text-red-800', blue:'bg-blue-100 text-blue-800', yellow:'bg-yellow-100 text-yellow-800', purple:'bg-purple-100 text-purple-800' }[c] || 'bg-green-100 text-green-800');
 
-   // 5) Render (Função para desenhar produtos e anúncios)
-
+  // Função para RENDERIZAR os produtos e anúncios
   const render = () => {
     const start = (state.page - 1) * state.perPage;
     const end   = start + state.perPage;
@@ -1551,19 +1539,16 @@ if (whatsappInput) {
 
     listEl.innerHTML = items.length ? items.map(p => {
       
-      // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
+      // 1. VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
       if (p.tipo === 'anuncio_google') {
         const adClient = p.tag;
         const adSlot = p.link;
         const adLayoutKey = p.tagClass;
         
-
         if (!adClient || !adSlot) return ''; 
-
 
         return `
         <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
-            <!-- Anúncio: ${p.titulo} -->
             <ins class="adsbygoogle"
                  style="display:block"
                  data-ad-format="fluid"
@@ -1576,21 +1561,17 @@ if (whatsappInput) {
         </div>`;
       }
 
-      // Se não for um anúncio, renderiza o card do produto normalmente
-      // A função toArray foi mantida aqui APENAS para as vantagens, que são várias linhas.
-      const vantagens = toArray(p.vantagens, false);
-      const vHtml = vantagens.map(v => `
-        <li class="flex items-start">
-          <span class="mr-2 text-green-800">✓</span><span>${v}</span>
-        </li>`).join('');
+      // 2. Se não for um anúncio, renderiza o card do produto
+      const vantagens = splitLines(p.vantagens);
+      const vHtml = vantagens.map(v => `<li class="flex items-start"><span class="mr-2 text-green-800">✓</span><span>${v}</span></li>`).join('');
+      
       return `
       <div class="product-card">
         <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
           <div class="flex flex-col lg:flex-row gap-6">
             <div class="flex-shrink-0 flex justify-center lg:justify-start">
               <div class="p-3 border rounded-lg bg-gray-50">
-                <img src="${fixLogo(p.logo)}" alt="Logo ${p.titulo}" class="w-32 h-auto object-contain"
-                     onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
+                <img src="${fixLogo(p.logo)}" alt="Logo ${p.titulo}" class="w-32 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
               </div>
             </div>
             <div class="flex-grow">
@@ -1613,34 +1594,27 @@ if (whatsappInput) {
       </div>`;
     }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
 
-    // Paginação (código original, sem alterações)
+    // Paginação
     const total = Math.ceil(state.filtered.length / state.perPage);
     [pagTop, pagBottom].forEach(c => {
       if (!c) return; c.innerHTML = ''; if (total <= 1) return;
       const mk = (label, p, dis=false, cur=false) => {
         const b = document.createElement('button');
         b.textContent = label; b.disabled = dis || cur;
-        b.className = cur
-          ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-          : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
-                 : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
+        b.className = cur ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white' : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed' : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
         function scrollToProductsTop() {
             const header = document.getElementById('main-header');
-            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
+            const anchor = document.getElementById('home-filters');
             const headerH = header ? header.offsetHeight : 0;
-            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
-            const y = window.pageYOffset + rect.top - headerH - 8;
-
+            const y = window.pageYOffset + (anchor?.getBoundingClientRect().top || 0) - headerH - 20;
             window.scrollTo({ top: y, behavior: 'smooth' });
         }
         if (!b.disabled) b.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation();
             state.page = p;
             render();
             scrollToProductsTop();
         });
-        
         return b;
       };
       c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
@@ -1649,39 +1623,34 @@ if (whatsappInput) {
     });
   };
 
-  
-  // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
+  // Função para APLICAR os filtros
   const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
     const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
                       .map(e => e.value);
 
     state.filtered = state.all.filter(p => {
-      // 1. Verifica se é um anúncio. Se for, mantém sempre.
+      // 1. Se for um anúncio, mantém sempre na lista.
       if (p.tipo === 'anuncio_google') {
         return true;
       }
 
-      // 2. Lógica de filtro para PRODUTOS, usando texto simples.
+      // 2. Lógica de filtro para produtos, usando texto simples.
       const tipoDoProduto = p.tipo || ''; 
       const perfisDoProduto = p.perfis || '';
 
-      // Verifica se o tipo do produto contém o tipo selecionado no filtro
       const tipoOK = (type === 'all') || tipoDoProduto.includes(type);
-      
-      // Verifica se o texto de perfis do produto contém TODOS os perfis selecionados
       const perfisOK = (perfisSel.length === 0) || perfisSel.every(perfilSelecionado => perfisDoProduto.includes(perfilSelecionado));
 
       return tipoOK && perfisOK;
     });
 
-    // O resto da função continua igual.
     state.page = 1;
     render();
     if (window.innerWidth < 1024) {
-      const panel   = document.getElementById('filter-panel');
+      const panel = document.getElementById('filter-panel');
       const overlay = document.getElementById('filter-overlay');
-      panel?.classList.add('translate-x-full');
+      if (panel) panel.classList.add('translate-x-full');
       if (overlay) {
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
@@ -1692,7 +1661,7 @@ if (whatsappInput) {
 
   filters.forEach(f => f.addEventListener('change', apply));
 
-  // 7) Boot
+  // Função de inicialização (Boot)
   (async () => {
     listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
