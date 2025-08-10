@@ -107,8 +107,16 @@ const statusEl = $('status'), modal = $('modal'), form = $('form');
 
 let items = [];
 
-const asPgArray = (txt) => txt.split('\n').map(s=>s.trim()).filter(Boolean);
-const asCsvArray = (txt) => txt.split(',').map(s=>s.trim()).filter(Boolean);
+const normCsv = (txt = '') =>
+  txt.split(',').map(s => s.trim()).filter(Boolean).join(',');         // "a, b ,c" -> "a,b,c"
+
+const normLines = (txt = '') =>
+  txt.split('\n').map(s => s.trim()).filter(Boolean).join('\n');       // linhas limpas
+
+const displayCsv = (v) => Array.isArray(v) ? v.join(', ') : (v || ''); // para mostrar nos cards
+const editCsv    = (v) => Array.isArray(v) ? v.join(',')    : (v || ''); // para colocar no <input>
+
+const displayLines = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
 
 const cardHTML = (p) => `
   <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start" data-id="${p.id}">
@@ -119,7 +127,7 @@ const cardHTML = (p) => `
         <h4 class="font-semibold">${p.titulo}</h4>
         <span class="text-xs px-2 py-1 rounded ${p.tagClass ? 'bg-gray-100' : ''}">${p.tag || ''}</span>
       </div>
-      <p class="text-xs text-gray-500">#${p.priority_order} • ${ (p.tipo||[]).join(', ') }</p>
+        <p class="text-xs text-gray-500">#${p.priority_order} • ${ displayCsv(p.tipo) }</p>
       <div class="mt-2 flex gap-2">
         <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm">Abrir</a>
         <button class="edit text-sm px-2 py-1 border rounded">Editar</button>
@@ -131,9 +139,9 @@ const openModal = (p={}) => {
   $('modalTitle').textContent = p.id ? 'Editar Produto' : 'Novo Produto';
   ['id','titulo','tag','tagClass','logo','link','btnPrimario','btnSecundario','priority_order']
     .forEach(k => $(k).value = p[k] ?? '');
-  $('tipo').value = (p.tipo||[]).join(',');
-  $('perfis').value = (p.perfis||[]).join(',');
-  $('vantagens').value = (p.vantagens||[]).join('\n');
+    $('tipo').value      = editCsv(p.tipo);
+    $('perfis').value    = editCsv(p.perfis);
+    $('vantagens').value = displayLines(p.vantagens);
   modal.classList.remove('hidden');
 };
 const closeModal = () => modal.classList.add('hidden');
@@ -149,11 +157,12 @@ $('save').onclick = async () => {
     link: $('link').value,
     btnPrimario: $('btnPrimario').value || 'Acessar',
     btnSecundario: $('btnSecundario').value || 'Detalhes',
-    vantagens: asPgArray($('vantagens').value),
-    tipo: asCsvArray($('tipo').value.toLowerCase()),
-    perfis: asCsvArray($('perfis').value.toLowerCase()),
-    priority_order: Number($('priority_order').value) || 0
-  };
+    vantagens:  normLines($('vantagens').value),             // linhas
+    tipo:       normCsv($('tipo').value.toLowerCase()),      // csv
+    perfis:     normCsv($('perfis').value.toLowerCase()),    // csv
+
+  priority_order: Number($('priority_order').value) || 0
+};
   const id = $('id').value;
   let resp;
   if (id) resp = await supabase.from('products').update(payload).eq('id', id);
