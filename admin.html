@@ -4,10 +4,7 @@
   <meta charset="utf-8" />
   <title>Admin - TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <a href="index.html" class="h-8 inline-block" title="Voltar ao site">
-  <img src="public/logo.png" alt="logo" class="h-8"
-       onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
-</a>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -47,10 +44,15 @@
       <div class="container mx-auto px-4 h-16 flex items-center justify-between">
         <img src="public/logo.png" alt="logo" class="h-8"
              onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
-        <div class="flex items-center gap-2">
-          <button id="logout" class="px-3 py-2 bg-red-600 text-white rounded-lg">Sair</button>
+       <div class="flex items-center gap-2">
+        <a href="index.html"
+            class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100">
+            Início
+        </a>
+        <button id="logout" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            Sair
+        </button>
         </div>
-      </div>
     </header>
 
     <main class="container mx-auto px-4 py-6">
