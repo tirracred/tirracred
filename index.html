@@ -632,193 +632,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /* ===================================================
-     * 3. LÓGICA DE FILTRAGEM & PAGINAÇÃO DINÂMICA
-     * =================================================== */
-    const filterInputs  = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-    const productCards  = document.querySelectorAll('#product-list .product-card');
-    const itemsPerPage  = 8;  // Exibir 8 produtos por página
-    let currentPage     = 1;
-    let filteredCards   = [];
-
-    function applyFilters() {
-        const selectedType     = document.querySelector('input[name="product_type"]:checked').value;
-        const selectedProfiles = Array.from(
-            document.querySelectorAll('input[data-filter="perfil"]:checked')
-        ).map(cb => cb.value);
-
-        filteredCards = [];
-        let visibleCount = 0;
-        productCards.forEach(card => {
-            const typeMatch    = (selectedType === 'all') || (card.dataset.tipo === selectedType);
-            const cardProfiles = (card.dataset.perfil || '').split(' ');
-            const profileMatch = (selectedProfiles.length === 0) ||
-                selectedProfiles.every(p => cardProfiles.includes(p));
-
-            if (typeMatch && profileMatch) {
-                // Card corresponde aos filtros
-                visibleCount++;
-                filteredCards.push(card);
-                if (visibleCount <= itemsPerPage) {
-                    // Mostrar o card na primeira página
-                    card.style.display = 'block';
-                    setTimeout(() => {
-                        card.style.opacity   = '1';
-                        card.style.transform = 'scale(1)';
-                    }, 10);
-                } else {
-                    // Ocultar cards além do limite da primeira página
-                    card.style.opacity   = '0';
-                    card.style.transform = 'scale(0.95)';
-                    setTimeout(() => { card.style.display = 'none'; }, 300);
-                }
-            } else {
-                // Ocultar cards que não correspondem aos filtros
-                card.style.opacity   = '0';
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => { card.style.display = 'none'; }, 300);
-            }
-        });
-
-        // Reinicia na primeira página e atualiza a paginação
-        currentPage = 1;
-        renderPagination();
-
-        // Em telas pequenas, fecha o painel de filtros após aplicar
-        if (window.innerWidth < 1024) {
-            closePanel();
-        }
-    }
-
-    // Função para trocar de página com transição suave
-    function goToPage(page) {
-        const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
-        if (page < 1 || page > totalPages || page === currentPage) return;
-
-        // Índices dos itens da página atual
-        const startOld = (currentPage - 1) * itemsPerPage;
-        const endOld   = Math.min(startOld + itemsPerPage, filteredCards.length);
-        const oldCards = filteredCards.slice(startOld, endOld);
-
-        // Índices dos itens da nova página
-        const startNew = (page - 1) * itemsPerPage;
-        const endNew   = Math.min(startNew + itemsPerPage, filteredCards.length);
-        const newCards = filteredCards.slice(startNew, endNew);
-
-        // Fade-out: oculta gradualmente os cards da página atual
-        oldCards.forEach(card => {
-            card.style.opacity   = '0';
-            card.style.transform = 'scale(0.95)';
-            setTimeout(() => { card.style.display = 'none'; }, 300);
-        });
-
-        // Fade-in: exibe os cards da nova página após saída dos anteriores
-        setTimeout(() => {
-            newCards.forEach(card => {
-                card.style.display   = 'block';
-                card.style.opacity   = '0';
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.opacity   = '1';
-                    card.style.transform = 'scale(1)';
-                }, 10);
-            });
-            currentPage = page;
-            renderPagination();
-        }, 300);
-    }
-
-    // Função para criar/atualizar os controles de paginação
-    function renderPagination() {
-        const totalProducts = filteredCards.length;
-        const totalPages    = Math.ceil(totalProducts / itemsPerPage);
-        const containerTop    = document.getElementById('pagination-top');
-        const containerBottom = document.getElementById('pagination-bottom');
-
-        // Limpa paginação antiga se os containers existem
-        if (containerTop) containerTop.innerHTML = '';
-        if (containerBottom) containerBottom.innerHTML = '';
-
-        if (totalPages <= 1) {
-            // Não exibe paginação se há 0 ou 1 página
-            return;
-        }
-
-        // Botão "Anterior"
-        const prevDisabled = (currentPage === 1);
-        const prevClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' +
-                             (prevDisabled
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-300 hover:bg-gray-100');
-        const prevTopBtn = document.createElement('button');
-        prevTopBtn.innerText = 'Anterior';
-        prevTopBtn.className = prevClass;
-        prevTopBtn.disabled  = prevDisabled;
-        prevTopBtn.addEventListener('click', () => {
-            if (currentPage > 1) goToPage(currentPage - 1);
-        });
-        const prevBottomBtn = prevTopBtn.cloneNode(true);
-        if (prevBottomBtn) {
-            prevBottomBtn.disabled = prevDisabled;
-            prevBottomBtn.addEventListener('click', () => {
-                if (currentPage > 1) goToPage(currentPage - 1);
-            });
-        }
-
-        if (containerTop) containerTop.appendChild(prevTopBtn);
-        if (containerBottom) containerBottom.appendChild(prevBottomBtn);
-
-        // Botões de número de página
-        for (let p = 1; p <= totalPages; p++) {
-            const isCurrent = (p === currentPage);
-            const pageClass = isCurrent
-                ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-                : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100';
-
-            const pageTopBtn = document.createElement('button');
-            pageTopBtn.innerText = p;
-            pageTopBtn.className = pageClass;
-            if (!isCurrent) {
-                pageTopBtn.addEventListener('click', () => goToPage(p));
-            }
-            const pageBottomBtn = pageTopBtn.cloneNode(true);
-            if (!isCurrent) {
-                pageBottomBtn.addEventListener('click', () => goToPage(p));
-            }
-
-            if (containerTop) containerTop.appendChild(pageTopBtn);
-            if (containerBottom) containerBottom.appendChild(pageBottomBtn);
-        }
-
-        // Botão "Próximo"
-        const nextDisabled = (currentPage === totalPages);
-        const nextClass    = 'px-3 py-1 rounded-lg text-sm font-medium border ' +
-                             (nextDisabled
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                                : 'text-gray-700 border-gray-300 hover:bg-gray-100');
-        const nextTopBtn = document.createElement('button');
-        nextTopBtn.innerText = 'Próximo';
-        nextTopBtn.className = nextClass;
-        nextTopBtn.disabled  = nextDisabled;
-        nextTopBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) goToPage(currentPage + 1);
-        });
-        const nextBottomBtn = nextTopBtn.cloneNode(true);
-        if (nextBottomBtn) {
-            nextBottomBtn.disabled = nextDisabled;
-            nextBottomBtn.addEventListener('click', () => {
-                if (currentPage < totalPages) goToPage(currentPage + 1);
-            });
-        }
-
-        if (containerTop) containerTop.appendChild(nextTopBtn);
-        if (containerBottom) containerBottom.appendChild(nextBottomBtn);
-    }
-
-    // Eventos dos filtros e inicialização
-    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-    applyFilters();  // Aplica filtros (e paginação) na carga inicial
 });
+
 </script>
             
 
@@ -829,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-<section class=div id="emprestimos-page" class="page-container">
+<section id="emprestimos-page" class="page-container">
         <!-- Conteúdo da página de empréstimos -->
     </div>
 
@@ -1173,6 +988,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI Event Listeners ---
     mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+    // ao carregar, posiciona a viewport no formulário do herói
+        requestAnimationFrame(() => {
+        const header = document.getElementById('main-header');
+        const hero   = document.getElementById('hero-section'); // onde está o form
+        if (!hero) return;
+        const headerH = header ? header.offsetHeight : 0;
+        const rect = hero.getBoundingClientRect();
+        const y = window.pageYOffset + rect.top - headerH - 8;
+        // use 'instant' para evitar "animação" inicial no mobile
+        window.scrollTo({ top: y, behavior: 'instant' });
+        });
 
     // ===================================================
     // 2. HOME PAGE SIMULATOR
@@ -1364,10 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================
     // 5. INITIALIZATION
     // ===================================================
-    if (filterInputs.length > 0) {
-    filterInputs.forEach(input => input.addEventListener('change', applyFilters));
-    applyFilters();
-    }
+    
     showPage('page-home');
 });
     /**
@@ -1601,7 +1424,7 @@ if (whatsappInput) {
 
     initializeCarousel();
 }
-const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+  const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1683,7 +1506,31 @@ const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
           ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
           : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
                  : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
-        if (!b.disabled) b.addEventListener('click', () => { state.page = p; render(); });
+        // rola a viewport para o topo da lista (logo acima da paginação de cima)
+            function scrollToProductsTop() {
+            const header = document.getElementById('main-header');
+            const anchor =
+                document.getElementById('pagination-top') ||
+                document.getElementById('product-list') ||
+                document.getElementById('home-filters');
+
+            const headerH = header ? header.offsetHeight : 0;
+            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
+            const y = window.pageYOffset + rect.top - headerH - 8;
+
+            // rolagem suave e controlada
+            window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+
+        
+        if (!b.disabled) b.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();           // <- ESTA LINHA É A NOVIDADE
+        state.page = p;
+        render();
+        scrollToProductsTop();
+        });
+
         return b;
       };
       c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
@@ -1708,6 +1555,16 @@ const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
 
     state.page = 1;
     render();
+    if (window.innerWidth < 1024) {
+  const panel   = document.getElementById('filter-panel');
+  const overlay = document.getElementById('filter-overlay');
+  panel?.classList.add('translate-x-full');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  }
+  document.body.style.overflow = '';
+}
   };
 
   filters.forEach(f => f.addEventListener('change', apply));
