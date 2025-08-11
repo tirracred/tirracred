@@ -1545,34 +1545,39 @@ if (whatsappInput) {
    // 5) Render (Função para desenhar produtos e anúncios)
 
   const render = () => {
-  //... (lógica de paginação para obter `items`)
+  //... (a sua lógica de paginação para obter `items` permanece a mesma)
+  const paginatedItems = state.filtered.slice((state.page - 1) * state.perPage, state.page * state.perPage);
 
-  // Limpa o conteúdo anterior da lista
+  // 1. Limpa completamente o container antes de renderizar novamente.
+  // Isto é crucial para o ciclo de vida dos anúncios numa SPA.
   listEl.innerHTML = '';
 
-  if (items.length === 0) {
+  if (paginatedItems.length === 0) {
     listEl.innerHTML = '<p class="text-center text-gray-500">Nenhum produto encontrado.</p>';
+    //... (a sua lógica de renderização de paginação)
     return;
   }
 
-  // Utiliza um DocumentFragment para otimizar o desempenho
+  // Usa um DocumentFragment para otimizar a manipulação do DOM
   const fragment = document.createDocumentFragment();
 
-  items.forEach(p => {
-    // Verificação direta para identificar o anúncio
+  paginatedItems.forEach((p, index) => {
     if (p.tipo === 'anuncio_google') {
       const adClient = p.tag;
       const adSlot = p.link;
       const adLayoutKey = p.tagClass;
 
-      // Ignora se os dados essenciais do anúncio estiverem em falta
+      
       if (!adClient ||!adSlot) return;
 
-      // 1. Cria o container principal do anúncio
+      // Cria um ID único para o container do anúncio para o MutationObserver
+      const adContainerId = `ad-container-${index}-${new Date().getTime()}`;
+      
       const adContainer = document.createElement('div');
+      adContainer.id = adContainerId;
       adContainer.className = 'product-card w-full bg-transparent p-0 border-0 shadow-none';
 
-      // 2. Cria o elemento <ins>
+
       const insElement = document.createElement('ins');
       insElement.className = 'adsbygoogle';
       insElement.style.display = 'block';
@@ -1581,39 +1586,98 @@ if (whatsappInput) {
       if (adLayoutKey) {
         insElement.setAttribute('data-ad-layout-key', adLayoutKey);
       }
-      // Atributos padrão para anúncios responsivos
+
       insElement.setAttribute('data-ad-format', 'auto');
       insElement.setAttribute('data-full-width-responsive', 'true');
 
-      // 3. Cria o elemento <script>
+
       const scriptElement = document.createElement('script');
-      // Usar textContent é mais seguro e performático que innerHTML
+
       scriptElement.textContent = '(adsbygoogle = window.adsbygoogle ||).push({});';
 
-      // 4. Anexa os elementos ao container
+
       adContainer.appendChild(insElement);
       adContainer.appendChild(scriptElement);
 
-      // Anexa o container do anúncio ao fragmento
+
       fragment.appendChild(adContainer);
+
+
+      // 2. Anexa um MutationObserver para diagnóstico
+      // Aguarda um momento para o elemento estar no DOM antes de observar
+      setTimeout(() => {
+        const attachedInsElement = document.querySelector(`#${adContainerId}.adsbygoogle`);
+        if (attachedInsElement) {
+          console.log(` Observando o anúncio no container #${adContainerId}`);
+          
+          const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+                const status = mutation.target.getAttribute('data-ad-status');
+                console.log(` O anúncio #${adContainerId} mudou de estado para: ${status}`);
+                // Pode adicionar lógica aqui para lidar com anúncios não preenchidos, se desejar
+                observer.disconnect(); // Para de observar após a primeira mudança
+              }
+            }
+          });
+
+          observer.observe(attachedInsElement, { attributes: true });
+        } else {
+            console.error(` Não foi possível encontrar o elemento <ins> para observar em #${adContainerId}`);
+        }
+      }, 100); // Um pequeno atraso para garantir que o DOM foi atualizado
+
     } else {
-      // Lógica existente para renderizar um card de produto
-      const productCard = document.createElement('div');
-      // A forma mais segura é construir o HTML do produto aqui também,
-      // mas para manter a simplicidade, usamos innerHTML para o conteúdo não-script
-      productCard.innerHTML = `
-        <div class="product-card">
-          <h3>${p.titulo}</h3>
-          </div>
-      `;
-      // Anexa o card do produto ao fragmento
-      fragment.appendChild(productCard.firstElementChild);
+      // A sua lógica de renderização de produto existente
+      const productEl = document.createElement('div');
+      // Construa o seu card de produto aqui. Exemplo simplificado:
+      productEl.className = 'product-card'; // Adicione as suas classes
+      productEl.innerHTML = `<h3>${p.titulo}</h3><p>${p.tipo}</p>`; // Adapte ao seu HTML
+      fragment.appendChild(productEl);
     }
   });
 
-  // Anexa o fragmento ao DOM de uma só vez para minimizar reflows
+  // Anexa todos os novos elementos de uma só vez
   listEl.appendChild(fragment);
+
+  //... (a sua lógica de renderização de paginação)
 };
+
+    // Paginação (código original, sem alterações)
+    const total = Math.ceil(state.filtered.length / state.perPage);
+    [pagTop, pagBottom].forEach(c => {
+      if (!c) return; c.innerHTML = ''; if (total <= 1) return;
+      const mk = (label, p, dis=false, cur=false) => {
+        const b = document.createElement('button');
+        b.textContent = label; b.disabled = dis || cur;
+        b.className = cur
+          ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
+          : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
+                 : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
+        function scrollToProductsTop() {
+            const header = document.getElementById('main-header');
+            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
+            const headerH = header ? header.offsetHeight : 0;
+            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
+            const y = window.pageYOffset + rect.top - headerH - 8;
+
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+        if (!b.disabled) b.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            state.page = p;
+            render();
+            scrollToProductsTop();
+        });
+        
+        return b;
+      };
+      c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
+      for (let i=1;i<=total;i++) c.appendChild(mk(String(i), i, false, i === state.page));
+      c.appendChild(mk('Próximo', state.page + 1, state.page === total));
+    });
+  };
 
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
