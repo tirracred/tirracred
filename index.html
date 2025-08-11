@@ -1545,103 +1545,73 @@ if (whatsappInput) {
    // 5) Render (Função para desenhar produtos e anúncios)
 
   const render = () => {
-  //... (a sua lógica de paginação para obter `items` permanece a mesma)
-  const paginatedItems = state.filtered.slice((state.page - 1) * state.perPage, state.page * state.perPage);
+    const start = (state.page - 1) * state.perPage;
+    const end   = start + state.perPage;
+    const items = state.filtered.slice(start, end);
 
-  // 1. Limpa completamente o container antes de renderizar novamente.
-  // Isto é crucial para o ciclo de vida dos anúncios numa SPA.
-  listEl.innerHTML = '';
-
-  if (paginatedItems.length === 0) {
-    listEl.innerHTML = '<p class="text-center text-gray-500">Nenhum produto encontrado.</p>';
-    //... (a sua lógica de renderização de paginação)
-    return;
-  }
-
-  // Usa um DocumentFragment para otimizar a manipulação do DOM
-  const fragment = document.createDocumentFragment();
-
-  paginatedItems.forEach((p, index) => {
-    if (p.tipo === 'anuncio_google') {
-      const adClient = p.tag;
-      const adSlot = p.link;
-      const adLayoutKey = p.tagClass;
-
+    listEl.innerHTML = items.length ? items.map(p => {
       
-      if (!adClient ||!adSlot) return;
+      // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
+      if (p.tipo === 'anuncio_google') {
+        const adClient = p.tag;
+        const adSlot = p.link;
+        const adLayoutKey = p.tagClass;
+        
 
-      // Cria um ID único para o container do anúncio para o MutationObserver
-      const adContainerId = `ad-container-${index}-${new Date().getTime()}`;
-      
-      const adContainer = document.createElement('div');
-      adContainer.id = adContainerId;
-      adContainer.className = 'product-card w-full bg-transparent p-0 border-0 shadow-none';
+        if (!adClient || !adSlot) return ''; 
 
 
-      const insElement = document.createElement('ins');
-      insElement.className = 'adsbygoogle';
-      insElement.style.display = 'block';
-      insElement.setAttribute('data-ad-client', adClient);
-      insElement.setAttribute('data-ad-slot', adSlot);
-      if (adLayoutKey) {
-        insElement.setAttribute('data-ad-layout-key', adLayoutKey);
+        return `
+        <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
+            <!-- Anúncio: ${p.titulo} -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-format="fluid"
+                 ${adLayoutKey ? `data-ad-layout-key="${adLayoutKey}"` : ''}
+                 data-ad-client="${adClient}"
+                 data-ad-slot="${adSlot}"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </scr`+`ipt>
+        </div>`;
       }
 
-      insElement.setAttribute('data-ad-format', 'auto');
-      insElement.setAttribute('data-full-width-responsive', 'true');
-
-
-      const scriptElement = document.createElement('script');
-
-      scriptElement.textContent = '(adsbygoogle = window.adsbygoogle ||).push({});';
-
-
-      adContainer.appendChild(insElement);
-      adContainer.appendChild(scriptElement);
-
-
-      fragment.appendChild(adContainer);
-
-
-      // 2. Anexa um MutationObserver para diagnóstico
-      // Aguarda um momento para o elemento estar no DOM antes de observar
-      setTimeout(() => {
-        const attachedInsElement = document.querySelector(`#${adContainerId}.adsbygoogle`);
-        if (attachedInsElement) {
-          console.log(` Observando o anúncio no container #${adContainerId}`);
-          
-          const observer = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
-              if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
-                const status = mutation.target.getAttribute('data-ad-status');
-                console.log(` O anúncio #${adContainerId} mudou de estado para: ${status}`);
-                // Pode adicionar lógica aqui para lidar com anúncios não preenchidos, se desejar
-                observer.disconnect(); // Para de observar após a primeira mudança
-              }
-            }
-          });
-
-          observer.observe(attachedInsElement, { attributes: true });
-        } else {
-            console.error(` Não foi possível encontrar o elemento <ins> para observar em #${adContainerId}`);
-        }
-      }, 100); // Um pequeno atraso para garantir que o DOM foi atualizado
-
-    } else {
-      // A sua lógica de renderização de produto existente
-      const productEl = document.createElement('div');
-      // Construa o seu card de produto aqui. Exemplo simplificado:
-      productEl.className = 'product-card'; // Adicione as suas classes
-      productEl.innerHTML = `<h3>${p.titulo}</h3><p>${p.tipo}</p>`; // Adapte ao seu HTML
-      fragment.appendChild(productEl);
-    }
-  });
-
-  // Anexa todos os novos elementos de uma só vez
-  listEl.appendChild(fragment);
-
-  //... (a sua lógica de renderização de paginação)
-};
+      // Se não for um anúncio, renderiza o card do produto normalmente
+      // A função toArray foi mantida aqui APENAS para as vantagens, que são várias linhas.
+      const vantagens = toArray(p.vantagens, false);
+      const vHtml = vantagens.map(v => `
+        <li class="flex items-start">
+          <span class="mr-2 text-green-800">✓</span><span>${v}</span>
+        </li>`).join('');
+      return `
+      <div class="product-card">
+        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
+          <div class="flex flex-col lg:flex-row gap-6">
+            <div class="flex-shrink-0 flex justify-center lg:justify-start">
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <img src="${fixLogo(p.logo)}" alt="Logo ${p.titulo}" class="w-32 h-auto object-contain"
+                     onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
+              </div>
+            </div>
+            <div class="flex-grow">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div class="flex-grow">
+                  <span class="inline-block ${tagBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">${p.tag || ''}</span>
+                  <h4 class="text-xl font-bold text-gray-800 mb-3">${p.titulo || ''}</h4>
+                  <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
+                </div>
+                <div class="flex-shrink-0 mt-4 sm:mt-0">
+                  <div class="product-actions flex flex-col gap-2">
+                    <a href="${p.link}" target="_blank" rel="noopener" class="btn-primary text-center">${p.btnPrimario || 'Acessar'}</a>
+                    <a href="${p.link}" target="_blank" rel="noopener" class="btn-secondary text-center">${p.btnSecundario || 'Detalhes'}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
 
     // Paginação (código original, sem alterações)
     const total = Math.ceil(state.filtered.length / state.perPage);
