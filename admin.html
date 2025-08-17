@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Admin - TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
+  <head><link rel="icon" type="image/png" href="public/favincon.png"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -14,6 +14,9 @@
     .sortable-ghost{opacity:.4;background:#c7d2fe}
     .sortable-chosen{cursor:grabbing}
     .modal-bg{background:rgba(0,0,0,.5)}
+
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:9999px;font-size:12px;margin:4px 6px 0 0;background:#f9fafb}
+.badge .x{cursor:pointer;font-weight:700}
   </style>
 </head>
 <body class="text-gray-800">
@@ -170,6 +173,20 @@
         </div>
       </div>
 
+          <div class="md:col-span-2">
+      <label class="text-sm">Pré-visualização</label>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Lista A</div>
+          <div id="previewA" class="flex flex-wrap"></div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Lista B</div>
+          <div id="previewB" class="flex flex-wrap"></div>
+        </div>
+      </div>
+    </div>
+
       <!-- Outros perfis: uma lista -->
       <div id="rulesOutros" class="grid md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
@@ -182,16 +199,26 @@
         </div>
       </div>
 
+          <div class="md:col-span-2">
+      <label class="text-sm">Pré-visualização</label>
+      <div id="previewOutros" class="flex flex-wrap"></div>
+    </div>
+
       <!-- Ajuda rápida para pegar IDs -->
       <div class="md:col-span-2">
         <label class="text-sm">Adicionar ID rápido</label>
-        <div class="flex gap-2 mt-1">
-          <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
-          <button id="addIdBtn" class="px-3 py-2 border rounded-lg">Adicionar</button>
-        </div>
-        <p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
-      </div>
-    </div>
+        <div class="flex gap-2 mt-1 items-center">
+  <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
+
+  <!-- aparece só no perfil 'negativado' -->
+  <select id="addTarget" class="px-3 py-2 border rounded-lg hidden">
+    <option value="A">Lista A</option>
+    <option value="B">Lista B</option>
+  </select>
+
+  <button id="addIdBtn" class="px-3 py-2 border rounded-lg">Adicionar</button>
+</div>
+<p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
 
     <div class="flex justify-end gap-2 mt-6">
       <button id="rulesClose" class="px-4 py-2 bg-gray-200 rounded-lg">Fechar</button>
@@ -492,10 +519,22 @@ function csvJoin(a){ return (a||[]).filter(Boolean).join(','); }
 
 function toggleRulesBlocks(){
   const pf = rulesPerfil.value;
-  if (pf === 'negativado'){ show($('rulesNegativado')); hide($('rulesOutros')); }
-  else { hide($('rulesNegativado')); show($('rulesOutros')); }
+  if (pf === 'negativado'){
+    show($('rulesNegativado'));
+    hide($('rulesOutros'));
+    addTarget.classList.remove('hidden'); // mostra seletor A/B
+  } else {
+    hide($('rulesNegativado'));
+    show($('rulesOutros'));
+    addTarget.classList.add('hidden');    // esconde seletor A/B
+  }
 }
-rulesPerfil.addEventListener('change', toggleRulesBlocks);
+
+rulesPerfil.addEventListener('change', async () => {
+  toggleRulesBlocks();
+  await loadRulesUI();   // recarrega valores daquele perfil
+  renderRulesPreview();  // redesenha os nomes
+});
 
 // sessão persistida
 (async () => {
@@ -508,21 +547,32 @@ function fillPicker(){
   pickerProduto.innerHTML = '<option value="">Selecione um produto…</option>' + 
     items.map(p => `<option value="${p.id}">#${p.id} — ${p.titulo}</option>`).join('');
 }
-fillPicker();
+
 $('addIdBtn').onclick = () => {
   const id = pickerProduto.value;
   if (!id) return;
+
   if (rulesPerfil.value === 'negativado'){
-    // se estiver em A/B, adiciona na lista A por padrão
-    const cur = arrCsv(idsA.value);
-    if (!cur.includes(id)) { cur.push(id); idsA.value = csvJoin(cur); }
+    const target = (addTarget.value === 'B') ? idsB : idsA;
+    const cur = arrCsv(target.value);
+    if (!cur.includes(id)) {
+      cur.push(id);
+      target.value = csvJoin(cur);
+    }
   } else {
     const cur = arrCsv(idsOutros.value);
-    if (!cur.includes(id)) { cur.push(id); idsOutros.value = csvJoin(cur); }
+    if (!cur.includes(id)) {
+      cur.push(id);
+      idsOutros.value = csvJoin(cur);
+    }
   }
+
+  pickerProduto.value = '';
+  renderRulesPreview();
 };
 openRulesBtn.onclick = async () => {
-  await loadRulesUI(); 
+  await loadRulesUI();
+  renderRulesPreview();
   document.body.style.overflow = 'hidden';
   show(rulesModal);
 };
@@ -545,10 +595,12 @@ async function loadRulesUI(){
   if (rB){ idsB.value = rB.product_ids || ''; /* limite herdado de A */ }
 
   // outros
-  ['bolsafamilia','aposentado','default'].forEach(pf => {
+    ['bolsafamilia','aposentado','default'].forEach(pf => {
     const r = by(pf, null);
     if (r && rulesPerfil.value === pf){ idsOutros.value = r.product_ids || ''; limiteOutros.value = r.limit_count || 12; }
   });
+
+  renderRulesPreview(); // <<<<<< desenha nomes/IDs
 }
 
 rulesSave.onclick = async () => {
@@ -579,9 +631,62 @@ rulesSave.onclick = async () => {
   const ins = await supabase.from('rules').insert(payloads).select();
   if (ins.error){ alert('Erro ao salvar: ' + ins.error.message); return; }
 
-  alert('Regras salvas!');
-  hide(rulesModal); document.body.style.overflow = '';
+    alert('Regras salvas!');
+  await loadRulesUI();    // recarrega do banco
+  renderRulesPreview();   // redesenha nomes
+  // Se preferir fechar modal automaticamente, reative a linha abaixo:
+  // hide(rulesModal); document.body.style.overflow = '';
 };
+
+const addTarget = $('addTarget');
+
+function renderRulesPreview(){
+  const pf = rulesPerfil.value;
+
+  const mk = (idsCsv, listName) => {
+    const ids = arrCsv(idsCsv);
+    if (!ids.length) return '<p class="text-xs text-gray-500">Sem IDs.</p>';
+    return ids.map(id => `
+      <span class="badge" data-id="${id}" data-list="${listName||''}">
+        ${labelFor(id)} <span class="x" title="remover">×</span>
+      </span>
+    `).join('');
+  };
+
+  if (pf === 'negativado'){
+    $('previewA').innerHTML = mk(idsA.value, 'A');
+    $('previewB').innerHTML = mk(idsB.value, 'B');
+  } else {
+    $('previewOutros').innerHTML = mk(idsOutros.value, 'OUTROS');
+  }
+}
+
+rulesModal.addEventListener('click', (e) => {
+  const x = e.target.closest('.x');
+  if (!x) return;
+  const badge = x.closest('.badge');
+  const id = badge.dataset.id;
+  const list = badge.dataset.list;
+  if (rulesPerfil.value === 'negativado'){
+    const input = (list === 'B') ? idsB : idsA;
+    const arr = arrCsv(input.value).filter(v => v !== id);
+    input.value = csvJoin(arr);
+  } else {
+    const arr = arrCsv(idsOutros.value).filter(v => v !== id);
+    idsOutros.value = csvJoin(arr);
+  }
+  renderRulesPreview();
+});
+
+[idsA, idsB, idsOutros].forEach(el => el && el.addEventListener('input', renderRulesPreview));
+
+function productById(id){
+  return items.find(x => String(x.id) === String(id));
+}
+function labelFor(id){
+  const p = productById(id);
+  return `#${id} — ${p ? p.titulo : 'não encontrado'}`;
+}
 
 </script>
 </body>
