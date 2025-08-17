@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Admin - TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <head><link rel="icon" type="image/png" href="public/favincon.png"/>
+  <link rel="icon" type="image/png" href="public/favincon.png"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -17,6 +17,7 @@
 
     .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:9999px;font-size:12px;margin:4px 6px 0 0;background:#f9fafb}
 .badge .x{cursor:pointer;font-weight:700}
+.badge-miss{border-color:#fecaca;background:#fee2e2;color:#991b1b}
   </style>
 </head>
 <body class="text-gray-800">
@@ -153,6 +154,8 @@
 
       <!-- Negativado: listas A/B e peso -->
       <div id="rulesNegativado" class="grid md:grid-cols-2 gap-4">
+
+
         <div>
           <label class="text-sm">IDs da Lista A (CSV)</label>
           <input id="idsA" placeholder="ex.: 18,1,2,4,5,7" class="w-full mt-1 px-3 py-2 border rounded-lg">
@@ -172,20 +175,20 @@
           <input id="limiteNeg" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
         </div>
       </div>
-
-          <div class="md:col-span-2">
-      <label class="text-sm">Pré-visualização</label>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <div class="text-xs text-gray-500 mb-1">Lista A</div>
-          <div id="previewA" class="flex flex-wrap"></div>
-        </div>
-        <div>
-          <div class="text-xs text-gray-500 mb-1">Lista B</div>
-          <div id="previewB" class="flex flex-wrap"></div>
+      <div class="md:col-span-2">
+        <label class="text-sm">Pré-visualização</label>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Lista A</div>
+            <div id="previewA" class="flex flex-wrap"></div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Lista B</div>
+            <div id="previewB" class="flex flex-wrap"></div>
+          </div>
         </div>
       </div>
-    </div>
+
 
       <!-- Outros perfis: uma lista -->
       <div id="rulesOutros" class="grid md:grid-cols-2 gap-4">
@@ -280,7 +283,7 @@ const cardHTML = (p) => `
           <span class="text-[11px] px-2 py-0.5 rounded ${p.tagClass ? 'bg-gray-100' : ''}">${p.tag || ''}</span>
         </div>
       </div>
-      <p class="text-xs text-gray-500">#${p.priority_order} • ${ displayCsv(p.tipo) }</p>
+      <p class="text-xs text-gray-500">ID #${p.id} • ordem ${p.priority_order} • ${ displayCsv(p.tipo) }</p>
       <div class="mt-2 flex flex-wrap gap-2">
         <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm">Abrir</a>
         <button class="edit text-sm px-2 py-1 border rounded">Editar</button>
@@ -533,8 +536,9 @@ function toggleRulesBlocks(){
 rulesPerfil.addEventListener('change', async () => {
   toggleRulesBlocks();
   await loadRulesUI();   // recarrega valores daquele perfil
-  renderRulesPreview();  // redesenha os nomes
+  renderRulesPreview();  // desenha os nomes dos produtos
 });
+
 
 // sessão persistida
 (async () => {
@@ -570,6 +574,7 @@ $('addIdBtn').onclick = () => {
   pickerProduto.value = '';
   renderRulesPreview();
 };
+
 openRulesBtn.onclick = async () => {
   await loadRulesUI();
   renderRulesPreview();
@@ -608,20 +613,35 @@ rulesSave.onclick = async () => {
 
   let payloads = [];
   if (perfil === 'negativado'){
-    payloads.push({
-      perfil, variant:'A', product_ids: idsA.value || '',
-      limit_count: Number(limiteNeg.value)||12, ab_weight: Number(pesoA.value)||70, is_active:true
-    });
-    payloads.push({
-      perfil, variant:'B', product_ids: idsB.value || '',
-      limit_count: Number(limiteNeg.value)||12, ab_weight: 100 - (Number(pesoA.value)||70), is_active:true
-    });
-  } else {
-    payloads.push({
-      perfil, variant: null, product_ids: idsOutros.value || '',
-      limit_count: Number(limiteOutros.value)||12, ab_weight: 100, is_active:true
-    });
-  }
+  payloads.push({
+    perfil, variant:'A',
+    product_ids: resolveCsvToRealIds(idsA.value),
+    limit_count: Number(limiteNeg.value)||12,
+    ab_weight: Number(pesoA.value)||70,
+    is_active:true
+  });
+  payloads.push({
+    perfil, variant:'B',
+    product_ids: resolveCsvToRealIds(idsB.value),
+    limit_count: Number(limiteNeg.value)||12,
+    ab_weight: 100 - (Number(pesoA.value)||70),
+    is_active:true
+  });
+} else {
+  payloads.push({
+    perfil, variant: null,
+    product_ids: resolveCsvToRealIds(idsOutros.value),
+    limit_count: Number(limiteOutros.value)||12,
+    ab_weight: 100,
+    is_active:true
+  });
+}
+alert('Regras salvas!');
+await loadRulesUI();
+renderRulesPreview();
+hide(rulesModal);
+document.body.style.overflow = '';
+
 
   // upsert por (perfil, variant). Se sua tabela tiver unique, configure; senão simples:
   // estratégia: delete existentes e insere novamente desse perfil
@@ -670,6 +690,7 @@ rulesModal.addEventListener('click', (e) => {
   if (rulesPerfil.value === 'negativado'){
     const input = (list === 'B') ? idsB : idsA;
     const arr = arrCsv(input.value).filter(v => v !== id);
+    
     input.value = csvJoin(arr);
   } else {
     const arr = arrCsv(idsOutros.value).filter(v => v !== id);
@@ -677,6 +698,20 @@ rulesModal.addEventListener('click', (e) => {
   }
   renderRulesPreview();
 });
+
+function resolveCsvToRealIds(csv){
+  const arr = arrCsv(csv);
+  return csvJoin(arr.map(tok => {
+    const n = Number(tok);
+    if (!isNaN(n) && n > 0){
+      const byId = productById(n);
+      if (byId) return String(byId.id);
+      const idx = n - 1; // posição na lista atual (1-based)
+      if (idx >= 0 && idx < items.length) return String(items[idx].id);
+    }
+    return String(tok);
+  }));
+}
 
 [idsA, idsB, idsOutros].forEach(el => el && el.addEventListener('input', renderRulesPreview));
 
