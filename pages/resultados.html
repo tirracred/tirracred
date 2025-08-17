@@ -194,6 +194,55 @@ crossorigin="anonymous"></script>
                 return (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0);
             });
             }
+        // lógica do admin 
+
+        async function fetchRules(supabase){
+  const { data, error } = await supabase.from('rules').select('*').eq('is_active', true);
+  if (error) { console.warn('rules error', error); return []; }
+  return data || [];
+}
+
+function listFromIds(idsCsv, products){
+  const wanted = arrCsv(idsCsv).map(x => Number(x));
+  const wantedSet = new Set(wanted);
+  const ordered = wanted.map(id => products.find(p => Number(p.id)===id)).filter(Boolean);
+  const rest = products.filter(p => !wantedSet.has(Number(p.id)));
+  return [...ordered, ...rest];
+}
+function arrCsv(v){ return (v||'').split(',').map(s=>s.trim()).filter(Boolean); }
+
+function applyRules(products, params, rules){
+  const active = [];
+  if (params.aposentado)   active.push('aposentado');
+  if (params.bolsafamilia) active.push('bolsafamilia');
+  if (params.negativado)   active.push('negativado');
+  const perfil = active[0] || 'default';
+
+  const r = rules.filter(r => r.perfil === perfil);
+
+  if (perfil === 'negativado'){
+    const rA = r.find(x => x.variant==='A');
+    const rB = r.find(x => x.variant==='B');
+    if (rA || rB){
+      const pesoA = Math.max(0, Math.min(100, Number(rA?.ab_weight ?? 70)));
+      const pickA = Math.random()*100 < pesoA;
+      const base = pickA ? rA : rB;
+      const lim = Number((rA||rB)?.limit_count)||12;
+      if (base){
+        const pool = products.filter(p => p.ativo !== false);
+        return listFromIds(base.product_ids, pool).slice(0, lim);
+      }
+    }
+  } else {
+    const rr = r.find(x => !x.variant);
+    if (rr){
+      const pool = products.filter(p => p.ativo !== false);
+      const lim = Number(rr.limit_count)||12;
+      return listFromIds(rr.product_ids, pool).slice(0, lim);
+    }
+  }
+  return null; // sem regra -> deixa o fallback
+}
 
         // ========================================================================
         // III. BLOCO DE EXECUÇÃO PRINCIPAL
@@ -210,6 +259,14 @@ crossorigin="anonymous"></script>
             .from('products')
             .select('*')
             .order('priority_order', { ascending: true });
+
+const rules = await fetchRules(supabase);
+
+// tenta aplicar regras; se não houver, usa seu fallback/boost atual
+let orderedProducts = applyRules(allProducts, params, rules);
+if (!orderedProducts){
+  orderedProducts = prioritizeProducts(allProducts, params); // sua função atual (fallback)
+}
         
         if (error) {
             console.error("Erro ao buscar produtos:", error);
@@ -217,9 +274,7 @@ crossorigin="anonymous"></script>
             return;
         }
 
-        // 3. Priorizar os produtos com base nos parâmetros
-        const orderedProducts = prioritizeProducts(allProducts, params);
-
+        
         // 4. Enriquecer dados e renderizar
         const productsToRender = orderedProducts.map(product => {
         let displayChance = Math.floor(Math.random() * (98 - 75 + 1)) + 75;

@@ -61,6 +61,7 @@
         <div class="flex gap-2">
           <button id="add" class="px-4 py-2 bg-green-600 text-white rounded-lg">Novo</button>
           <button id="saveOrder" class="px-4 py-2 bg-green-600 text-white rounded-lg">Salvar Ordem</button>
+          <button id="openRules" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Resultados</button>
         </div>
       </div>
 
@@ -72,8 +73,8 @@
   </div>
 
   <!-- Modal -->
-  <div id="modal" class="hidden fixed inset-0 modal-bg z-50">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-[95%] mx-auto my-8 p-6">
+  <div id="modal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
       <h3 class="text-xl font-semibold mb-4" id="modalTitle">Editar Produto</h3>
       <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="hidden" id="id">
@@ -130,6 +131,74 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Regras de Resultados -->
+<div id="rulesModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
+    <h3 class="text-xl font-semibold mb-4">Configurar Resultados por Perfil</h3>
+
+    <div class="grid gap-4">
+      <div>
+        <label class="text-sm">Perfil</label>
+        <select id="rulesPerfil" class="w-full mt-1 px-3 py-2 border rounded-lg">
+          <option value="negativado">Negativado (A/B Test)</option>
+          <option value="bolsafamilia">Bolsa Família</option>
+          <option value="aposentado">Aposentado</option>
+          <option value="default">Padrão</option>
+        </select>
+      </div>
+
+      <!-- Negativado: listas A/B e peso -->
+      <div id="rulesNegativado" class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm">IDs da Lista A (CSV)</label>
+          <input id="idsA" placeholder="ex.: 18,1,2,4,5,7" class="w-full mt-1 px-3 py-2 border rounded-lg">
+          <p class="text-xs text-gray-500 mt-1">Ordem = priorização. Somente IDs válidos de <b>products</b>.</p>
+        </div>
+        <div>
+          <label class="text-sm">IDs da Lista B (CSV)</label>
+          <input id="idsB" placeholder="ex.: 2,1,4,5,7,10" class="w-full mt-1 px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="text-sm">Peso da Lista A (%)</label>
+          <input id="pesoA" type="number" min="0" max="100" value="70" class="w-full mt-1 px-3 py-2 border rounded-lg">
+          <p class="text-xs text-gray-500 mt-1">Ex.: 70 → mostra A 70% das vezes e B 30%.</p>
+        </div>
+        <div>
+          <label class="text-sm">Limite (quantos produtos exibir)</label>
+          <input id="limiteNeg" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
+        </div>
+      </div>
+
+      <!-- Outros perfis: uma lista -->
+      <div id="rulesOutros" class="grid md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="text-sm">IDs (CSV)</label>
+          <input id="idsOutros" placeholder="ex.: 15,20,1,2,5" class="w-full mt-1 px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="text-sm">Limite (quantos produtos exibir)</label>
+          <input id="limiteOutros" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
+        </div>
+      </div>
+
+      <!-- Ajuda rápida para pegar IDs -->
+      <div class="md:col-span-2">
+        <label class="text-sm">Adicionar ID rápido</label>
+        <div class="flex gap-2 mt-1">
+          <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
+          <button id="addIdBtn" class="px-3 py-2 border rounded-lg">Adicionar</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button id="rulesClose" class="px-4 py-2 bg-gray-200 rounded-lg">Fechar</button>
+      <button id="rulesSave" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Salvar Regras</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
@@ -208,10 +277,15 @@ const openModal = (p={}) => {
     }
     $('vantagens').value = displayLines(p.vantagens);
     $('ativo').checked = (p.ativo !== false); // default true quando não vier do BD
+    document.body.style.overflow = 'hidden';
+
 
   modal.classList.remove('hidden');
 };
-const closeModal = () => modal.classList.add('hidden');
+const closeModal = () => { 
+  modal.classList.add('hidden');
+  document.body.style.overflow = ''; 
+};
 
 $('close').onclick = closeModal;
 // Quando marcar/desmarcar um chip, atualiza o input CSV
@@ -401,11 +475,114 @@ $('loginForm').onsubmit = async (e) => {
   load();
 };
 
+// Regras (Resultados)
+const rulesModal = $('rulesModal');
+const rulesPerfil = $('rulesPerfil');
+const idsA = $('idsA'); const idsB = $('idsB'); const pesoA = $('pesoA'); const limiteNeg = $('limiteNeg');
+const idsOutros = $('idsOutros'); const limiteOutros = $('limiteOutros');
+const pickerProduto = $('pickerProduto');
+const openRulesBtn = $('openRules');
+const rulesClose = $('rulesClose'); const rulesSave = $('rulesSave');
+
+function show(el){ el.classList.remove('hidden'); }
+function hide(el){ el.classList.add('hidden'); }
+
+function arrCsv(v){ return (v||'').split(',').map(s=>s.trim()).filter(Boolean); }
+function csvJoin(a){ return (a||[]).filter(Boolean).join(','); }
+
+function toggleRulesBlocks(){
+  const pf = rulesPerfil.value;
+  if (pf === 'negativado'){ show($('rulesNegativado')); hide($('rulesOutros')); }
+  else { hide($('rulesNegativado')); show($('rulesOutros')); }
+}
+rulesPerfil.addEventListener('change', toggleRulesBlocks);
+
 // sessão persistida
 (async () => {
   const { data: { session } } = await supabase.auth.getSession();
   if (session) { login.classList.add('hidden'); app.classList.remove('hidden'); load(); }
 })();
+
+function fillPicker(){
+  if (!pickerProduto) return;
+  pickerProduto.innerHTML = '<option value="">Selecione um produto…</option>' + 
+    items.map(p => `<option value="${p.id}">#${p.id} — ${p.titulo}</option>`).join('');
+}
+fillPicker();
+$('addIdBtn').onclick = () => {
+  const id = pickerProduto.value;
+  if (!id) return;
+  if (rulesPerfil.value === 'negativado'){
+    // se estiver em A/B, adiciona na lista A por padrão
+    const cur = arrCsv(idsA.value);
+    if (!cur.includes(id)) { cur.push(id); idsA.value = csvJoin(cur); }
+  } else {
+    const cur = arrCsv(idsOutros.value);
+    if (!cur.includes(id)) { cur.push(id); idsOutros.value = csvJoin(cur); }
+  }
+};
+openRulesBtn.onclick = async () => {
+  await loadRulesUI(); 
+  document.body.style.overflow = 'hidden';
+  show(rulesModal);
+};
+rulesClose.onclick = () => { hide(rulesModal); document.body.style.overflow = ''; };
+async function loadRulesUI(){
+  toggleRulesBlocks();
+  // limpa campos
+  idsA.value = idsB.value = idsOutros.value = '';
+  limiteNeg.value = 12; limiteOutros.value = 12; pesoA.value = 70;
+
+  const { data, error } = await supabase.from('rules').select('*').eq('is_active', true);
+  if (error) { alert('Erro ao carregar regras: ' + error.message); return; }
+
+  const by = (perfil, variant=null) => data?.find(r => r.perfil===perfil && r.variant===variant);
+
+  // negativado
+  const rA = by('negativado','A');
+  const rB = by('negativado','B');
+  if (rA){ idsA.value = rA.product_ids || ''; limiteNeg.value = rA.limit_count || 12; pesoA.value = rA.ab_weight ?? 70; }
+  if (rB){ idsB.value = rB.product_ids || ''; /* limite herdado de A */ }
+
+  // outros
+  ['bolsafamilia','aposentado','default'].forEach(pf => {
+    const r = by(pf, null);
+    if (r && rulesPerfil.value === pf){ idsOutros.value = r.product_ids || ''; limiteOutros.value = r.limit_count || 12; }
+  });
+}
+
+rulesSave.onclick = async () => {
+  const perfil = rulesPerfil.value;
+
+  let payloads = [];
+  if (perfil === 'negativado'){
+    payloads.push({
+      perfil, variant:'A', product_ids: idsA.value || '',
+      limit_count: Number(limiteNeg.value)||12, ab_weight: Number(pesoA.value)||70, is_active:true
+    });
+    payloads.push({
+      perfil, variant:'B', product_ids: idsB.value || '',
+      limit_count: Number(limiteNeg.value)||12, ab_weight: 100 - (Number(pesoA.value)||70), is_active:true
+    });
+  } else {
+    payloads.push({
+      perfil, variant: null, product_ids: idsOutros.value || '',
+      limit_count: Number(limiteOutros.value)||12, ab_weight: 100, is_active:true
+    });
+  }
+
+  // upsert por (perfil, variant). Se sua tabela tiver unique, configure; senão simples:
+  // estratégia: delete existentes e insere novamente desse perfil
+  const del = await supabase.from('rules').delete().eq('perfil', perfil);
+  if (del.error) { alert('Erro ao limpar regras: ' + del.error.message); return; }
+
+  const ins = await supabase.from('rules').insert(payloads).select();
+  if (ins.error){ alert('Erro ao salvar: ' + ins.error.message); return; }
+
+  alert('Regras salvas!');
+  hide(rulesModal); document.body.style.overflow = '';
+};
+
 </script>
 </body>
 </html>
