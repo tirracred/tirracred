@@ -90,6 +90,10 @@
         </div>
         <div><label class="text-sm">Tipo (ex: emprestimo,cartao,contas,fgts,...)</label>
              <input id="tipo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+             <div>
+  <label class="text-sm">Perfis (ex: negativado,score-baixo,aposentado,bolsafamilia)</label>
+  <input id="perfis" class="w-full mt-1 px-3 py-2 border rounded-lg">
+</div>
         <!-- Perfis rápidos (sincroniza com o input acima) -->
       <div class="md:col-span-2" id="perfis-chips">
         <label class="text-sm mb-2 block">Perfis rápidos</label>
@@ -196,8 +200,12 @@ const openModal = (p={}) => {
   ['id','titulo','tag','tagClass','logo','link','btnPrimario','btnSecundario','priority_order']
     .forEach(k => $(k).value = p[k] ?? '');
     $('tipo').value      = editCsv(p.tipo);
-    $('perfis').value    = editCsv(p.perfis);
+    if ($('perfis')) {
+    $('perfis').value = editCsv(p.perfis);
     renderPerfisChips($('perfis').value);
+    } else {
+    renderPerfisChips(editCsv(p.perfis));
+    }
     $('vantagens').value = displayLines(p.vantagens);
     $('ativo').checked = (p.ativo !== false); // default true quando não vier do BD
 
@@ -212,9 +220,10 @@ document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
 });
 
 // Se digitar manualmente no input, atualiza os chips
-$('perfis').addEventListener('input', (e) => {
-  renderPerfisChips(e.target.value);
-});
+const perfisInput = $('perfis');
+if (perfisInput) {
+  perfisInput.addEventListener('input', (e) => renderPerfisChips(e.target.value));
+}
 $('save').onclick = async () => {
   const btn = $('save');
   const original = btn.innerHTML;
@@ -240,8 +249,9 @@ $('save').onclick = async () => {
     btnSecundario: $('btnSecundario').value || 'Detalhes',
     vantagens:  normLines($('vantagens').value),
     tipo:       normCsv($('tipo').value),
-    perfis:     normCsv($('perfis').value),
-    ativo:      $('ativo').checked,
+    perfis:     normCsv( ($('perfis') && $('perfis').value) || 
+        Array.from(document.querySelectorAll('[data-chip="perfil"]:checked'))
+          .map(cb => cb.value).join(',') ),    ativo:      $('ativo').checked,
     priority_order: Number($('priority_order').value) || 0
   };
 
