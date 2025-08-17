@@ -160,37 +160,39 @@ crossorigin="anonymous"></script>
 
 
             function prioritizeProducts(products, params) {
-            const fgtsProductIds = findProducts({ tipo: 'fgts' }, products).map(p => p.id); // calcula no topo
-            let priorityOrder = [];
+            // Quais perfis estão ativos nesta consulta
+            const activeProfiles = [];
+            if (params.aposentado)   activeProfiles.push('aposentado');
+            if (params.bolsafamilia) activeProfiles.push('bolsafamilia');
+            if (params.negativado)   activeProfiles.push('negativado');
 
-            const buildOrderedList = (priorityIds) => {
-                const priorityProducts = priorityIds
-                .map(id => products.find(p => p.id === id))
-                .filter(Boolean);
-                const priorityIdSet = new Set(priorityIds);
-                const otherProducts = products.filter(p => !priorityIdSet.has(p.id));
-                return [...priorityProducts, ...otherProducts];
+            // 1) Filtra por perfis: se o produto NÃO tiver perfis definidos (campo vazio), vale para todos
+            const filtered = products.filter(p => {
+                if (p.ativo === false) return false; // respeita "Ativo" do admin
+                const pPerfis = toArray(p.perfis, true); // já existe no arquivo
+                if (pPerfis.length === 0) return true;   // sem perfis = exibir para todos
+                // se houver perfis ativos, basta 1 bater para entrar
+                return activeProfiles.length === 0 
+                ? true 
+                : activeProfiles.some(ap => pPerfis.includes(ap));
+            });
+
+            // 2) Ordena: boost opcional por tipo + priority_order ascendente
+            const score = (p) => {
+                let s = 0;
+                const tipos = toArray(p.tipo, true);
+                // Exemplo de boost: FGTS primeiro em Bolsa Família
+                if (activeProfiles.includes('bolsafamilia') && tipos.includes('fgts')) s += 1000;
+                // Você pode adicionar outros boosts se quiser:
+                // if (activeProfiles.includes('aposentado') && tipos.includes('consignado')) s += 500;
+                return s;
             };
 
-            if (params.aposentado) {
-                priorityOrder = [8, 20, 16, 2, 1, 5, 12];
-                return buildOrderedList(priorityOrder);
-            }
-
-            if (params.bolsafamilia) {
-                priorityOrder = [15, 20, ...fgtsProductIds, 1, 2, 5, 7, 12];
-                return buildOrderedList(priorityOrder);
-            }
-
-            if (params.negativado) {
-                const variationA = [18, 1, 2, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
-                const variationB = [ 2, 1, 4, 5, 7, 10, 14, 12, 13, 3, ...fgtsProductIds];
-                priorityOrder = (Math.random() < 0.7) ? variationA : variationB;
-                return buildOrderedList(priorityOrder);
-            }
-
-            priorityOrder = [9, 1, 2, 5, 4, 10, 3, ...fgtsProductIds];
-            return buildOrderedList(priorityOrder);
+            return [...filtered].sort((a, b) => {
+                const byBoost = score(b) - score(a);
+                if (byBoost !== 0) return byBoost;
+                return (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0);
+            });
             }
 
         // ========================================================================
@@ -250,7 +252,7 @@ crossorigin="anonymous"></script>
                             ${chanceBadge}
                             <div class="flex items-center justify-between">
                                 <div class="w-28 h-12 flex items-center justify-start">
-                                    <img src="../${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                                    <img src="../${product.logo}" ... alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
                                 </div>
                                 <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
                             </div>

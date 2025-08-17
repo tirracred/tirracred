@@ -90,8 +90,28 @@
         </div>
         <div><label class="text-sm">Tipo (ex: emprestimo,cartao,contas,fgts,...)</label>
              <input id="tipo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Perfis (ex: negativado,score-baixo,aposentado,...)</label>
-             <input id="perfis" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+        <!-- Perfis rápidos (sincroniza com o input acima) -->
+      <div class="md:col-span-2" id="perfis-chips">
+        <label class="text-sm mb-2 block">Perfis rápidos</label>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" data-chip="perfil" value="negativado" class="h-4 w-4"> Negativado
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" data-chip="perfil" value="score-baixo" class="h-4 w-4"> Score baixo
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" data-chip="perfil" value="aposentado" class="h-4 w-4"> Aposentado
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" data-chip="perfil" value="bolsafamilia" class="h-4 w-4"> Bolsa Família
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" data-chip="perfil" value="autonomo" class="h-4 w-4"> Autônomo
+          </label>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Marque/desmarque e eu preencho o campo acima (CSV) pra você.</p>
+      </div>
              <div class="md:col-span-2">
   <label class="inline-flex items-center gap-2 text-sm">
     <input id="ativo" type="checkbox" class="h-4 w-4">
@@ -120,6 +140,23 @@ let items = [];
 
 const normCsv = (txt = '') =>
   txt.split(',').map(s => s.trim()).filter(Boolean).join(',');         // "a, b ,c" -> "a,b,c"
+
+// Helpers para sincronizar chips <-> input CSV
+const csvToArr = (txt='') => txt.split(',').map(s => s.trim()).filter(Boolean);
+const arrToCsv = (arr=[]) => arr.filter(Boolean).join(',');
+
+function renderPerfisChips(perfisCsv) {
+  const set = new Set(csvToArr(perfisCsv.toLowerCase()));
+  document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
+    cb.checked = set.has(cb.value);
+  });
+}
+
+function syncPerfisFromChips() {
+  const selected = Array.from(document.querySelectorAll('[data-chip="perfil"]:checked')).map(cb => cb.value);
+  $('perfis').value = arrToCsv(selected);
+}
+
 
 const normLines = (txt = '') =>
   txt.split('\n').map(s => s.trim()).filter(Boolean).join('\n');       // linhas limpas
@@ -160,6 +197,7 @@ const openModal = (p={}) => {
     .forEach(k => $(k).value = p[k] ?? '');
     $('tipo').value      = editCsv(p.tipo);
     $('perfis').value    = editCsv(p.perfis);
+    renderPerfisChips($('perfis').value);
     $('vantagens').value = displayLines(p.vantagens);
     $('ativo').checked = (p.ativo !== false); // default true quando não vier do BD
 
@@ -168,7 +206,15 @@ const openModal = (p={}) => {
 const closeModal = () => modal.classList.add('hidden');
 
 $('close').onclick = closeModal;
+// Quando marcar/desmarcar um chip, atualiza o input CSV
+document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
+  cb.addEventListener('change', syncPerfisFromChips);
+});
 
+// Se digitar manualmente no input, atualiza os chips
+$('perfis').addEventListener('input', (e) => {
+  renderPerfisChips(e.target.value);
+});
 $('save').onclick = async () => {
   const btn = $('save');
   const original = btn.innerHTML;
