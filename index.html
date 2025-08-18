@@ -1477,12 +1477,13 @@ if (whatsappInput) {
 
 
    function activateAds(){
+  // garante o array global do AdSense
   window.adsbygoogle = window.adsbygoogle || [];
-  // inicializa apenas os <ins> que ainda não foram processados
-  document
-    .querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
-    .forEach(() => { try { (adsbygoogle).push({}); } catch(e){} });
-    activateAds();
+  // inicializa somente os <ins> ainda não processados
+  document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
+    .forEach(() => {
+      try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
+    });
 }
 
   const render = () => {
