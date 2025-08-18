@@ -1502,17 +1502,16 @@ if (whatsappInput) {
         if (!adClient || !adSlot) return ''; 
 
 
-        return `
-        <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
-            <!-- Anúncio: ${p.titulo} -->
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-format="fluid"
-                 ${adLayoutKey ? `data-ad-layout-key="${adLayoutKey}"` : ''}
-                 data-ad-client="${adClient}"
-                 data-ad-slot="${adSlot}"></ins>
+       return `
+  <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-format="fluid"
+         ${adLayoutKey ? `data-ad-layout-key="${adLayoutKey}"` : ''}
+         data-ad-client="${adClient}"
+         data-ad-slot="${adSlot}"></ins>
+  </div>`;
 
-        </div>`;
       }
 
       // Se não for um anúncio, renderiza o card do produto normalmente
