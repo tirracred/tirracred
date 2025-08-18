@@ -1494,26 +1494,27 @@ if (whatsappInput) {
     listEl.innerHTML = items.length ? items.map(p => {
       
       // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
-      if (p.tipo === 'anuncio_google') {
-        const adClient = p.tag;
-        const adSlot = p.link;
-        const adLayoutKey = p.tagClass;
-        
+     if (p.tipo === 'anuncio_google') {
+  const adClient = p.tag;     // ex.: 'ca-pub-4935884639623224'
+  const adSlot   = p.link;    // ex.: '1234567890' (apenas números)
+  const adLayoutKey = p.tagClass; // deixe VAZIO se não tiver
 
-        if (!adClient || !adSlot) return ''; 
+  if (!adClient || !adSlot) return '';
 
+  // Se tiver layout-key usamos "fluid"; senão, um responsivo "auto"
+  const formatAttrs = adLayoutKey
+    ? `data-ad-format="fluid" data-ad-layout-key="${adLayoutKey}"`
+    : `data-ad-format="auto" data-full-width-responsive="true"`;
 
-       return `
-  <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-format="fluid"
-         ${adLayoutKey ? `data-ad-layout-key="${adLayoutKey}"` : ''}
-         data-ad-client="${adClient}"
-         data-ad-slot="${adSlot}"></ins>
-  </div>`;
-
-      }
+  return `
+    <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="${adClient}"
+           data-ad-slot="${adSlot}"
+           ${formatAttrs}></ins>
+    </div>`;
+}
 
       // Se não for um anúncio, renderiza o card do produto normalmente
       // A função toArray foi mantida aqui APENAS para as vantagens, que são várias linhas.
@@ -1552,6 +1553,8 @@ if (whatsappInput) {
       </div>`;
     }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
 
+    setTimeout(activateAds, 0);
+
     // Paginação (código original, sem alterações)
     const total = Math.ceil(state.filtered.length / state.perPage);
     [pagTop, pagBottom].forEach(c => {
@@ -1585,8 +1588,13 @@ if (whatsappInput) {
       c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
       for (let i=1;i<=total;i++) c.appendChild(mk(String(i), i, false, i === state.page));
       c.appendChild(mk('Próximo', state.page + 1, state.page === total));
+      
     });
+    
   };
+
+  setTimeout(activateAds, 0);
+
 
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
