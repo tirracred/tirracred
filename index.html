@@ -163,14 +163,16 @@ crossorigin="anonymous"></script>
 </head>
 <body class="bg-green-50 text-gray-800">
 
-    <!-- Alerta Topo -->
-    <div class="bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
-        Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
-    </div>
+   <!-- Alerta Topo (fixo) -->
+<div id="top-alert" class="fixed inset-x-0 top-0 z-[60] bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
+  Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
+</div>
+<!-- Espaçador para não “empurrar” o header -->
+<div id="top-alert-spacer" aria-hidden="true"></div>
 
     <!-- Header -->
 
-   <header id="main-header" class="bg-white shadow-md sticky top-0 z-50">
+<header id="main-header" class="bg-white shadow-md sticky z-50" style="top: var(--alert-h, 0px);">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
@@ -374,6 +376,9 @@ crossorigin="anonymous"></script>
             position: sticky;
             top: 20px;
         }
+
+        :root{ --alert-h: 0px; }
+#top-alert-spacer{ height: var(--alert-h); }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -593,7 +598,7 @@ crossorigin="anonymous"></script>
 
 
 <!-- Bloco da Renegociação -->
-<section class="py-16 bg-gray-800 text-white">
+<section id="renegociacao" class="py-16 bg-gray-800 text-white">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
     <h2 class="text-3xl font-extrabold mb-4">
       Negocie suas dívidas com até
@@ -680,6 +685,15 @@ crossorigin="anonymous"></script>
 
     
 document.addEventListener('DOMContentLoaded', () => {
+
+
+
+    const alertBar = document.getElementById('top-alert');
+function setAlertHeight(){
+  document.documentElement.style.setProperty('--alert-h', alertBar ? alertBar.offsetHeight + 'px' : '0px');
+}
+setAlertHeight();
+window.addEventListener('resize', setAlertHeight);
     /* ===================================================
      * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
      * =================================================== */
@@ -956,17 +970,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI Event Listeners ---
     mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
-    // ao carregar, posiciona a viewport no formulário do herói
-        requestAnimationFrame(() => {
-        const header = document.getElementById('main-header');
-        const hero   = document.getElementById('hero-section'); // onde está o form
-        if (!hero) return;
-        const headerH = header ? header.offsetHeight : 0;
-        const rect = hero.getBoundingClientRect();
-        const y = window.pageYOffset + rect.top - headerH - 8;
-        // use 'instant' para evitar "animação" inicial no mobile
-        window.scrollTo({ top: y, behavior: 'instant' });
-        });
+    
 
     // ===================================================
     // 2. HOME PAGE SIMULATOR
