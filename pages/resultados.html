@@ -254,20 +254,27 @@ function applyRules(products, params, rules){
             leadNameSpan.textContent = params.nome.split(' ')[0] || 'Cliente';
         }
 
-        // 2. BUSCAR PRODUTOS DO BANCO DE DADOS
-        const { data, error } = await supabase
+       <!-- 2. BUSCAR PRODUTOS DO BANCO DE DADOS -->
+const { data, error } = await supabase
   .from('products')
   .select('*')
-  .neq('ativo', false)          // <-- só traz quem NÃO está desativado
+  .neq('ativo', false)          // só ativos
   .order('priority_order', { ascending: true });
 
+if (error) {
+  console.error("Erro ao buscar produtos:", error);
+  if (loadingState) loadingState.innerHTML = '<p class="text-red-500">Ocorreu um erro ao carregar as ofertas. Tente novamente.</p>';
+  return;
+}
+
+const allProducts = data || [];
 
 const rules = await fetchRules(supabase);
 
-// tenta aplicar regras; se não houver, usa seu fallback/boost atual
+// tenta aplicar regras; se não houver, usa o fallback
 let orderedProducts = applyRules(allProducts, params, rules);
-if (!orderedProducts){
-  orderedProducts = prioritizeProducts(allProducts, params); // sua função atual (fallback)
+if (!orderedProducts) {
+  orderedProducts = prioritizeProducts(allProducts, params);
 }
         
         if (error) {
@@ -309,7 +316,8 @@ if (!orderedProducts){
                             ${chanceBadge}
                             <div class="flex items-center justify-between">
                                 <div class="w-28 h-12 flex items-center justify-start">
-                                    <img src="../${product.logo}" ... alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+                                    <img src="../${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+
                                 </div>
                                 <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
                             </div>
