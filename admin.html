@@ -415,10 +415,20 @@ listEl.querySelectorAll('.toggle-active').forEach(btn => {
   btn.onclick = async (e) => {
     const id = Number(e.target.closest('[data-id]').dataset.id);
     const p  = items.find(x => Number(x.id) === id);
-    const novo = !(p.ativo !== false); // true->false, false->true
-    const { error } = await supabase.from('products').update({ ativo: novo }).eq('id', id);
-    if (error) { alert('Erro: ' + error.message); return; }
-    load();
+    const novo = !(p.ativo !== false);
+
+    // Captura o error da query aqui
+    const { error } = await supabase
+      .from('products')
+      .update({ ativo: novo })
+      .eq('id', id);
+
+    if (error) {
+      alert('Erro: ' + error.message);
+      return;
+    }
+
+    load(); // recarrega a lista para refletir
   };
 });
 

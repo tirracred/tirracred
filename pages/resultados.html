@@ -255,10 +255,12 @@ function applyRules(products, params, rules){
         }
 
         // 2. BUSCAR PRODUTOS DO BANCO DE DADOS
-        const { data: allProducts, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('priority_order', { ascending: true });
+        const { data, error } = await supabase
+  .from('products')
+  .select('*')
+  .neq('ativo', false)          // <-- só traz quem NÃO está desativado
+  .order('priority_order', { ascending: true });
+
 
 const rules = await fetchRules(supabase);
 
