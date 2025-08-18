@@ -45,20 +45,19 @@
   <!-- Painel -->
   <div id="app" class="hidden">
     <header class="bg-white shadow-md sticky top-0 z-40">
-      <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-        </div>
-        <img src="public/logo.png" alt="logo" class="h-8"
-             onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
-       <div class="flex items-center gap-2">
-        <a href="index.html"
-            class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100">
-            Início
-        </a>
-        <button id="logout" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-            Sair
-        </button>
-        </div>
-    </header>
+  <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+    <img src="public/logo.png" alt="logo" class="h-8"
+         onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
+    <div class="flex items-center gap-2">
+      <a href="index.html"
+         class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100">
+        Início
+      </a>
+      <button id="logout" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        Sair
+      </button>
+    </div>
+  </div>
 
     <main class="container mx-auto px-4 py-6">
       <div class="flex items-start justify-between gap-4 mb-4">
@@ -137,7 +136,7 @@
     </div>
   </div>
 
-  <!-- Modal Regras de Resultados -->
+ <!-- Modal Regras de Resultados -->
 <div id="rulesModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
     <h3 class="text-xl font-semibold mb-4">Configurar Resultados por Perfil</h3>
@@ -153,10 +152,8 @@
         </select>
       </div>
 
-      <!-- Negativado: listas A/B e peso -->
+      <!-- NEGATIVADO (Listas A/B + Peso + Limite + PRÉVIA A/B) -->
       <div id="rulesNegativado" class="grid md:grid-cols-2 gap-4">
-
-
         <div>
           <label class="text-sm">IDs da Lista A (CSV)</label>
           <input id="idsA" placeholder="ex.: 18,1,2,4,5,7" class="w-full mt-1 px-3 py-2 border rounded-lg">
@@ -175,20 +172,24 @@
           <label class="text-sm">Limite (quantos produtos exibir)</label>
           <input id="limiteNeg" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
         </div>
-      </div>
-     
-            <div class="text-xs text-gray-500 mb-1">Lista A</div>
-            <div id="previewA" class="flex flex-wrap"></div>
-          </div>
-          <div>
-            <div class="text-xs text-gray-500 mb-1">Lista B</div>
-            <div id="previewB" class="flex flex-wrap"></div>
+
+        <!-- PRÉVIA A/B DENTRO de #rulesNegativado -->
+        <div class="md:col-span-2">
+          <label class="text-sm">Pré-visualização</label>
+          <div class="grid md:grid-cols-2 gap-4 mt-1">
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Lista A</div>
+              <div id="previewA" class="flex flex-wrap"></div>
+            </div>
+            <div>
+              <div class="text-xs text-gray-500 mb-1">Lista B</div>
+              <div id="previewB" class="flex flex-wrap"></div>
+            </div>
           </div>
         </div>
       </div>
 
-
-      <!-- Outros perfis: uma lista -->
+      <!-- OUTROS PERFIS (IDs + Limite + PRÉVIA) -->
       <div id="rulesOutros" class="grid md:grid-cols-2 gap-4">
         <div class="md:col-span-2">
           <label class="text-sm">IDs (CSV)</label>
@@ -198,33 +199,36 @@
           <label class="text-sm">Limite (quantos produtos exibir)</label>
           <input id="limiteOutros" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
         </div>
+
+        <!-- PRÉVIA OUTROS DENTRO de #rulesOutros -->
+        <div class="md:col-span-2">
+          <label class="text-sm">Pré-visualização</label>
+          <div id="previewOutros" class="flex flex-wrap mt-1"></div>
+        </div>
       </div>
 
-          <div class="md:col-span-2">
-        <label class="text-sm">Pré-visualização</label>
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-    
-
-      <!-- Ajuda rápida para pegar IDs -->
+      <!-- Adicionar ID rápido -->
       <div class="md:col-span-2">
         <label class="text-sm">Adicionar ID rápido</label>
         <div class="flex gap-2 mt-1 items-center">
-  <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
+          <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
 
-  <!-- aparece só no perfil 'negativado' -->
-  <select id="addTarget" class="px-3 py-2 border rounded-lg hidden">
-    <option value="A">Lista A</option>
-    <option value="B">Lista B</option>
-  </select>
+          <!-- aparece só no perfil 'negativado' -->
+          <select id="addTarget" class="px-3 py-2 border rounded-lg hidden">
+            <option value="A">Lista A</option>
+            <option value="B">Lista B</option>
+          </select>
 
-  <button id="addIdBtn" class="px-3 py-2 border rounded-lg">Adicionar</button>
-</div>
-<p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
+          <button id="addIdBtn" class="px-3 py-2 border rounded-lg">Adicionar</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
+      </div>
 
-    <div class="flex justify-end gap-2 mt-6">
-      <button id="rulesClose" class="px-4 py-2 bg-gray-200 rounded-lg">Fechar</button>
-      <button id="rulesSave" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Salvar Regras</button>
+      <!-- Ações -->
+      <div class="flex justify-end gap-2 mt-6 md:col-span-2">
+        <button id="rulesClose" class="px-4 py-2 bg-gray-200 rounded-lg">Fechar</button>
+        <button id="rulesSave" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Salvar Regras</button>
+      </div>
     </div>
   </div>
 </div>
@@ -655,20 +659,7 @@ rulesSave.onclick = async () => {
 };
 
 
-  // upsert por (perfil, variant). Se sua tabela tiver unique, configure; senão simples:
-  // estratégia: delete existentes e insere novamente desse perfil
-  const del = await supabase.from('rules').delete().eq('perfil', perfil);
-  if (del.error) { alert('Erro ao limpar regras: ' + del.error.message); return; }
 
-  const ins = await supabase.from('rules').insert(payloads).select();
-  if (ins.error){ alert('Erro ao salvar: ' + ins.error.message); return; }
-
-    alert('Regras salvas!');
-  await loadRulesUI();    // recarrega do banco
-  renderRulesPreview();   // redesenha nomes
-  // Se preferir fechar modal automaticamente, reative a linha abaixo:
-  // hide(rulesModal); document.body.style.overflow = '';
-};
 
 
 
