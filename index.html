@@ -970,7 +970,17 @@ window.addEventListener('resize', setAlertHeight);
 
     // --- UI Event Listeners ---
     mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
-    
+    // ao carregar, posiciona a viewport no formulário do herói
+        requestAnimationFrame(() => {
+        const header = document.getElementById('main-header');
+        const hero   = document.getElementById('hero-section'); // onde está o form
+        if (!hero) return;
+        const headerH = header ? header.offsetHeight : 0;
+        const rect = hero.getBoundingClientRect();
+        const y = window.pageYOffset + rect.top - headerH - 8;
+        // use 'instant' para evitar "animação" inicial no mobile
+        window.scrollTo({ top: y, behavior: 'instant' });
+        });
 
     // ===================================================
     // 2. HOME PAGE SIMULATOR
