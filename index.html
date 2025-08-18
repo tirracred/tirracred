@@ -379,6 +379,16 @@ crossorigin="anonymous"></script>
 
         :root{ --alert-h: 0px; }
 #top-alert-spacer{ height: var(--alert-h); }
+
+/* Avulso: animação de entrada do aviso */
+#top-alert{
+  transform: translateY(-100%);
+  transition: transform .35s ease;
+  will-change: transform;
+}
+#top-alert.show-alert{
+  transform: translateY(0);
+}
     </style>
 </head>
 <body class="bg-gray-50">
@@ -689,10 +699,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const alertBar = document.getElementById('top-alert');
+const rootStyle = document.documentElement.style;
+
 function setAlertHeight(){
-  document.documentElement.style.setProperty('--alert-h', alertBar ? alertBar.offsetHeight + 'px' : '0px');
+  const h = alertBar ? alertBar.offsetHeight : 0;
+  // só reserva altura quando o aviso estiver visível
+  rootStyle.setProperty('--alert-h', alertBar?.classList.contains('show-alert') ? (h + 'px') : '0px');
 }
+
+function showAlert(){
+  if(!alertBar) return;
+  alertBar.classList.add('show-alert');
+  setAlertHeight();
+  window.removeEventListener('scroll', onFirstScroll);
+}
+
+function onFirstScroll(){
+  if(window.scrollY > 8) showAlert();
+}
+
+// Inicializa com o aviso fora da tela e sem reservar altura
 setAlertHeight();
+
+// Mostra imediatamente se já estiver um pouco rolado,
+// senão: aparece sozinho após ~700ms ou no primeiro scroll
+if(window.scrollY > 8){
+  showAlert();
+}else{
+  setTimeout(showAlert, 700);
+  window.addEventListener('scroll', onFirstScroll, { passive:true });
+}
+
 window.addEventListener('resize', setAlertHeight);
     /* ===================================================
      * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
