@@ -157,43 +157,92 @@ crossorigin="anonymous"></script>
             const value = String(criteria[key]).toLowerCase();
             return sourceArray.filter(p => toArray(p[key], true).includes(value));
             }
+function prioritizeProducts(products, params) {
+  const activeProfiles = [];
+  if (params.aposentado)   activeProfiles.push('aposentado');
+  if (params.bolsafamilia) activeProfiles.push('bolsafamilia');
+  if (params.negativado)   activeProfiles.push('negativado');
+
+  const filtered = products.filter(p => {
+    if (p.ativo === false) return false;
+    const pPerfis = toArray(p.perfis, true);
+    if (pPerfis.length === 0) return true;
+    return activeProfiles.length === 0
+      ? true
+      : activeProfiles.some(ap => pPerfis.includes(ap));
+  });
+
+  const score = (p) => {
+    let s = 0;
+    const tipos = toArray(p.tipo, true);
+    if (activeProfiles.includes('bolsafamilia') && tipos.includes('fgts')) s += 1000;
+    return s;
+  };
+
+  return [...filtered].sort((a, b) => {
+    const byBoost = score(b) - score(a);
+    if (byBoost !== 0) return byBoost;
+    return (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0);
+  });
+}
 
 
-            function prioritizeProducts(products, params) {
-            // Quais perfis estão ativos nesta consulta
-            const activeProfiles = [];
-            if (params.aposentado)   activeProfiles.push('aposentado');
-            if (params.bolsafamilia) activeProfiles.push('bolsafamilia');
-            if (params.negativado)   activeProfiles.push('negativado');
 
-            // 1) Filtra por perfis: se o produto NÃO tiver perfis definidos (campo vazio), vale para todos
-            const filtered = products.filter(p => {
-                if (p.ativo === false) return false; // respeita "Ativo" do admin
-                const pPerfis = toArray(p.perfis, true); // já existe no arquivo
-                if (pPerfis.length === 0) return true;   // sem perfis = exibir para todos
-                // se houver perfis ativos, basta 1 bater para entrar
-                return activeProfiles.length === 0 
-                ? true 
-                : activeProfiles.some(ap => pPerfis.includes(ap));
-            });
 
-            // 2) Ordena: boost opcional por tipo + priority_order ascendente
-            const score = (p) => {
-                let s = 0;
-                const tipos = toArray(p.tipo, true);
-                // Exemplo de boost: FGTS primeiro em Bolsa Família
-                if (activeProfiles.includes('bolsafamilia') && tipos.includes('fgts')) s += 1000;
-                // Você pode adicionar outros boosts se quiser:
-                // if (activeProfiles.includes('aposentado') && tipos.includes('consignado')) s += 500;
-                return s;
-            };
+           function isAd(product){
+  const t = toArray(product.tipo, true);
+  return t.includes('ads') || t.includes('adsense') || /anúncio|anuncio/i.test(product.titulo || '');
+}
 
-            return [...filtered].sort((a, b) => {
-                const byBoost = score(b) - score(a);
-                if (byBoost !== 0) return byBoost;
-                return (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0);
-            });
-            }
+// Tenta descobrir o slot do anúncio a partir de link ou tag
+function extractAdSlot(product){
+  const tryNum = (s) => String(s||'').match(/\d{5,}/)?.[0] || '';
+  return tryNum(product.link) || tryNum(product.tag) || '';
+}
+
+// Formato: "fluid" se aparecer no tipo/título; senão in-article/auto
+function extractAdFormat(product){
+  const t = (product.titulo || '') + ' ' + toArray(product.tipo, true).join(' ');
+  return /fluid/i.test(t) ? 'fluid' : 'in-article';
+}
+
+// Layout key opcional (se você guardar em btnSecundario/tagClass)
+function extractLayoutKey(product){
+  return product.btnSecundario || product.tagClass || '';
+}
+
+// Renderiza o bloco do AdSense e dispara o push
+function renderAdCard(product, chanceBadge){
+  const slot = extractAdSlot(product);
+  const format = extractAdFormat(product);
+  const layoutKey = extractLayoutKey(product);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative h-full';
+
+  wrap.innerHTML = `
+    ${chanceBadge}
+    <div class="flex items-center justify-between">
+      <div class="w-28 h-12 flex items-center justify-start">
+        <img src="../${product.logo || ''}" alt="Logo" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+      </div>
+      <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag || 'AdSense'}</span>
+    </div>
+    <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo || 'Anúncio'}</h3>
+    <div class="mt-2">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-4935884639623224"
+           ${slot ? `data-ad-slot="${slot}"` : ''}
+           ${format === 'fluid' ? `data-ad-format="fluid" data-full-width-responsive="true"` : `data-ad-format="auto"`}
+           ${layoutKey ? `data-ad-layout-key="${layoutKey}"` : ''}>
+      </ins>
+    </div>
+  `;
+
+  productGrid.appendChild(wrap);
+  try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(_) {}
+}
         // lógica do admin 
 
         async function fetchRules(supabase){
@@ -254,7 +303,7 @@ function applyRules(products, params, rules){
             leadNameSpan.textContent = params.nome.split(' ')[0] || 'Cliente';
         }
 
-       <!-- 2. BUSCAR PRODUTOS DO BANCO DE DADOS -->
+// 2. BUSCAR PRODUTOS DO BANCO DE DADOS
 const { data, error } = await supabase
   .from('products')
   .select('*')
@@ -276,12 +325,20 @@ let orderedProducts = applyRules(allProducts, params, rules);
 if (!orderedProducts) {
   orderedProducts = prioritizeProducts(allProducts, params);
 }
+
+function dedupeById(arr){
+  const seen = new Set();
+  return arr.filter(p => !seen.has(p.id) && seen.add(p.id));
+}
+orderedProducts = dedupeById(orderedProducts);
         
         if (error) {
             console.error("Erro ao buscar produtos:", error);
             if (loadingState) loadingState.innerHTML = '<p class="text-red-500">Ocorreu um erro ao carregar as ofertas. Tente novamente.</p>';
             return;
         }
+
+        
 
         
         // 4. Enriquecer dados e renderizar
@@ -303,35 +360,43 @@ if (!orderedProducts) {
         if (messageBox) messageBox.innerHTML = message;
 
         setTimeout(() => {
-            if (loadingState) loadingState.style.display = 'none';
-            if (resultsContent) resultsContent.style.display = 'block';
-            if (productGrid && productsToRender.length > 0) {
-                productsToRender.forEach(product => {
-                   const vantagensHtml = toArray(product.vantagens).map(v => `
-                    <li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>
-                    `).join('');
-                    const chanceBadge = `<div class="absolute -top-3 -right-3 chance-badge bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">${product.displayChance}% DE CHANCE</div>`;
-                    const cardHtml = `
-                        <div class="product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative h-full">
-                            ${chanceBadge}
-                            <div class="flex items-center justify-between">
-                                <div class="w-28 h-12 flex items-center justify-start">
-                                    <img src="../${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+  if (loadingState) loadingState.style.display = 'none';
+  if (resultsContent) resultsContent.style.display = 'block';
 
-                                </div>
-                                <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag}</span>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
-                            <ul class="space-y-2 text-gray-600 text-sm flex-grow">${vantagensHtml}</ul>
-                            <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">${product.btnPrimario}</a>
-                        </div>
-                    `;
-                    productGrid.innerHTML += cardHtml;
-                });
-            } else if (productGrid) {
-                productGrid.innerHTML = '<p class="text-center text-gray-600 col-span-full">Nenhuma oferta encontrada para o seu perfil.</p>';
-            }
-        }, transitionTime);
+  if (productGrid && productsToRender.length > 0) {
+    productsToRender.forEach(product => {
+      const vantagensHtml = toArray(product.vantagens).map(v => `
+        <li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✔</span><span>${v}</span></li>
+      `).join('');
+
+      const chanceBadge = `<div class="absolute -top-3 -right-3 chance-badge bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">${product.displayChance}% DE CHANCE</div>`;
+
+      if (isAd(product)) {
+        // === ANÚNCIO (AdSense) ===
+        renderAdCard(product, chanceBadge);
+      } else {
+        // === PRODUTO NORMAL ===
+        const cardHtml = `
+          <div class="product-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative h-full">
+            ${chanceBadge}
+            <div class="flex items-center justify-between">
+              <div class="w-28 h-12 flex items-center justify-start">
+                <img src="../${product.logo}" alt="Logo ${product.titulo}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Logo';">
+              </div>
+              <span class="inline-block bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-1 rounded-full">${product.tag||''}</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mt-4 mb-3">${product.titulo}</h3>
+            <ul class="space-y-2 text-gray-600 text-sm flex-grow">${vantagensHtml}</ul>
+            <a href="${product.link}" target="_blank" class="btn-primary mt-6 w-full">${product.btnPrimario||'Acessar'}</a>
+          </div>
+        `;
+        productGrid.innerHTML += cardHtml;
+      }
+    });
+  } else if (productGrid) {
+    productGrid.innerHTML = '<p class="text-center text-gray-600 col-span-full">Nenhuma oferta encontrada para o seu perfil.</p>';
+  }
+}, transitionTime);
     });
 
     // Converte text[], JSON string ou string simples em array
