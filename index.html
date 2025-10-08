@@ -402,6 +402,21 @@
   #results-grid ins.adsbygoogle { min-height:250px; }
 }
     </style>
+    <title>Carrossel Como Funciona</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Estilos adicionais para a transição suave e aparência */
+        .carousel-track {
+            transition: transform 0.5s ease-in-out;
+        }
+        .dot {
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .dot.active {
+            transform: scale(0.50);
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
  <!-- Seção de Parceiros -->
@@ -438,22 +453,7 @@
         </main>
     </div>
 
-      <title>Carrossel Como Funciona</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* Estilos adicionais para a transição suave e aparência */
-        .carousel-track {
-            transition: transform 0.5s ease-in-out;
-        }
-        .dot {
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-        .dot.active {
-            transform: scale(0.50);
-        }
-    </style>
-</head>
+      
 
      
      
@@ -1543,8 +1543,8 @@ if (!adClient || !/^\d+$/.test(adSlot)) return '';
 
 
 const formatAttrs = layoutKey
-? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}` + '"'
-: 'data-ad-format="auto" data-full-width-responsive="true"';
+  ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
+  : `data-ad-format="auto" data-full-width-responsive="true"`;
 
 
 return `
