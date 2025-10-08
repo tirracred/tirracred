@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>TirraCred - Soluções Financeiras Completas para Você</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -158,7 +158,10 @@
             100% { transform: translateX(calc(-200px * 8)); } /* Metade da largura total */
         }
     </style>
-
+<!-- [ADSENSE LOADER ÚNICO | HEAD] -->
+<script async
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224"
+  crossorigin="anonymous"></script>
 </head>
 <body class="bg-green-50 text-gray-800">
 
@@ -310,7 +313,7 @@
     </div>
 </section>
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script> <ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="ca-pub-4935884639623224" data-ad-slot="6885030328"></ins> <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+
    
             
     <style>
@@ -390,6 +393,15 @@
 }
 #top-alert.show-alert{
   transform: translateY(0);
+}
+/* [ADSENSE ANTI-COLAPSO] — largura total + altura mínima */
+#product-list ins.adsbygoogle,
+#results-grid ins.adsbygoogle {
+  display:block; width:100%; min-height:180px;
+}
+@media (min-width:640px){
+  #product-list ins.adsbygoogle,
+  #results-grid ins.adsbygoogle { min-height:250px; }
 }
     </style>
 </head>
@@ -1491,6 +1503,7 @@ if (whatsappInput) {
       try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
     });
 }
+
   // ==== SANITIZADORES/WHITELISTS ====
   const esc = (s) => String(s ?? '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -1521,29 +1534,20 @@ if (whatsappInput) {
     listEl.innerHTML = items.length ? items.map(p => {
       
       // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
-   if (String(p.tipo || '').toLowerCase().includes('anuncio')) {
-  // use SEMPRE o seu client do AdSense
+  // [ADSENSE | DETECTA E RENDERIZA]
+if (String(p.tipo || '').toLowerCase().includes('anuncio')) {
   const adClient = 'ca-pub-4935884639623224';
-
-  // tenta usar p.slot; se não houver, extrai só os dígitos do p.link
-  const adSlot = String(
-    p.slot || (String(p.link || '').match(/\d{5,}/) || [])[0] || ''
-  ).trim();
-
-  // layout-key opcional e saneado
+  const adSlot = String(p.slot || (String(p.link || '').match(/\d{5,}/) || [])[0] || '').trim();
   const layoutKey = /^[A-Za-z0-9._-]+$/.test(String(p.tagClass || '')) ? p.tagClass : '';
-
-  // se não tiver slot numérico válido, nem tenta renderizar
-  if (!/^\d+$/.test(adSlot)) return '';
+  if (!/^\d+$/.test(adSlot)) return ''; // sem slot válido, não mostra
 
   const formatAttrs = layoutKey
     ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
     : `data-ad-format="auto" data-full-width-responsive="true"`;
 
   return `
-    <div class="product-card w-full bg-transparent p-0 border-0 shadow-none">
-      <ins class="adsbygoogle"
-           style="display:block"
+    <div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
+      <ins class="adsbygoogle" style="display:block"
            data-ad-client="${adClient}"
            data-ad-slot="${adSlot}"
            ${formatAttrs}></ins>
