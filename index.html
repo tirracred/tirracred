@@ -1521,12 +1521,20 @@ if (whatsappInput) {
     listEl.innerHTML = items.length ? items.map(p => {
       
       // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
-    if (p.tipo === 'anuncio_google') {
-  const adClient = ADS_CLIENT;                // força seu client
-  const adSlot   = safeSlot(p.link);          // p.link deve ser SÓ o slot (números)
-  const layoutKey = safeLayoutKey(p.tagClass);
+   if (String(p.tipo || '').toLowerCase().includes('anuncio')) {
+  // use SEMPRE o seu client do AdSense
+  const adClient = 'ca-pub-4935884639623224';
 
-  if (!adSlot) return ''; // slot inválido → não renderiza
+  // tenta usar p.slot; se não houver, extrai só os dígitos do p.link
+  const adSlot = String(
+    p.slot || (String(p.link || '').match(/\d{5,}/) || [])[0] || ''
+  ).trim();
+
+  // layout-key opcional e saneado
+  const layoutKey = /^[A-Za-z0-9._-]+$/.test(String(p.tagClass || '')) ? p.tagClass : '';
+
+  // se não tiver slot numérico válido, nem tenta renderizar
+  if (!/^\d+$/.test(adSlot)) return '';
 
   const formatAttrs = layoutKey
     ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
@@ -1541,6 +1549,7 @@ if (whatsappInput) {
            ${formatAttrs}></ins>
     </div>`;
 }
+
 
       // Se não for um anúncio, renderiza o card do produto normalmente
       // A função toArray foi mantida aqui APENAS para as vantagens, que são várias linhas.
@@ -1638,23 +1647,21 @@ if (whatsappInput) {
                       .map(e => e.value);
 
     state.filtered = state.all.filter(p => {
-      // 1. Verifica se é um anúncio. Se for, mantém sempre.
-      if (p.tipo === 'anuncio_google') {
-        return true;
-      }
+  // detecta anúncio de forma robusta
+  const tipoNorm = String(p.tipo || '').toLowerCase().trim();
+  const isAd = tipoNorm.includes('anuncio')
+               || String(p.tag || '').includes('ca-pub')
+               || /^\d+$/.test(String(p.slot || '').trim());
 
-      // 2. Lógica de filtro para PRODUTOS, usando texto simples.
-      const tipoDoProduto = p.tipo || ''; 
-      const perfisDoProduto = p.perfis || '';
+  if (isAd) return true; // anúncio sempre passa
 
-      // Verifica se o tipo do produto contém o tipo selecionado no filtro
-      const tipoOK = (type === 'all') || tipoDoProduto.includes(type);
-      
-      // Verifica se o texto de perfis do produto contém TODOS os perfis selecionados
-      const perfisOK = (perfisSel.length === 0) || perfisSel.every(perfilSelecionado => perfisDoProduto.includes(perfilSelecionado));
+  // filtros de produto (case-insensitive)
+  const tipoOK = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
+  const perfisText = String(p.perfis || '').toLowerCase();
+  const perfisOK = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(String(v).toLowerCase()));
 
-      return tipoOK && perfisOK;
-    });
+  return tipoOK && perfisOK;
+});
 
     // O resto da função continua igual.
     state.page = 1;
