@@ -157,6 +157,35 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(calc(-200px * 8)); } /* Metade da largura total */
         }
+
+        /* === AD CARDS (lista de produtos) === */
+        #product-list .ad-card {
+        /* visual igual aos cards de produto */
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 0.75rem; /* rounded-xl */
+        box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+        padding: 1.5rem; /* p-6 */
+        }
+        #product-list .ad-card-inner{ /* assegura que o <ins> expanda bem */
+        display:block; width:100%;
+        min-height: 180px; /* evita “buracos” enquanto carrega */
+        }
+        @media (min-width:640px){
+        #product-list .ad-card-inner{ min-height:250px; }
+        }
+
+
+        /* Centraliza criativos menores dentro do espaço */
+        #product-list .ad-card iframe{ display:block; margin:0 auto; width:100% !important; }
+
+
+        /* Remove qualquer margem/padding do <ins> que possa vir do user agent */
+        ins.adsbygoogle{ display:block; width:100%; line-height:0; }
+
+
+        /* Opcional: selo discreto “Anúncio” alinhado ao estilo do site */
+        .ad-badge{ display:inline-block; font-size:.75rem; font-weight:700;
+        padding:.25rem .625rem; border-radius:9999px; margin-bottom:.75rem;
+        background:#d1fae5; color:#065f46; /* verde clarinho */ }
     </style>
 <!-- [ADSENSE LOADER ÚNICO | HEAD] -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
@@ -1549,6 +1578,17 @@ const formatAttrs = layoutKey
 
 return `
 <div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
+<div class="ad-card">
+<span class="ad-badge">Anúncio</span>
+<div class="ad-card-inner">
+<ins class="adsbygoogle"
+style="display:block"
+data-ad-client="${adClient}"
+data-ad-slot="${adSlot}"
+${layoutKey
+? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
+: 'data-ad-format="auto" data-full-width-responsive="true"'}>
+</ins>
 <ins class="adsbygoogle" style="display:block"
 data-ad-client="${adClient}"
 data-ad-slot="${adSlot}"
