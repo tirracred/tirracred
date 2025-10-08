@@ -1547,8 +1547,9 @@ if (whatsappInput) {
       const vantagens = toArray(p.vantagens, false);
       const vHtml = vantagens.map(v => `
   <li class="flex items-start">
-    <span class="mr-2 text-green-800">✓</span><span>${esc(v)}</span>
-  </li>`).join('');
+    <span class="mr-2 text-green-800">✓</span><span>${v}</span>
+  </li>`
+).join('');
       return `
   <div class="product-card">
     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
