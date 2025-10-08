@@ -418,11 +418,11 @@
 /* [ADSENSE ANTI-COLAPSO] — largura total + altura mínima */
 #product-list ins.adsbygoogle,
 #results-grid ins.adsbygoogle {
-  display:block; width:100%; min-height:180px;
+  display:block; width:100%; min-height:140px;
 }
 @media (min-width:640px){
   #product-list ins.adsbygoogle,
-  #results-grid ins.adsbygoogle { min-height:250px; }
+  #results-grid ins.adsbygoogle { min-height:200px; }
 }
     </style>
     <title>Carrossel Como Funciona</title>
@@ -1521,7 +1521,7 @@ if (whatsappInput) {
     // inicializa somente os <ins> ainda não processados
     document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
     .forEach(() => {
-    try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
+        try { window.adsbygoogle.push({}); } catch (e) {}
     });
     }
 
@@ -1547,6 +1547,18 @@ if (whatsappInput) {
   };
   const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
 
+  // Detecta se o item é anúncio (robusto, baseado em tipo, tag e slot)
+const isAdItem = (p) => {
+  const tipo = String(p?.tipo || '').toLowerCase().trim();
+  const tag  = String(p?.tag  || '');
+  const slot = String(p?.slot || p?.link || '').toString().trim();
+  return (
+    tipo.includes('anuncio') ||        // “anuncio_google”, “anuncio_...”
+    tag.includes('ca-pub')   ||        // client típico do AdSense
+    /^\d+$/.test(slot)                 // slot numérico
+  );
+};
+
   const render = () => {
     const start = (state.page - 1) * state.perPage;
     const end   = start + state.perPage;
@@ -1557,7 +1569,7 @@ if (whatsappInput) {
         
 // 1) É ANÚNCIO?
 
-if (p.tipo === 'anuncio_google') {
+if (isAdItem(p)) {  
   const adClient  = p.tag;                           // ex.: 'ca-pub-4935...'
   const adSlot    = (p.slot || p.link || '').toString().trim(); // slot numérico
   const layoutKey = (p.tagClass || '').trim();       // opcional (in-feed)
@@ -1688,7 +1700,8 @@ if (p.tipo === 'anuncio_google') {
                || String(p.tag || '').includes('ca-pub')
                || /^\d+$/.test(String(p.slot || '').trim());
 
-  if (isAd) return true; // anúncio sempre passa
+  if (isAdItem(p)) return true;
+ // anúncio sempre passa
 
   // filtros de produto (case-insensitive)
   const tipoOK = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
