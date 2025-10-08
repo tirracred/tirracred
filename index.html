@@ -159,9 +159,7 @@
         }
     </style>
 <!-- [ADSENSE LOADER ÚNICO | HEAD] -->
-<script async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224"
-  crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
 </head>
 <body class="bg-green-50 text-gray-800">
 
@@ -1495,14 +1493,14 @@ if (whatsappInput) {
 
 
    function activateAds(){
-  // garante o array global do AdSense
-  window.adsbygoogle = window.adsbygoogle || [];
-  // inicializa somente os <ins> ainda não processados
-  document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
+    // garante o array global do AdSense
+    window.adsbygoogle = window.adsbygoogle || [];
+    // inicializa somente os <ins> ainda não processados
+    document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
     .forEach(() => {
-      try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
+    try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
     });
-}
+    }
 
   // ==== SANITIZADORES/WHITELISTS ====
   const esc = (s) => String(s ?? '')
@@ -1532,27 +1530,33 @@ if (whatsappInput) {
     const items = state.filtered.slice(start, end);
 
     listEl.innerHTML = items.length ? items.map(p => {
-      
-      // VERIFICA SE O ITEM É UM ANÚNCIO (verificação direta de texto)
-  // [ADSENSE | DETECTA E RENDERIZA]
-if (String(p.tipo || '').toLowerCase().includes('anuncio')) {
-  const adClient = 'ca-pub-4935884639623224';
-  const adSlot = String(p.slot || (String(p.link || '').match(/\d{5,}/) || [])[0] || '').trim();
-  const layoutKey = /^[A-Za-z0-9._-]+$/.test(String(p.tagClass || '')) ? p.tagClass : '';
-  if (!/^\d+$/.test(adSlot)) return ''; // sem slot válido, não mostra
 
-  const formatAttrs = layoutKey
-    ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
-    : `data-ad-format="auto" data-full-width-responsive="true"`;
+        
+// 1) É ANÚNCIO?
+if (p.tipo === 'anuncio_google') {
+const adClient = p.tag; // ex.: 'ca-pub-4935884639623224'
+const adSlot = (p.slot || p.link || '').toString().trim(); // slot numérico
+const layoutKey = (p.tagClass || '').trim(); // opcional (formato in-feed)
 
-  return `
-    <div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
-      <ins class="adsbygoogle" style="display:block"
-           data-ad-client="${adClient}"
-           data-ad-slot="${adSlot}"
-           ${formatAttrs}></ins>
-    </div>`;
+
+if (!adClient || !/^\d+$/.test(adSlot)) return '';
+
+
+const formatAttrs = layoutKey
+? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}` + '"'
+: 'data-ad-format="auto" data-full-width-responsive="true"';
+
+
+return `
+<div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
+<ins class="adsbygoogle" style="display:block"
+data-ad-client="${adClient}"
+data-ad-slot="${adSlot}"
+${formatAttrs}></ins>
+</div>`;
 }
+
+
 
 
       // Se não for um anúncio, renderiza o card do produto normalmente
