@@ -1725,94 +1725,61 @@ if (isAdItem(p)) {
 
 
   
-  // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
+  
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO (NOVA)
+
 const apply = () => {
-  // 1) Ler filtros
+  // 1) Filtros
   const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
   const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
     .map(e => String(e.value || '').toLowerCase());
 
   const all = Array.isArray(state.all) ? state.all : [];
 
-  // 2) Helpers de aderência ao filtro (para PRODUTOS)
-  const matchesType = (p) => {
-    if (type === 'all') return true;
-    return String(p?.tipo || '').toLowerCase().includes(type);
-  };
+  // 2) Match helpers (para PRODUTOS)
+  const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
   const matchesPerfis = (p) => {
     if (!perfisSel.length) return true;
-    const perfisTxt = String(p?.perfis || '').toLowerCase();
-    return perfisSel.every(sel => perfisTxt.includes(sel));
+    const txt = String(p?.perfis || '').toLowerCase();
+    return perfisSel.every(v => txt.includes(v));
   };
 
-  // 3) Dedup de anúncios por (tag + slot/link)
-  const adKey = (a) => [String(a?.tag || ''), String(a?.slot || a?.link || '')].join('|').trim();
+  // 3) Primeiro produto que passa no filtro (se houver)
+  const firstProduct = all.find(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p)) || null;
 
-  // 4) Primeiro produto que casa com o filtro
-  const firstIdx = all.findIndex(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
-
+  // 4) Monta a lista final
   const out = [];
-  const seenAds = new Set();
+  if (firstProduct) out.push(firstProduct);
 
-  if (firstIdx !== -1) {
-    // (A) Sobe o produto filtrado para o topo
-    const firstProduct = all[firstIdx];
-    out.push(firstProduct);
-
-    // (B) Mantém a ORDEM do banco a partir dele
-    for (let i = firstIdx + 1; i < all.length; i++) {
-      const item = all[i];
-      if (isAdItem(item)) {
-        const k = adKey(item);
-        if (k && !seenAds.has(k)) {
-          out.push(item);
-          seenAds.add(k);
-        }
-      } else if (matchesType(item) && matchesPerfis(item)) {
-        out.push(item);
-      }
+  for (const item of all) {
+    // evita duplicar o primeiro produto
+    if (firstProduct && (item === firstProduct || (item.id && firstProduct.id && String(item.id) === String(firstProduct.id)))) {
+      continue;
     }
-
-    // (C) Opcional: se quiser aproveitar anúncios que vinham antes do 1º produto,
-    // acrescenta-os no final, preservando ordem e sem duplicar
-    for (let i = 0; i < firstIdx; i++) {
-      const item = all[i];
-      if (isAdItem(item)) {
-        const k = adKey(item);
-        if (k && !seenAds.has(k)) {
-          out.push(item);
-          seenAds.add(k);
-        }
-      }
-    }
-  } else {
-    // Nenhum produto no filtro ➜ mostra só anúncios (ordem do banco), sem duplicar
-    for (const item of all) {
-      if (isAdItem(item)) {
-        const k = adKey(item);
-        if (k && !seenAds.has(k)) {
-          out.push(item);
-          seenAds.add(k);
-        }
-      }
+    if (isAdItem(item)) {
+      // Anúncio SEM restrição: mantém todos, inclusive consecutivos
+      out.push(item);
+    } else {
+      // Produto comum respeita os filtros
+      if (matchesType(item) && matchesPerfis(item)) out.push(item);
     }
   }
 
-  // 5) Atualiza estado e renderiza
+  // 5) Se não houver produto que passe no filtro, ainda mostramos anúncios (todos)
+  if (!firstProduct && out.length === 0) {
+    for (const item of all) if (isAdItem(item)) out.push(item);
+  }
+
   state.filtered = out;
   state.page = 1;
   render();
 
-  // 6) Fecha o painel de filtros no mobile (igual ao seu código atual)
+  // fecha o painel no mobile (igual ao seu código)
   if (window.innerWidth < 1024) {
-    const panel   = document.getElementById('filter-panel');
+    const panel = document.getElementById('filter-panel');
     const overlay = document.getElementById('filter-overlay');
     panel?.classList.add('translate-x-full');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      overlay.style.pointerEvents = 'none';
-    }
+    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
     document.body.style.overflow = '';
   }
 };
