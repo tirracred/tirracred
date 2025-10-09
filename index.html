@@ -1555,6 +1555,47 @@ const isAdItem = (p) => {
     /^\d+$/.test(slot)                 // slot numérico
   );
 };
+// Monta o feed intercalando anúncios em uma frequência controlada
+  function buildFeed(products, ads, opts = {}) {
+    // Parâmetros ajustáveis
+    const EVERY = opts.every ?? 3;           // 1 anúncio a cada N produtos
+    const FIRST_INDEX = opts.first ?? 2;     // só começa a inserir após o 2º produto (0-based)
+    const MAX_ADS_TOTAL = opts.maxAdsTotal ?? ads.length; // limite global opcional
+
+    const merged = [];
+    let adPtr = 0;
+    let adsPlaced = 0;
+
+    for (let i = 0; i < products.length; i++) {
+      // sempre coloca o produto
+      merged.push(products[i]);
+
+      // posição atual (0-based) do item recém-colocado
+      const pos = merged.length - 1;
+
+      // regra: só tenta inserir anúncio se:
+      // - já passamos do FIRST_INDEX
+      // - a cada EVERY produtos
+      // - ainda existem anúncios e não estouramos o limite global
+      const hitFrequency = (pos >= FIRST_INDEX) && ((pos - FIRST_INDEX + 1) % EVERY === 0);
+      if (hitFrequency && adPtr < ads.length && adsPlaced < MAX_ADS_TOTAL) {
+        // garante que não ficam dois anúncios seguidos
+        const previousIsAd = merged.length > 0 && isAdItem(merged[merged.length - 1]);
+        if (!previousIsAd) {
+          merged.push(ads[adPtr++]);
+          adsPlaced++;
+        }
+      }
+    }
+
+    // Caso não tenha nenhum produto (filtro muito restrito), ainda assim mostra 1 anúncio
+    if (products.length === 0 && ads.length > 0) {
+      merged.push(ads[0]);
+    }
+
+    return merged;
+  }
+
 
   const render = () => {
     const start = (state.page - 1) * state.perPage;
@@ -1688,17 +1729,50 @@ if (isAdItem(p)) {
   const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
     const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-                      .map(e => e.value);
+      .map(e => String(e.value).toLowerCase());
 
-    state.filtered = state.all.filter(p => {
-  // detecta anúncio de forma robusta
-  const tipoNorm = String(p.tipo || '').toLowerCase().trim();
-  const isAd = tipoNorm.includes('anuncio')
-               || String(p.tag || '').includes('ca-pub')
-               || /^\d+$/.test(String(p.slot || '').trim());
+    // 1) separe tudo em anúncios e produtos
+    const allAds = state.all.filter(p => isAdItem(p));
+    const allProducts = state.all.filter(p => !isAdItem(p));
 
-  if (isAdItem(p)) return true;
- // anúncio sempre passa
+    // 2) aplique os filtros apenas nos PRODUTOS (não nos anúncios)
+    const filteredProducts = allProducts.filter(p => {
+      const tipoNorm = String(p.tipo || '').toLowerCase().trim();
+      const tipoOK   = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
+
+      const perfisText = String(p.perfis || '').toLowerCase();
+      const perfisOK   = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(v));
+
+      return tipoOK && perfisOK;
+    });
+
+    // 3) monte o feed intercalando anúncios
+    //    Ajuste os parâmetros conforme o seu gosto:
+    //    - every: 1 anúncio a cada N produtos
+    //    - first: só começa a aparecer depois do 2º card
+    //    - maxAdsTotal: limite global de anúncios a serem usados no feed filtrado
+    state.filtered = buildFeed(filteredProducts, allAds, {
+      every: 3,
+      first: 2,
+      // Se quiser segurar anúncio em listas curtas, por exemplo no máx. 2:
+      // maxAdsTotal: 2
+    });
+
+    // 4) reset de página, render e fechar o painel no mobile
+    state.page = 1;
+    render();
+
+    if (window.innerWidth < 1024) {
+      const panel   = document.getElementById('filter-panel');
+      const overlay = document.getElementById('filter-overlay');
+      panel?.classList.add('translate-x-full');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+      }
+      document.body.style.overflow = '';
+    }
+  };
 
  // ===== CONTROLES DE ANÚNCIO =====
 const MAX_ADS_PER_PAGE = 2;      // máx. de anúncios por página
