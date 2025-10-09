@@ -1729,50 +1729,9 @@ if (isAdItem(p)) {
   const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
     const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-      .map(e => String(e.value).toLowerCase());
+                      .map(e => e.value);
 
-    // 1) separe tudo em anúncios e produtos
-    const allAds = state.all.filter(p => isAdItem(p));
-    const allProducts = state.all.filter(p => !isAdItem(p));
-
-    // 2) aplique os filtros apenas nos PRODUTOS (não nos anúncios)
-    const filteredProducts = allProducts.filter(p => {
-      const tipoNorm = String(p.tipo || '').toLowerCase().trim();
-      const tipoOK   = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
-
-      const perfisText = String(p.perfis || '').toLowerCase();
-      const perfisOK   = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(v));
-
-      return tipoOK && perfisOK;
-    });
-
-    // 3) monte o feed intercalando anúncios
-    //    Ajuste os parâmetros conforme o seu gosto:
-    //    - every: 1 anúncio a cada N produtos
-    //    - first: só começa a aparecer depois do 2º card
-    //    - maxAdsTotal: limite global de anúncios a serem usados no feed filtrado
-    state.filtered = buildFeed(filteredProducts, allAds, {
-      every: 3,
-      first: 2,
-      // Se quiser segurar anúncio em listas curtas, por exemplo no máx. 2:
-      // maxAdsTotal: 2
-    });
-
-    // 4) reset de página, render e fechar o painel no mobile
-    state.page = 1;
-    render();
-
-    if (window.innerWidth < 1024) {
-      const panel   = document.getElementById('filter-panel');
-      const overlay = document.getElementById('filter-overlay');
-      panel?.classList.add('translate-x-full');
-      if (overlay) {
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-      }
-      document.body.style.overflow = '';
-    }
-  };
+    state.filtered = state.all.filter(p => {
   // detecta anúncio de forma robusta
   const tipoNorm = String(p.tipo || '').toLowerCase().trim();
   const isAd = tipoNorm.includes('anuncio')
