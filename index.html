@@ -1756,10 +1756,10 @@ const apply = () => {
   const featured       = products.slice(0, 3);
   const restProducts   = products.slice(3);
 
-  // 5) Intercala anúncios com limites (1 a cada 4 produtos, começando após os 3 primeiros)
-  const maxAds = Math.min(ads.length, Math.ceil(restProducts.length / 4));
+  // 5) Intercala anúncios com limites (1 a cada 2 produtos, começando após os 3 primeiros)
+  const maxAds = Math.min(ads.length, Math.ceil(restProducts.length / 2));
   const afterFeatured = buildFeed(restProducts, ads, {
-    every: 2,        // 1 anúncio a cada 4 produtos
+    every: 2,        // 1 anúncio a cada 2 produtos
     first: 0,        // começa a contar já no início do 'restProducts'
     maxAdsTotal: maxAds
   });
