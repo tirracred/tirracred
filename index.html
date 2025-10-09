@@ -1728,7 +1728,24 @@ if (isAdItem(p)) {
   setTimeout(activateAds, 0);
 
 
-  
+// === Config de frequência de anúncios no feed filtrado ===
+// Define N (um anúncio a cada N produtos) via ?adEvery=N ou localStorage('adEvery').
+// Ex.: ?adEvery=3  → 1 anúncio a cada 3 produtos.
+(function () {
+  const qs = new URLSearchParams(location.search);
+  const fromQS = qs.get('adEvery');
+  const fromLS = localStorage.getItem('adEvery');
+  const parsed = Number(fromQS ?? fromLS);
+  window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
+
+  // helper opcional pra trocar em tempo real e persistir
+  window.setAdEvery = (n) => {
+    n = Math.max(1, Math.floor(Number(n) || 2));
+    localStorage.setItem('adEvery', String(n));
+    window.AD_EVERY = n;
+    apply(); // reconstrói o feed com o novo N
+  };
+})();
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO (NOVA)
 
@@ -1741,35 +1758,52 @@ const apply = () => {
   const all = Array.isArray(state.all) ? state.all : [];
 
   // 2) Helpers de match
-  const matchesType   = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
+  const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
   const matchesPerfis = (p) => {
     if (!perfisSel.length) return true;
     const txt = String(p?.perfis || '').toLowerCase();
     return perfisSel.every(v => txt.includes(v));
   };
 
-  // 3) Separa produtos x anúncios
+  // 3) Se não está filtrando (home = Todos + nenhum perfil), mantém exatamente a ordem do admin
+  const isFiltered = !(type === 'all' && perfisSel.length === 0);
+  if (!isFiltered) {
+    state.filtered = [...state.all];   // respeita ativo/ordem do admin
+    state.page = 1;
+    render();
+    if (window.innerWidth < 1024) {
+      const panel = document.getElementById('filter-panel');
+      const overlay = document.getElementById('filter-overlay');
+      panel?.classList.add('translate-x-full');
+      if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+      document.body.style.overflow = '';
+    }
+    return;
+  }
+
+  // 4) Separa em produtos e anúncios (ordem do admin é preservada)
   const products = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
   const ads      = all.filter(p => isAdItem(p));
 
-  // 4) “3 produtos juntos” antes de qualquer anúncio
-  const featured       = products.slice(0, 3);
-  const restProducts   = products.slice(3);
+  // 5) “3 produtos juntos” antes de qualquer anúncio
+  const featured     = products.slice(0, 3);
+  const restProducts = products.slice(3);
 
-  // 5) Intercala anúncios com limites (1 a cada 2 produtos, começando após os 3 primeiros)
-  const maxAds = Math.min(ads.length, Math.ceil(restProducts.length / 2));
-  const afterFeatured = buildFeed(restProducts, ads, {
-    every: 2,        // 1 anúncio a cada 2 produtos
-    first: 0,        // começa a contar já no início do 'restProducts'
-    maxAdsTotal: maxAds
-  });
+// 6) Intercala anúncios seguindo a frequência escolhida (qualquer N >= 1)
+const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2)); // N livre
+const maxAds = Math.min(ads.length, Math.floor(restProducts.length / every));
+const mixed  = buildFeed(restProducts, ads, {
+  every,     // 1 anúncio a cada 'every' produtos
+  first: 0,  // começa a contar já no início de restProducts (os 3 primeiros ficam “limpos”)
+  maxAdsTotal: maxAds
+});
 
-  // 6) Feed final
-  state.filtered = [...featured, ...afterFeatured];
+  // 7) Feed final
+  state.filtered = [...featured, ...mixed];
   state.page = 1;
   render();
 
-  // fecha o painel no mobile (inalterado)
+  // fecha o painel no mobile
   if (window.innerWidth < 1024) {
     const panel = document.getElementById('filter-panel');
     const overlay = document.getElementById('filter-overlay');
