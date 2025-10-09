@@ -1786,8 +1786,8 @@ const apply = () => {
   const ads      = all.filter(p => isAdItem(p));
 
   // 5) “3 produtos juntos” antes de qualquer anúncio
-  const featured     = products.slice(0, 3);
-  const restProducts = products.slice(3);
+  const featured     = products.slice(0, 2);
+  const restProducts = products.slice(2);
 
 // 6) Intercala anúncios seguindo a frequência escolhida (qualquer N >= 1)
 const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2)); // N livre
