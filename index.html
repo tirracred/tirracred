@@ -1686,19 +1686,45 @@ if (isAdItem(p)) {
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
   const apply = () => {
-    const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-    const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-                      .map(e => e.value);
+  const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+  const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+                    .map(e => e.value.toLowerCase());
 
-    state.filtered = state.all.filter(p => {
-  // detecta anúncio de forma robusta
-  const tipoNorm = String(p.tipo || '').toLowerCase().trim();
-  const isAd = tipoNorm.includes('anuncio')
-               || String(p.tag || '').includes('ca-pub')
-               || /^\d+$/.test(String(p.slot || '').trim());
+  // 1) Separa orgânicos e anúncios do dataset completo
+  const allAds = state.all.filter(p => isAdItem(p));
+  const allOrganic = state.all.filter(p => !isAdItem(p));
 
-  if (isAdItem(p)) return true;
- // anúncio sempre passa
+  // 2) Aplica filtros SOMENTE nos orgânicos (anúncio não deve “passar por cima” do filtro)
+  const organicFiltered = allOrganic.filter(p => {
+    const tipoOK = (type === 'all') || String(p.tipo||'').toLowerCase().includes(type);
+    const perfisText = String(p.perfis||'').toLowerCase();
+    const perfisOK = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(v));
+    return tipoOK && perfisOK;
+  });
+
+  // 3) Deduplica anúncios e deixa-os globais (eles aparecem em qualquer filtro, mas controlados)
+  const adsPool = dedupAds(allAds);
+
+  // 4) Intercala conforme as regras (limite por página aplicado por “bloco” também funciona bem)
+  //    Aqui montamos toda a lista já com anúncios espaçados. A paginação mantém esse arranjo.
+  const mixed = interleaveProductsAndAds(organicFiltered, adsPool);
+
+  state.filtered = mixed;
+  state.page = 1;
+  render();
+
+  // fecha o painel (mobile)
+  if (window.innerWidth < 1024) {
+    const panel   = document.getElementById('filter-panel');
+    const overlay = document.getElementById('filter-overlay');
+    panel?.classList.add('translate-x-full');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+    document.body.style.overflow = '';
+  }
+};
 
  // ===== CONTROLES DE ANÚNCIO =====
 const MAX_ADS_PER_PAGE = 2;      // máx. de anúncios por página
