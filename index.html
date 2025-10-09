@@ -1773,6 +1773,14 @@ if (isAdItem(p)) {
       document.body.style.overflow = '';
     }
   };
+  // detecta anúncio de forma robusta
+  const tipoNorm = String(p.tipo || '').toLowerCase().trim();
+  const isAd = tipoNorm.includes('anuncio')
+               || String(p.tag || '').includes('ca-pub')
+               || /^\d+$/.test(String(p.slot || '').trim());
+
+  if (isAdItem(p)) return true;
+ // anúncio sempre passa
 
  // ===== CONTROLES DE ANÚNCIO =====
 const MAX_ADS_PER_PAGE = 2;      // máx. de anúncios por página
