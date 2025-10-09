@@ -1733,52 +1733,43 @@ if (isAdItem(p)) {
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO (NOVA)
 
 const apply = () => {
-  // 1) Filtros
+  // 1) Lê filtros
   const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
   const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
     .map(e => String(e.value || '').toLowerCase());
 
   const all = Array.isArray(state.all) ? state.all : [];
 
-  // 2) Match helpers (para PRODUTOS)
-  const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
+  // 2) Helpers de match
+  const matchesType   = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
   const matchesPerfis = (p) => {
     if (!perfisSel.length) return true;
     const txt = String(p?.perfis || '').toLowerCase();
     return perfisSel.every(v => txt.includes(v));
   };
 
-  // 3) Primeiro produto que passa no filtro (se houver)
-  const firstProduct = all.find(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p)) || null;
+  // 3) Separa produtos x anúncios
+  const products = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
+  const ads      = all.filter(p => isAdItem(p));
 
-  // 4) Monta a lista final
-  const out = [];
-  if (firstProduct) out.push(firstProduct);
+  // 4) “3 produtos juntos” antes de qualquer anúncio
+  const featured       = products.slice(0, 3);
+  const restProducts   = products.slice(3);
 
-  for (const item of all) {
-    // evita duplicar o primeiro produto
-    if (firstProduct && (item === firstProduct || (item.id && firstProduct.id && String(item.id) === String(firstProduct.id)))) {
-      continue;
-    }
-    if (isAdItem(item)) {
-      // Anúncio SEM restrição: mantém todos, inclusive consecutivos
-      out.push(item);
-    } else {
-      // Produto comum respeita os filtros
-      if (matchesType(item) && matchesPerfis(item)) out.push(item);
-    }
-  }
+  // 5) Intercala anúncios com limites (1 a cada 4 produtos, começando após os 3 primeiros)
+  const maxAds = Math.min(ads.length, Math.ceil(restProducts.length / 4));
+  const afterFeatured = buildFeed(restProducts, ads, {
+    every: 2,        // 1 anúncio a cada 4 produtos
+    first: 0,        // começa a contar já no início do 'restProducts'
+    maxAdsTotal: maxAds
+  });
 
-  // 5) Se não houver produto que passe no filtro, ainda mostramos anúncios (todos)
-  if (!firstProduct && out.length === 0) {
-    for (const item of all) if (isAdItem(item)) out.push(item);
-  }
-
-  state.filtered = out;
+  // 6) Feed final
+  state.filtered = [...featured, ...afterFeatured];
   state.page = 1;
   render();
 
-  // fecha o painel no mobile (igual ao seu código)
+  // fecha o painel no mobile (inalterado)
   if (window.innerWidth < 1024) {
     const panel = document.getElementById('filter-panel');
     const overlay = document.getElementById('filter-overlay');
