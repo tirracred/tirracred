@@ -1727,71 +1727,82 @@ if (isAdItem(p)) {
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
   const apply = () => {
-    const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-    const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-        .map(e => e.value);
+  // 1) Lê filtros de tipo e perfis
+  const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+  const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+    .map(e => String(e.value || '').toLowerCase());
 
-            // Função para remover anúncios duplicados (mesmo client/slot) da lista de anúncios
-        function dedupAds(adList) {
-            const seen = new Set();
-            return adList.filter(ad => {
-                const id = [String(ad.tag || ''), String(ad.slot || ad.link || '')].join('|').trim();
-                if (!id || seen.has(id)) return false;
-                seen.add(id);
-                return true;
-            });
-        }
+  const all = Array.isArray(state.all) ? state.all : [];
 
-        // Função para intercalar produtos e anúncios com limite de 2 anúncios por página e sem anúncios consecutivos
-        function interleaveProductsAndAds(products, ads) {
-            const merged = [];
-            let adCount = 0;
-            let sinceLastAd = 0;
-            const MAX_ADS_PER_PAGE = 2;
-            const ADS_INTERVAL = 3;
-            // Percorre os produtos filtrados na ordem original
-            products.forEach((prod) => {
-                merged.push(prod);
-                sinceLastAd++;
-                // Insere um anúncio quando atingiu o intervalo definido e não excedeu o limite de anúncios
-                if (sinceLastAd >= ADS_INTERVAL && adCount < MAX_ADS_PER_PAGE && ads.length > 0) {
-                    merged.push(ads.shift());   // insere próximo anúncio da lista
-                    adCount++;
-                    sinceLastAd = 0;
-                }
-            });
-            // Se não houve nenhum produto (lista filtrada vazia), insere um anúncio mesmo assim (máximo 1)
-            if (merged.length === 0 && ads.length > 0 && adCount < MAX_ADS_PER_PAGE) {
-                merged.push(ads.shift());
-                adCount++;
-            }
-            return merged;
-        }
+  // Helpers de filtro para produtos
+  const matchesType = (p) => {
+    if (type === 'all') return true;
+    return String(p?.tipo || '').toLowerCase().includes(type);
+  };
+  const matchesPerfis = (p) => {
+    if (!perfisSel.length) return true;
+    const perfis = String(p?.perfis || '')
+      .toLowerCase()
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    // todos os perfis marcados precisam existir no item
+    return perfisSel.every(sel => perfis.includes(sel));
+  };
 
-    state.filtered = state.all.filter(p => {
-  // detecta anúncio de forma robusta
-  const tipoNorm = String(p.tipo || '').toLowerCase().trim();
-  const isAd = tipoNorm.includes('anuncio')
-               || String(p.tag || '').includes('ca-pub')
-               || /^\d+$/.test(String(p.slot || '').trim());
+  // 2) Mantém a ORDEM ORIGINAL (priority_order) do Supabase
+  const adsInOrder = all.filter(isAdItem);
+  const productsMatching = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
 
- 
-  // filtros de produto (case-insensitive)
-  const tipoOK = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
-  const perfisText = String(p.perfis || '').toLowerCase();
-  const perfisOK = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(String(v).toLowerCase()));
+  // 3) Produto filtrado primeiro (se existir)
+  const firstProduct = productsMatching[0] || null;
 
-    return !isAdItem(p) && tipoOK && perfisOK;
-});
+  // 4) Dedup de anúncios por (client/tag + slot/link)
+  const adKey = (a) => [String(a?.tag || ''), String(a?.slot || a?.link || '')].join('|').trim();
+  const seenAds = new Set();
 
-const allAds = dedupAds(state.all.filter(p => isAdItem(p)));
+  // 5) Monta a lista final preservando ordem do banco,
+  //    sem anúncios consecutivos e sem repetir o mesmo anúncio
+  const out = [];
+  if (firstProduct) out.push(firstProduct);
 
-// Intercala os anúncios na lista filtrada de produtos, respeitando limite e espaçamento
-state.filtered = interleaveProductsAndAds(state.filtered, allAds);
+  for (const item of all) {
+    // Evita duplicar o produto que já subimos pro topo
+    if (firstProduct && (item === firstProduct || (item.id && item.id === firstProduct.id))) {
+      continue;
+    }
 
-    // O resto da função continua igual.
-    state.page = 1;
-    render();
+    if (isAdItem(item)) {
+      const k = adKey(item);
+      if (!k) continue;
+      if (seenAds.has(k)) continue;                  // sem anúncio repetido
+      if (out.length && isAdItem(out[out.length-1])) continue; // sem dois anúncios seguidos
+      out.push(item);
+      seenAds.add(k);
+    } else {
+      // produto: só entra se combinar com os filtros
+      if (matchesType(item) && matchesPerfis(item)) {
+        out.push(item);
+      }
+    }
+  }
+
+  // 6) Se não houver nenhum produto filtrado, ainda mostramos os anúncios (sem limite artificial)
+  if (!firstProduct && out.length === 0) {
+    for (const a of adsInOrder) {
+      const k = adKey(a);
+      if (!k) continue;
+      if (seenAds.has(k)) continue;
+      if (out.length && isAdItem(out[out.length-1])) continue; // ainda evita dois seguidos
+      out.push(a);
+      seenAds.add(k);
+    }
+  }
+
+  state.filtered = out;
+  state.page = 1;
+  render();
+
     if (window.innerWidth < 1024) {
       const panel   = document.getElementById('filter-panel');
       const overlay = document.getElementById('filter-overlay');
