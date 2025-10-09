@@ -1729,7 +1729,44 @@ if (isAdItem(p)) {
   const apply = () => {
     const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
     const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-                      .map(e => e.value);
+        .map(e => e.value);
+
+            // Função para remover anúncios duplicados (mesmo client/slot) da lista de anúncios
+        function dedupAds(adList) {
+            const seen = new Set();
+            return adList.filter(ad => {
+                const id = [String(ad.tag || ''), String(ad.slot || ad.link || '')].join('|').trim();
+                if (!id || seen.has(id)) return false;
+                seen.add(id);
+                return true;
+            });
+        }
+
+        // Função para intercalar produtos e anúncios com limite de 2 anúncios por página e sem anúncios consecutivos
+        function interleaveProductsAndAds(products, ads) {
+            const merged = [];
+            let adCount = 0;
+            let sinceLastAd = 0;
+            const MAX_ADS_PER_PAGE = 2;
+            const ADS_INTERVAL = 3;
+            // Percorre os produtos filtrados na ordem original
+            products.forEach((prod) => {
+                merged.push(prod);
+                sinceLastAd++;
+                // Insere um anúncio quando atingiu o intervalo definido e não excedeu o limite de anúncios
+                if (sinceLastAd >= ADS_INTERVAL && adCount < MAX_ADS_PER_PAGE && ads.length > 0) {
+                    merged.push(ads.shift());   // insere próximo anúncio da lista
+                    adCount++;
+                    sinceLastAd = 0;
+                }
+            });
+            // Se não houve nenhum produto (lista filtrada vazia), insere um anúncio mesmo assim (máximo 1)
+            if (merged.length === 0 && ads.length > 0 && adCount < MAX_ADS_PER_PAGE) {
+                merged.push(ads.shift());
+                adCount++;
+            }
+            return merged;
+        }
 
     state.filtered = state.all.filter(p => {
   // detecta anúncio de forma robusta
@@ -1738,71 +1775,19 @@ if (isAdItem(p)) {
                || String(p.tag || '').includes('ca-pub')
                || /^\d+$/.test(String(p.slot || '').trim());
 
-  if (isAdItem(p)) return true;
- // anúncio sempre passa
-
- // ===== CONTROLES DE ANÚNCIO =====
-const MAX_ADS_PER_PAGE = 2;      // máx. de anúncios por página
-const ADS_INTERVAL = 3;          // a cada 3 produtos, 1 anúncio
-const START_WITH_PRODUCT = true; // começa com produto quando houver produto
-
-function dedupAds(adList){
-  const seen = new Set();
-  const out = [];
-  for (const a of adList){
-    const id = [String(a.tag||''), String(a.slot||a.link||'')].join('|');
-    if (!id.trim()) continue;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    out.push(a);
-  }
-  return out;
-}
-
-// monta o array final já intercalando anúncios
-function interleaveProductsAndAds(products, ads){
-  const mixed = [];
-  const adsPool = dedupAds(ads).slice(); // cópia
-  let adCount = 0;
-  let sinceLastAd = 0;
-
-  // se existir produto e START_WITH_PRODUCT estiver true, força começar por produto
-  const shouldStartWithProduct = START_WITH_PRODUCT && products.length > 0;
-
-  for (let i = 0; i < products.length; i++){
-    mixed.push(products[i]);
-    sinceLastAd++;
-
-    const canInsertAd =
-      adsPool.length > 0 &&
-      adCount < MAX_ADS_PER_PAGE &&
-      sinceLastAd >= ADS_INTERVAL;
-
-    if (canInsertAd){
-      mixed.push(adsPool.shift());
-      adCount++;
-      sinceLastAd = 0;
-    }
-  }
-
-  // caso não haja nenhum produto (ex.: filtro muito restrito), ainda podemos mostrar 1 anúncio
-  if (products.length === 0 && adsPool.length > 0){
-    mixed.push(adsPool.shift());
-  }
-
-  // se não começou por produto (porque não havia) e houver produtos depois, já está ok.
-  // se começou por produto, já garantimos acima.
-
-  return mixed;
-}
-
+ 
   // filtros de produto (case-insensitive)
   const tipoOK = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
   const perfisText = String(p.perfis || '').toLowerCase();
   const perfisOK = (perfisSel.length === 0) || perfisSel.every(v => perfisText.includes(String(v).toLowerCase()));
 
-  return tipoOK && perfisOK;
+    return !isAdItem(p) && tipoOK && perfisOK;
 });
+
+const allAds = dedupAds(state.all.filter(p => isAdItem(p)));
+
+// Intercala os anúncios na lista filtrada de produtos, respeitando limite e espaçamento
+state.filtered = interleaveProductsAndAds(state.filtered, allAds);
 
     // O resto da função continua igual.
     state.page = 1;
