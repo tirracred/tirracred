@@ -1700,6 +1700,61 @@ if (isAdItem(p)) {
   if (isAdItem(p)) return true;
  // anúncio sempre passa
 
+ // ===== CONTROLES DE ANÚNCIO =====
+const MAX_ADS_PER_PAGE = 2;      // máx. de anúncios por página
+const ADS_INTERVAL = 3;          // a cada 3 produtos, 1 anúncio
+const START_WITH_PRODUCT = true; // começa com produto quando houver produto
+
+function dedupAds(adList){
+  const seen = new Set();
+  const out = [];
+  for (const a of adList){
+    const id = [String(a.tag||''), String(a.slot||a.link||'')].join('|');
+    if (!id.trim()) continue;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(a);
+  }
+  return out;
+}
+
+// monta o array final já intercalando anúncios
+function interleaveProductsAndAds(products, ads){
+  const mixed = [];
+  const adsPool = dedupAds(ads).slice(); // cópia
+  let adCount = 0;
+  let sinceLastAd = 0;
+
+  // se existir produto e START_WITH_PRODUCT estiver true, força começar por produto
+  const shouldStartWithProduct = START_WITH_PRODUCT && products.length > 0;
+
+  for (let i = 0; i < products.length; i++){
+    mixed.push(products[i]);
+    sinceLastAd++;
+
+    const canInsertAd =
+      adsPool.length > 0 &&
+      adCount < MAX_ADS_PER_PAGE &&
+      sinceLastAd >= ADS_INTERVAL;
+
+    if (canInsertAd){
+      mixed.push(adsPool.shift());
+      adCount++;
+      sinceLastAd = 0;
+    }
+  }
+
+  // caso não haja nenhum produto (ex.: filtro muito restrito), ainda podemos mostrar 1 anúncio
+  if (products.length === 0 && adsPool.length > 0){
+    mixed.push(adsPool.shift());
+  }
+
+  // se não começou por produto (porque não havia) e houver produtos depois, já está ok.
+  // se começou por produto, já garantimos acima.
+
+  return mixed;
+}
+
   // filtros de produto (case-insensitive)
   const tipoOK = (type === 'all') || tipoNorm.includes(String(type).toLowerCase());
   const perfisText = String(p.perfis || '').toLowerCase();
