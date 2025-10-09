@@ -1726,94 +1726,96 @@ if (isAdItem(p)) {
 
   
   // Função de filtros SIMPLIFICADA para trabalhar com TEXTO
-  const apply = () => {
-  // 1) Lê filtros de tipo e perfis
+  // Função de filtros SIMPLIFICADA para trabalhar com TEXTO (NOVA)
+const apply = () => {
+  // 1) Ler filtros
   const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
   const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
     .map(e => String(e.value || '').toLowerCase());
 
   const all = Array.isArray(state.all) ? state.all : [];
 
-  // Helpers de filtro para produtos
+  // 2) Helpers de aderência ao filtro (para PRODUTOS)
   const matchesType = (p) => {
     if (type === 'all') return true;
     return String(p?.tipo || '').toLowerCase().includes(type);
   };
   const matchesPerfis = (p) => {
     if (!perfisSel.length) return true;
-    const perfis = String(p?.perfis || '')
-      .toLowerCase()
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
-    // todos os perfis marcados precisam existir no item
-    return perfisSel.every(sel => perfis.includes(sel));
+    const perfisTxt = String(p?.perfis || '').toLowerCase();
+    return perfisSel.every(sel => perfisTxt.includes(sel));
   };
 
-  // 2) Mantém a ORDEM ORIGINAL (priority_order) do Supabase
-  const adsInOrder = all.filter(isAdItem);
-  const productsMatching = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
-
-  // 3) Produto filtrado primeiro (se existir)
-  const firstProduct = productsMatching[0] || null;
-
-  // 4) Dedup de anúncios por (client/tag + slot/link)
+  // 3) Dedup de anúncios por (tag + slot/link)
   const adKey = (a) => [String(a?.tag || ''), String(a?.slot || a?.link || '')].join('|').trim();
+
+  // 4) Primeiro produto que casa com o filtro
+  const firstIdx = all.findIndex(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
+
+  const out = [];
   const seenAds = new Set();
 
-  // 5) Monta a lista final preservando ordem do banco,
-  //    sem anúncios consecutivos e sem repetir o mesmo anúncio
-  const out = [];
-  if (firstProduct) out.push(firstProduct);
+  if (firstIdx !== -1) {
+    // (A) Sobe o produto filtrado para o topo
+    const firstProduct = all[firstIdx];
+    out.push(firstProduct);
 
-  for (const item of all) {
-    // Evita duplicar o produto que já subimos pro topo
-    if (firstProduct && (item === firstProduct || (item.id && item.id === firstProduct.id))) {
-      continue;
+    // (B) Mantém a ORDEM do banco a partir dele
+    for (let i = firstIdx + 1; i < all.length; i++) {
+      const item = all[i];
+      if (isAdItem(item)) {
+        const k = adKey(item);
+        if (k && !seenAds.has(k)) {
+          out.push(item);
+          seenAds.add(k);
+        }
+      } else if (matchesType(item) && matchesPerfis(item)) {
+        out.push(item);
+      }
     }
 
-    if (isAdItem(item)) {
-      const k = adKey(item);
-      if (!k) continue;
-      if (seenAds.has(k)) continue;                  // sem anúncio repetido
-      if (out.length && isAdItem(out[out.length-1])) continue; // sem dois anúncios seguidos
-      out.push(item);
-      seenAds.add(k);
-    } else {
-      // produto: só entra se combinar com os filtros
-      if (matchesType(item) && matchesPerfis(item)) {
-        out.push(item);
+    // (C) Opcional: se quiser aproveitar anúncios que vinham antes do 1º produto,
+    // acrescenta-os no final, preservando ordem e sem duplicar
+    for (let i = 0; i < firstIdx; i++) {
+      const item = all[i];
+      if (isAdItem(item)) {
+        const k = adKey(item);
+        if (k && !seenAds.has(k)) {
+          out.push(item);
+          seenAds.add(k);
+        }
+      }
+    }
+  } else {
+    // Nenhum produto no filtro ➜ mostra só anúncios (ordem do banco), sem duplicar
+    for (const item of all) {
+      if (isAdItem(item)) {
+        const k = adKey(item);
+        if (k && !seenAds.has(k)) {
+          out.push(item);
+          seenAds.add(k);
+        }
       }
     }
   }
 
-  // 6) Se não houver nenhum produto filtrado, ainda mostramos os anúncios (sem limite artificial)
-  if (!firstProduct && out.length === 0) {
-    for (const a of adsInOrder) {
-      const k = adKey(a);
-      if (!k) continue;
-      if (seenAds.has(k)) continue;
-      if (out.length && isAdItem(out[out.length-1])) continue; // ainda evita dois seguidos
-      out.push(a);
-      seenAds.add(k);
-    }
-  }
-
+  // 5) Atualiza estado e renderiza
   state.filtered = out;
   state.page = 1;
   render();
 
-    if (window.innerWidth < 1024) {
-      const panel   = document.getElementById('filter-panel');
-      const overlay = document.getElementById('filter-overlay');
-      panel?.classList.add('translate-x-full');
-      if (overlay) {
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-      }
-      document.body.style.overflow = '';
+  // 6) Fecha o painel de filtros no mobile (igual ao seu código atual)
+  if (window.innerWidth < 1024) {
+    const panel   = document.getElementById('filter-panel');
+    const overlay = document.getElementById('filter-overlay');
+    panel?.classList.add('translate-x-full');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
     }
-  };
+    document.body.style.overflow = '';
+  }
+};
 
   filters.forEach(f => f.addEventListener('change', apply));
 
