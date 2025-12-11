@@ -5,7 +5,7 @@ on:
     branches:
       - master    # Verifique se sua branch principal chama 'master' ou 'main'
     paths:
-      - 'supabase/functions/**' # Só roda quando mexer na função
+      - 'supabase/functions/**' # Só roda quando mexer na funçã
 
 jobs:
   deploy:
