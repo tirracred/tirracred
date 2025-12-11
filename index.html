@@ -1835,7 +1835,259 @@ const mixed  = buildFeed(restProducts, ads, {
 
 
 
+<div id="tirra-widget" class="fixed bottom-4 right-4 z-[9999] font-sans antialiased">
+    
+    <button id="tirra-toggle" onclick="toggleChat()" class="bg-green-600 hover:bg-green-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-105 border-4 border-white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+    </button>
 
+    <div id="tirra-window" class="hidden absolute bottom-20 right-0 w-[90vw] sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col h-[550px] overflow-hidden transition-all origin-bottom-right">
+        
+        <div class="bg-green-600 p-4 text-white flex justify-between items-center shadow-md shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="public/favincon.png" class="w-8 h-8 rounded-full bg-white p-0.5" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-300 border-2 border-green-600 rounded-full animate-pulse"></span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm">Atendimento TirraCred</h3>
+                    <p class="text-[10px] text-green-100 opacity-90">Responde na hora ⚡</p>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="text-white hover:bg-green-700 p-1 rounded-full transition">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div id="tirra-login" class="flex-1 p-6 flex flex-col justify-center bg-gray-50">
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Olá! 👋</h3>
+                <p class="text-gray-500 text-sm">Para um atendimento personalizado, por favor nos diga quem você é.</p>
+            </div>
+            
+            <form onsubmit="startSession(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 ml-1">SEU NOME</label>
+                    <input type="text" id="visitor-name" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="Ex: Maria Silva">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 ml-1">WHATSAPP</label>
+                    <input type="tel" id="visitor-phone" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="(DDD) 99999-9999">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold hover:bg-green-700 transition shadow-lg mt-2">
+                    INICIAR ATENDIMENTO ➤
+                </button>
+            </form>
+            <p class="text-xs text-center text-gray-400 mt-4">Seus dados estão seguros conosco.</p>
+        </div>
+
+        <div id="tirra-chat-area" class="hidden flex-1 flex flex-col h-full bg-gray-50">
+            <div id="messages-list" class="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
+                </div>
+            
+            <div class="p-3 bg-white border-t shrink-0">
+                <form onsubmit="sendMessage(event)" class="flex gap-2 items-center">
+                    <input type="text" id="msg-input" placeholder="Digite sua dúvida..." class="flex-1 p-3 bg-gray-100 border-0 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition text-sm" autocomplete="off">
+                    <button type="submit" id="send-btn" class="bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =========================================
+       CONFIGURAÇÕES E LÓGICA DO WIDGET
+       ========================================= */
+    
+    // URL da sua Edge Function (Já configurei com seu ID de projeto)
+    const EDGE_FUNCTION_URL = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
+    
+    // Variáveis de Estado
+    let sessionId = localStorage.getItem('tirracred_session_id');
+    let visitorName = localStorage.getItem('tirracred_visitor_name');
+    let realtimeSub = null;
+    
+    // Elementos DOM
+    const widgetWindow = document.getElementById('tirra-window');
+    const loginScreen = document.getElementById('tirra-login');
+    const chatScreen = document.getElementById('tirra-chat-area');
+    const msgsList = document.getElementById('messages-list');
+    const sendBtn = document.getElementById('send-btn');
+
+    // 1. Abrir/Fechar
+    function toggleChat() {
+        widgetWindow.classList.toggle('hidden');
+        // Se já tiver sessão salva, pula o login
+        if (!widgetWindow.classList.contains('hidden') && sessionId) {
+            showChatInterface();
+        }
+    }
+
+    // 2. Iniciar Sessão (Login)
+    async function startSession(e) {
+        e.preventDefault();
+        const name = document.getElementById('visitor-name').value;
+        const phone = document.getElementById('visitor-phone').value;
+
+        // Efeito de loading no botão
+        const btn = e.target.querySelector('button');
+        const originalText = btn.innerText;
+        btn.innerText = "Conectando...";
+        btn.disabled = true;
+
+        try {
+            // Cria sessão no Supabase
+            const { data, error } = await supabase
+                .from('chat_sessions')
+                .insert({ visitor_name: name, visitor_phone: phone })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Salva localmente para não perder se atualizar a página
+            sessionId = data.id;
+            visitorName = name;
+            localStorage.setItem('tirracred_session_id', sessionId);
+            localStorage.setItem('tirracred_visitor_name', name);
+
+            showChatInterface();
+            
+            // Mensagem de boas-vindas inicial (visual)
+            appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
+
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao iniciar chat. Tente novamente.");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // 3. Exibir Interface do Chat e Carregar Histórico
+    function showChatInterface() {
+        loginScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
+        
+        loadHistory();
+        subscribeRealtime();
+        
+        // Foca no input
+        setTimeout(() => document.getElementById('msg-input').focus(), 100);
+    }
+
+    // 4. Enviar Mensagem
+    async function sendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        
+        if (!text) return;
+
+        // Limpa input e mostra mensagem do usuário imediatamente (Otimista)
+        input.value = '';
+        appendMessage('user', text);
+
+        // Envia para a IA (Edge Function)
+        try {
+            sendBtn.disabled = true; // Evita flood
+            
+            const response = await fetch(EDGE_FUNCTION_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    session_id: sessionId, 
+                    message: text,
+                    visitor_name: visitorName
+                })
+            });
+
+            if (!response.ok) throw new Error('Erro na IA');
+
+        } catch (err) {
+            console.error(err);
+            appendMessage('ai', '⚠️ Tive um problema de conexão. Tente novamente.');
+        } finally {
+            sendBtn.disabled = false;
+        }
+    }
+
+    // 5. Escutar Respostas (IA ou Humano) via Realtime
+    function subscribeRealtime() {
+        if (realtimeSub) return; // Já está escutando
+
+        realtimeSub = supabase
+            .channel('widget_chat')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'chat_messages', 
+                filter: `session_id=eq.${sessionId}` 
+            }, (payload) => {
+                // Se a mensagem NÃO for minha (user), então é da IA ou do Admin -> Exibe
+                if (payload.new.sender !== 'user') {
+                    appendMessage(payload.new.sender, payload.new.content);
+                }
+            })
+            .subscribe();
+    }
+
+    // 6. Carregar Histórico Antigo
+    async function loadHistory() {
+        const { data } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .eq('session_id', sessionId)
+            .order('created_at', { ascending: true });
+        
+        msgsList.innerHTML = ''; // Limpa antes de renderizar
+        if (data) {
+            data.forEach(msg => appendMessage(msg.sender, msg.content));
+        }
+    }
+
+    // 7. Renderizar Balão de Mensagem
+    function appendMessage(sender, text) {
+        const div = document.createElement('div');
+        const isUser = sender === 'user';
+        const isAdmin = sender === 'admin';
+        
+        // Estilização dos balões
+        let bubbleStyle = isUser 
+            ? 'bg-green-600 text-white rounded-br-none' 
+            : (isAdmin ? 'bg-blue-600 text-white rounded-bl-none shadow-md border border-blue-700' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm');
+            
+        let alignStyle = isUser ? 'justify-end' : 'justify-start';
+        let label = isAdmin ? '<span class="text-[10px] text-blue-500 font-bold ml-1 mb-1 block">Atendente Humano</span>' : '';
+
+        div.className = `flex ${alignStyle} animate-fade-in mb-3`;
+        div.innerHTML = `
+            <div class="max-w-[85%]">
+                ${label}
+                <div class="p-3 rounded-2xl text-sm leading-relaxed ${bubbleStyle}">
+                    ${formatText(text)}
+                </div>
+            </div>
+        `;
+        
+        msgsList.appendChild(div);
+        msgsList.scrollTop = msgsList.scrollHeight; // Rola para o final
+    }
+
+    // Helper simples para quebras de linha
+    function formatText(txt) {
+        return txt.replace(/\n/g, '<br>');
+    }
+</script>
+
+<style>
+    /* Animação suave de entrada */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+</style>
 
 
 </body>
