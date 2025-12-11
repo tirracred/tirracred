@@ -100,12 +100,39 @@
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
     
-    // Controles Janela
+    // --- LÓGICA DE ABERTURA (Função Reutilizável) ---
+    const openChat = () => {
+        win.style.display = 'flex';
+        if(session) {
+            showChatScreen();
+        } else {
+            // Foca no campo nome se não tiver logado
+            setTimeout(() => {
+                const nameInput = el('tc-name');
+                if(nameInput) nameInput.focus();
+            }, 100);
+        }
+    };
+
+    // 1. Botão Flutuante (O verdinho do Canto)
     el('tirra-toggle').onclick = () => {
         const isClosed = win.style.display === 'none' || win.style.display === '';
-        win.style.display = isClosed ? 'flex' : 'none';
-        if (isClosed && session) showChatScreen();
+        if (isClosed) openChat();
+        else win.style.display = 'none';
     };
+
+    // 2. Conecta Botões do Site (Desktop e Mobile)
+    // Procura por qualquer elemento com id="tc-external-btn" ou "tc-mobile-btn"
+    ['tc-external-btn', 'tc-mobile-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.onclick = (e) => {
+                e.preventDefault(); // Não deixa a página recarregar
+                openChat(); // Abre a Isabel
+            };
+        }
+    });
+    
     el('tc-minimize').onclick = () => win.style.display = 'none';
     el('tc-close').onclick = () => {
         if(confirm("Encerrar atendimento?")) {
@@ -220,7 +247,7 @@
                 <div class="msg-bubble bubble-${sender === 'user' ? 'user' : 'ai'}">${processedText}</div>
             </div>
         `;
-        
+
         const area = el('tc-msgs');
         area.appendChild(div);
         area.scrollTop = area.scrollHeight;
