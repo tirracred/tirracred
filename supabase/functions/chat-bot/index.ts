@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       Nunca peça senhas.
     `
 
-    // 5. Chamar Groq
+    // 5. Chamar Gr. oq
     const completion = await groq.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
