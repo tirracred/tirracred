@@ -6,6 +6,7 @@
 <link rel="preload" href="public/banner2.png" as="image">
 
 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>TirraCred - Soluções Financeiras Completas para Você</title>
@@ -1833,223 +1834,213 @@ const mixed  = buildFeed(restProducts, ads, {
   
 </script>
 
-
-<div id="tirra-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; font-family: sans-serif;">
+<!-- ============================================ -->
+    <!-- WIDGET DE CHAT - COLE AQUI EMBAIXO -->
+    <!-- ============================================ -->
     
-    <button id="tirra-toggle" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-    </button>
-
-    <div id="tirra-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; max-width: 90vw; height: 500px; background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb;">
+    <div id="tirra-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; font-family: sans-serif;">
         
-        <div style="background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <div style="position: relative;">
-                    <img src="public/favincon.png" style="width: 32px; height: 32px; background: white; border-radius: 50%; padding: 2px;" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
-                    <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border-radius: 50%; border: 2px solid #16a34a;"></span>
-                </div>
-                <div>
-                    <div style="font-weight: bold; font-size: 14px;">Atendimento TirraCred</div>
-                    <div style="font-size: 11px; opacity: 0.9;">Online agora ⚡</div>
-                </div>
-            </div>
-            <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
-        </div>
+        <button id="tirra-toggle" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        </button>
 
-        <div id="tirra-login" style="padding: 24px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
-            <h3 style="text-align: center; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Olá! 👋</h3>
-            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px;">Identifique-se para começar.</p>
+        <div id="tirra-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; max-width: 90vw; height: 500px; background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb;">
             
-            <form onsubmit="startSession(event)" style="display: flex; flex-direction: column; gap: 12px;">
-                <input id="v-name" required placeholder="Seu Nome" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
-                <input id="v-phone" required placeholder="Seu WhatsApp" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
-                <button type="submit" id="btn-start" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px;">INICIAR CHAT ➤</button>
-            </form>
-        </div>
+            <div style="background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div style="position: relative;">
+                        <img src="public/favincon.png" style="width: 32px; height: 32px; background: white; border-radius: 50%; padding: 2px;" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
+                        <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border-radius: 50%; border: 2px solid #16a34a;"></span>
+                    </div>
+                    <div>
+                        <div style="font-weight: bold; font-size: 14px;">Atendimento TirraCred</div>
+                        <div style="font-size: 11px; opacity: 0.9;">Online agora ⚡</div>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
+            </div>
 
-        <div id="tirra-chat" style="display: none; flex: 1; flex-direction: column; height: 100%;">
-            <div id="msgs" style="flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb;"></div>
-            <div style="padding: 12px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; background: white;">
-                <form onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 8px;">
-                    <input id="v-msg" placeholder="Digite..." style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
-                    <button type="submit" id="send-btn" style="padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">➤</button>
+            <div id="tirra-login" style="padding: 24px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <h3 style="text-align: center; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Olá! 👋</h3>
+                <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px;">Identifique-se para começar.</p>
+                
+                <form onsubmit="startSession(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                    <input id="v-name" required placeholder="Seu Nome" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
+                    <input id="v-phone" required placeholder="Seu WhatsApp" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
+                    <button type="submit" id="btn-start" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px;">INICIAR CHAT ➤</button>
                 </form>
+            </div>
+
+            <div id="tirra-chat" style="display: none; flex: 1; flex-direction: column; height: 100%;">
+                <div id="msgs" style="flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb;"></div>
+                <div style="padding: 12px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; background: white;">
+                    <form onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 8px;">
+                        <input id="v-msg" placeholder="Digite..." style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
+                        <button type="submit" id="send-btn" style="padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">➤</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    
-    /* =========================================
-       LÓGICA DO WIDGET (CONEXÃO ISOLADA)
-       ========================================= */
-    
-    // Credenciais (Recriadas aqui para garantir que funcione independente do resto do site)
-    const W_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-    const W_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-    const EDGE_FUNC = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
+    <script>
+        /* =========================================
+           LÓGICA DO WIDGET (CONEXÃO ISOLADA)
+           ========================================= */
+        
+        const W_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+        const W_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+        const EDGE_FUNC = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
 
-    let chatClient = null;
-    let sessionId = localStorage.getItem('tirracred_session_id');
-    let visitorName = localStorage.getItem('tirracred_visitor_name');
-    let realtimeSub = null;
+        let chatClient = null;
+        let sessionId = localStorage.getItem('tirracred_session_id');
+        let visitorName = localStorage.getItem('tirracred_visitor_name');
+        let realtimeSub = null;
 
-    // Helpers de UI
-    const el = (id) => document.getElementById(id);
-    const widgetWindow = el('tirra-window');
-    const loginScreen = el('tirra-login');
-    const chatScreen = el('tirra-chat'); // Corrigido ID
-    const msgsList = el('msgs'); // Corrigido ID
+        const el = (id) => document.getElementById(id);
+        const widgetWindow = el('tirra-window');
+        const loginScreen = el('tirra-login');
+        const chatScreen = el('tirra-chat');
+        const msgsList = el('msgs');
 
-    // Inicialização Segura
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.supabase) {
-            // Cria um cliente EXCLUSIVO para o chat
-            chatClient = window.supabase.createClient(W_URL, W_KEY);
-            console.log("Chat Widget: Conectado ✅");
-        } else {
-            console.error("Chat Widget: Biblioteca Supabase não encontrada. Verifique o <head>.");
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.supabase) {
+                chatClient = window.supabase.createClient(W_URL, W_KEY);
+                console.log("Chat Widget: Conectado ✅");
+            } else {
+                console.error("Chat Widget: Biblioteca Supabase não encontrada.");
+            }
+        });
+
+        window.toggleChat = function() {
+            widgetWindow.style.display = widgetWindow.style.display === 'none' ? 'flex' : 'none';
+            if (widgetWindow.style.display === 'flex' && sessionId) {
+                showChatInterface();
+            }
         }
-    });
 
-    // 1. Abrir/Fechar (Função Global)
-    window.toggleChat = function() {
-        widgetWindow.style.display = widgetWindow.style.display === 'none' ? 'flex' : 'none';
-        if (widgetWindow.style.display === 'flex' && sessionId) {
-            showChatInterface();
+        window.startSession = async function(e) {
+            e.preventDefault();
+            if (!chatClient) return alert("Aguarde o carregamento da página e tente novamente.");
+            
+            const name = el('v-name').value;
+            const phone = el('v-phone').value;
+            const btn = el('btn-start');
+            
+            btn.innerText = "Conectando...";
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await chatClient
+                    .from('chat_sessions')
+                    .insert({ visitor_name: name, visitor_phone: phone })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                sessionId = data.id;
+                visitorName = name;
+                localStorage.setItem('tirracred_session_id', sessionId);
+                localStorage.setItem('tirracred_visitor_name', name);
+
+                showChatInterface();
+                appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao iniciar. Tente novamente.");
+                btn.innerText = "INICIAR CHAT ➤";
+                btn.disabled = false;
+            }
         }
-    }
 
-    // 2. Login
-    window.startSession = async function(e) {
-        e.preventDefault();
-        if (!chatClient) return alert("Aguarde o carregamento da página e tente novamente.");
-        
-        const name = el('v-name').value;
-        const phone = el('v-phone').value;
-        const btn = el('btn-start');
-        
-        btn.innerText = "Conectando...";
-        btn.disabled = true;
-
-        try {
-            const { data, error } = await chatClient
-                .from('chat_sessions')
-                .insert({ visitor_name: name, visitor_phone: phone })
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            sessionId = data.id;
-            visitorName = name;
-            localStorage.setItem('tirracred_session_id', sessionId);
-            localStorage.setItem('tirracred_visitor_name', name);
-
-            showChatInterface();
-            appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
-
-        } catch (err) {
-            console.error(err);
-            alert("Erro ao iniciar. Tente novamente.");
-            btn.innerText = "INICIAR ATENDIMENTO ➤";
-            btn.disabled = false;
+        function showChatInterface() {
+            loginScreen.style.display = 'none';
+            chatScreen.style.display = 'flex';
+            loadHistory();
+            subscribeRealtime();
         }
-    }
 
-    function showChatInterface() {
-        loginScreen.style.display = 'none';
-        chatScreen.style.display = 'flex';
-        loadHistory();
-        subscribeRealtime();
-    }
+        window.sendMessage = async function(e) {
+            e.preventDefault();
+            const input = el('v-msg');
+            const text = input.value.trim();
+            if (!text) return;
 
-    // 3. Enviar
-    window.sendMessage = async function(e) {
-        e.preventDefault();
-        const input = el('v-msg');
-        const text = input.value.trim();
-        if (!text) return;
+            input.value = '';
+            appendMessage('user', text);
 
-        input.value = '';
-        appendMessage('user', text); // Mostra logo
-
-        try {
-            el('send-btn').disabled = true;
-            // Chama a Edge Function
-            await fetch(EDGE_FUNC, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session_id: sessionId, message: text, visitor_name: visitorName })
-            });
-        } catch (err) {
-            console.error("Erro Edge Function:", err);
-            appendMessage('ai', '⚠️ Erro de conexão. Tente de novo.');
-        } finally {
-            el('send-btn').disabled = false;
+            try {
+                el('send-btn').disabled = true;
+                await fetch(EDGE_FUNC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, message: text, visitor_name: visitorName })
+                });
+            } catch (err) {
+                console.error("Erro Edge Function:", err);
+                appendMessage('ai', '⚠️ Erro de conexão. Tente de novo.');
+            } finally {
+                el('send-btn').disabled = false;
+            }
         }
-    }
 
-    // 4. Realtime
-    function subscribeRealtime() {
-        if (realtimeSub || !chatClient) return;
-        realtimeSub = chatClient
-            .channel('widget_chat_room')
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'chat_messages', 
-                filter: `session_id=eq.${sessionId}` 
-            }, (payload) => {
-                if (payload.new.sender !== 'user') {
-                    appendMessage(payload.new.sender, payload.new.content);
-                }
-            })
-            .subscribe();
-    }
+        function subscribeRealtime() {
+            if (realtimeSub || !chatClient) return;
+            realtimeSub = chatClient
+                .channel('widget_chat_room')
+                .on('postgres_changes', { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'chat_messages', 
+                    filter: `session_id=eq.${sessionId}` 
+                }, (payload) => {
+                    if (payload.new.sender !== 'user') {
+                        appendMessage(payload.new.sender, payload.new.content);
+                    }
+                })
+                .subscribe();
+        }
 
-    // 5. Histórico
-    async function loadHistory() {
-        if (!chatClient) return;
-        const { data } = await chatClient.from('chat_messages')
-            .select('*')
-            .eq('session_id', sessionId)
-            .order('created_at', { ascending: true });
-        
-        msgsList.innerHTML = '';
-        if (data) data.forEach(msg => appendMessage(msg.sender, msg.content));
-    }
+        async function loadHistory() {
+            if (!chatClient) return;
+            const { data } = await chatClient.from('chat_messages')
+                .select('*')
+                .eq('session_id', sessionId)
+                .order('created_at', { ascending: true });
+            
+            msgsList.innerHTML = '';
+            if (data) data.forEach(msg => appendMessage(msg.sender, msg.content));
+        }
 
-    // 6. Renderizar
-    function appendMessage(sender, text) {
-        const div = document.createElement('div');
-        const isUser = sender === 'user';
-        const isAdmin = sender === 'admin';
-        
-        // Estilo Inline para garantir
-        div.style.cssText = `display:flex; justify-content: ${isUser ? 'flex-end' : 'flex-start'}; margin-bottom: 10px; animation: fadeIn 0.3s ease;`;
-        
-        let bg = isUser ? '#16a34a' : (isAdmin ? '#2563eb' : '#f3f4f6');
-        let color = (isUser || isAdmin) ? 'white' : '#1f2937';
-        let label = isAdmin ? '<div style="font-size:10px; color:#93c5fd; margin-bottom:2px;">Humano</div>' : '';
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            const isUser = sender === 'user';
+            const isAdmin = sender === 'admin';
+            
+            div.style.cssText = `display:flex; justify-content: ${isUser ? 'flex-end' : 'flex-start'}; margin-bottom: 10px; animation: fadeIn 0.3s ease;`;
+            
+            let bg = isUser ? '#16a34a' : (isAdmin ? '#2563eb' : '#f3f4f6');
+            let color = (isUser || isAdmin) ? 'white' : '#1f2937';
+            let label = isAdmin ? '<div style="font-size:10px; color:#93c5fd; margin-bottom:2px;">Humano</div>' : '';
 
-        div.innerHTML = `
-            <div style="max-width: 80%;">
-                ${label}
-                <div style="padding: 10px 14px; border-radius: 12px; font-size: 14px; background: ${bg}; color: ${color}; border: ${isUser ? 'none' : '1px solid #e5e7eb'}; line-height: 1.4;">
-                    ${text.replace(/\n/g, '<br>')}
-                </div>
-            </div>`;
-        
-        msgsList.appendChild(div);
-        msgsList.scrollTop = msgsList.scrollHeight;
-    }
-</script>
+            div.innerHTML = `
+                <div style="max-width: 80%;">
+                    ${label}
+                    <div style="padding: 10px 14px; border-radius: 12px; font-size: 14px; background: ${bg}; color: ${color}; border: ${isUser ? 'none' : '1px solid #e5e7eb'}; line-height: 1.4;">
+                        ${text.replace(/\n/g, '<br>')}
+                    </div>
+                </div>`;
+            
+            msgsList.appendChild(div);
+            msgsList.scrollTop = msgsList.scrollHeight;
+        }
+    </script>
 
-<style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-</style>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 
 
 
