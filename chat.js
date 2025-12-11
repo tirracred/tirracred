@@ -1,142 +1,143 @@
 (function() {
-    console.log("🚀 Widget TirraCred: Iniciando...");
+    // --- CONFIGURAÇÕES ---
+    const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+    const EDGE_URL = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
 
-    // 1. ESTILOS (CSS CORRIGIDO PARA NÃO QUEBRAR LAYOUT)
+    console.log("🚀 Isabel TirraCred: Iniciando...");
+
+    // 1. ESTILOS (Layout Flexbox Corrigido)
     const style = document.createElement('style');
     style.innerHTML = `
-        /* Container Principal */
         #tirra-widget-container { 
             position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; 
             font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: flex-end; 
         }
         
-        /* Botão Flutuante */
         #tirra-toggle { 
             width: 60px; height: 60px; border-radius: 50%; background: #16a34a; 
             border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
             cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            transition: all 0.2s; 
+            transition: transform 0.2s; 
         }
-        #tirra-toggle:hover { transform: scale(1.1); }
+        #tirra-toggle:hover { transform: scale(1.05); }
         
-        /* Janela do Chat (FIXED LAYOUT) */
+        /* Layout Flexbox Vertical para não cortar nada */
         #tirra-window { 
             display: none; margin-bottom: 15px; 
             width: 360px; max-width: 90vw; 
-            height: 550px; max-height: 80vh; /* Respeita tela pequena */
+            height: 550px; max-height: 80vh; 
             background: white; border-radius: 16px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
             border: 1px solid #e5e7eb; 
-            display: flex; flex-direction: column; /* Organiza em coluna */
+            flex-direction: column; /* Importante */
             overflow: hidden; 
             animation: popIn 0.3s ease-out;
         }
         
-        /* SEÇÕES DO LAYOUT */
-        /* 1. Topo: Fixo */
+        /* Header Fixo */
         .tc-header { 
-            flex-shrink: 0; /* Não encolhe */
-            background: #16a34a; padding: 16px; color: white; 
-            display: flex; justify-content: space-between; align-items: center; 
+            flex-shrink: 0; 
+            background: #16a34a; padding: 12px 16px; 
+            color: white; display: flex; justify-content: space-between; align-items: center; 
         }
         
-        /* 2. Conteúdo (Login/Chat): Expande */
-        .tc-content-area {
-            flex-grow: 1; /* Ocupa todo espaço disponível */
-            overflow-y: auto; /* Scroll só aqui */
-            background: #f9fafb;
+        /* Área de Conteúdo (Cresce) */
+        .tc-content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
             display: flex; flex-direction: column;
-            min-height: 0; /* Fix para Firefox/Flex */
+            background: #f9fafb;
+            min-height: 0; /* Fix flex */
         }
+        
+        /* Rodapé de Input (Fixo) */
+        .tc-footer { 
+            flex-shrink: 0; 
+            padding: 10px; border-top: 1px solid #e5e7eb; 
+            background: white; display: flex; gap: 8px; align-items: center; 
+        }
+        
+        .tc-btn-reset { 
+            background: rgba(255,255,255,0.2); border: none; color: white; 
+            font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 8px;
+        }
+        .tc-btn-reset:hover { background: rgba(255,255,255,0.3); }
 
-        /* 3. Rodapé (Input): Fixo */
-        .tc-footer {
-            flex-shrink: 0; /* Não encolhe */
-            padding: 12px; border-top: 1px solid #e5e7eb; 
-            display: flex; gap: 8px; background: white; align-items: center;
-        }
-        
-        /* Elementos Visuais */
-        .tc-header-actions { display: flex; gap: 10px; }
-        .tc-header-btn { background: none; border: none; color: white; cursor: pointer; font-size: 18px; padding: 4px; opacity: 0.8; }
-        .tc-header-btn:hover { opacity: 1; }
-        
-        .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; box-sizing: border-box; outline: none; background: #fff; }
-        .tc-input:focus { border-color: #16a34a; }
+        .tc-btn-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+        .tc-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 14px; }
+        .tc-send { width: 40px; height: 40px; border-radius: 50%; background: #16a34a; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* Mensagens */
-        #tc-msgs { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        #tc-msgs { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .msg-row { display: flex; width: 100%; }
         .msg-user { justify-content: flex-end; }
         .msg-ai { justify-content: flex-start; }
-        .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); word-wrap: break-word; }
-        .bubble-user { background: #16a34a; color: white; border-bottom-right-radius: 4px; }
-        .bubble-ai { background: #fff; color: #1f2937; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
-        .msg-bubble a { color: inherit; text-decoration: underline; font-weight: bold; }
-        .bubble-ai a { color: #16a34a; }
+        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .bubble-user { background: #16a34a; color: white; border-bottom-right-radius: 2px; }
+        .bubble-ai { background: white; color: #333; border: 1px solid #e5e7eb; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-label { font-size: 10px; color: #6b7280; margin-bottom: 2px; margin-left: 2px; font-weight: 600; }
+        .bubble-ai a { color: #16a34a; font-weight: bold; text-decoration: underline; }
 
-        /* Helpers */
-        .hidden { display: none !important; }
-        .flex { display: flex !important; }
-        
+        /* Login Screen */
+        #tc-screen-login { padding: 24px; flex: 1; display: flex; flex-direction: column; justify-content: center; background: white; }
+        .login-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box; }
+        .login-btn { width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
         @keyframes popIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .hidden { display: none !important; }
     `;
     document.head.appendChild(style);
 
-    // 2. HTML ESTRUTURADO
+    // 2. HTML
     const root = document.createElement('div');
     root.id = 'tirra-widget-container';
     root.innerHTML = `
-        <div id="tirra-window" class="hidden">
+        <div id="tirra-window">
             <div class="tc-header">
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <div style="width:36px; height:36px; position:relative;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="width:32px; height:32px; position:relative;">
                         <img src="public/izabel.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" onerror="this.src='https://placehold.co/40x40/fff/16a34a?text=I'">
-                        <div style="position:absolute; bottom:0; right:0; width:10px; height:10px; background:#86efac; border:2px solid #16a34a; border-radius:50%;"></div>
+                        <div style="position:absolute; bottom:0; right:0; width:8px; height:8px; background:#86efac; border:2px solid #16a34a; border-radius:50%;"></div>
                     </div>
                     <div>
                         <div style="font-weight:bold; font-size:14px;">Isabel - Atendimento</div>
-                        <div style="font-size:11px; opacity:0.9;">Online agora ⚡</div>
+                        <div style="font-size:11px; opacity:0.9;">TirraCred</div>
                     </div>
                 </div>
-                <div class="tc-header-actions">
-                    <button id="tc-reset" class="tc-header-btn" title="Reiniciar">🔄</button>
-                    <button id="tc-close" class="tc-header-btn" title="Fechar">&times;</button>
+                <div style="display:flex; align-items:center;">
+                    <button id="tc-reset" class="tc-btn-reset">Novo Atendimento</button>
+                    <button id="tc-close" class="tc-btn-close">&times;</button>
                 </div>
             </div>
 
-            <div id="tc-screen-login" class="tc-content-area" style="padding:24px; justify-content:center;">
-                <h3 style="text-align:center; color:#111827; margin-bottom:8px; font-size:18px;">Falar com a Isabel 👋</h3>
-                <p style="text-align:center; color:#6b7280; font-size:14px; margin-bottom:24px;">Preencha seus dados para iniciar.</p>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo">
-                    <input id="tc-phone" class="tc-input" placeholder="Seu WhatsApp">
-                    <button id="tc-start-btn" class="tc-btn">INICIAR ATENDIMENTO ➤</button>
+            <div class="tc-content">
+                <div id="tc-screen-login">
+                    <h3 style="text-align:center; color:#111827; margin-bottom:8px; font-size:18px;">Olá! 👋</h3>
+                    <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Preencha seus dados para falar com a Isabel.</p>
+                    <input id="tc-name" class="login-input" placeholder="Seu Nome">
+                    <input id="tc-phone" class="login-input" placeholder="Seu WhatsApp">
+                    <button id="tc-start-btn" class="login-btn">INICIAR CHAT ➤</button>
+                    <p style="text-align:center; color:#9ca3af; font-size:11px; margin-top:16px;">Seus dados estão seguros.</p>
                 </div>
+
+                <div id="tc-msgs" class="hidden"></div>
             </div>
 
-            <div id="tc-screen-chat" class="tc-content-area hidden">
-                <div id="tc-msgs"></div>
-            </div>
-
-            <div id="tc-chat-footer" class="tc-footer hidden">
-                <input id="tc-msg-input" class="tc-input" style="margin:0;" placeholder="Digite sua resposta..." autocomplete="off">
-                <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">➤</button>
+            <div id="tc-footer" class="tc-footer hidden">
+                <input id="tc-msg-input" class="tc-input" placeholder="Digite aqui..." autocomplete="off">
+                <button id="tc-send-btn" class="tc-send">➤</button>
             </div>
         </div>
 
         <button id="tirra-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
         </button>
     `;
     document.body.appendChild(root);
 
     // 3. LÓGICA
-    const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-    const EDGE_URL = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
-
     let client = null;
     let session = localStorage.getItem('tc_sess');
     let visitor = localStorage.getItem('tc_vis');
@@ -147,33 +148,30 @@
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
     
-    // Toggle
+    // Toggle (Abrir/Fechar)
     el('tirra-toggle').onclick = () => {
-        const isHidden = win.classList.contains('hidden');
-        if (isHidden) {
-            win.classList.remove('hidden');
-            win.style.display = 'flex'; // Força flex
-            if (session) showChatScreen();
-        } else {
-            win.classList.add('hidden');
-            win.style.display = 'none';
-        }
+        const isHidden = win.style.display === 'none' || win.style.display === '';
+        win.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden && session) showChatScreen();
     };
     
-    el('tc-close').onclick = () => { win.classList.add('hidden'); win.style.display = 'none'; };
+    // Minimizar (X)
+    el('tc-close').onclick = () => win.style.display = 'none';
 
-    // Reset
+    // NOVO ATENDIMENTO (Reiniciar)
     el('tc-reset').onclick = () => {
-        if(!confirm('Reiniciar atendimento?')) return;
+        if(!confirm('Deseja encerrar a conversa atual e começar um novo atendimento?')) return;
         localStorage.removeItem('tc_sess');
         localStorage.removeItem('tc_vis');
-        session = null; visitor = null;
+        session = null; 
+        visitor = null;
+        
         el('tc-msgs').innerHTML = '';
-        el('tc-screen-chat').classList.add('hidden');
-        el('tc-chat-footer').classList.add('hidden');
-        el('tc-screen-login').classList.remove('hidden');
+        el('tc-msgs').classList.add('hidden');
+        el('tc-footer').classList.add('hidden');
+        el('tc-screen-login').classList.remove('hidden'); // Volta pro login
         el('tc-start-btn').disabled = false;
-        el('tc-start-btn').innerText = 'INICIAR ATENDIMENTO ➤';
+        el('tc-start-btn').innerText = 'INICIAR CHAT ➤';
     };
 
     // Login
@@ -192,7 +190,7 @@
             localStorage.setItem('tc_sess', session);
             localStorage.setItem('tc_vis', name);
             showChatScreen();
-            addMsg('ai', `Oi ${name}! 👋 Aqui é a Isabel. Para eu liberar o melhor crédito pra você agora, me diz: **Você está negativado ou com o nome limpo?**`);
+            addMsg('ai', `Oi ${name}! 👋 Sou a Isabel. Para eu montar o plano ideal pra você, me conta: **Você tem FGTS, algum veículo ou é aposentado?**`);
         } catch (e) {
             alert('Erro de conexão.');
             el('tc-start-btn').innerText = 'TENTAR NOVAMENTE';
@@ -216,7 +214,7 @@
                 body: JSON.stringify({ session_id: session, message: txt, visitor_name: visitor })
             });
         } catch(e) {
-            addMsg('ai', '⚠️ Erro de conexão.');
+            addMsg('ai', '⚠️ Falha na conexão.');
         } finally {
             isSending = false;
             setTimeout(() => el('tc-msg-input').focus(), 100);
@@ -228,8 +226,8 @@
 
     function showChatScreen() {
         el('tc-screen-login').classList.add('hidden');
-        el('tc-screen-chat').classList.remove('hidden');
-        el('tc-chat-footer').classList.remove('hidden');
+        el('tc-msgs').classList.remove('hidden');
+        el('tc-footer').classList.remove('hidden');
         loadHistory();
         
         client.channel('widget_room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
@@ -247,14 +245,23 @@
     function addMsg(sender, text) {
         const div = document.createElement('div');
         const type = sender === 'user' ? 'user' : (sender === 'admin' ? 'admin' : 'ai');
-        div.className = `msg-row msg-${sender === 'user' ? 'user' : 'ai'}`;
+        div.className = `msg-row msg-${type}`;
         
+        let label = '';
+        if(sender === 'ai') label = '<div class="msg-label">Isabel</div>';
+
         const processedText = text
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
             .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>') 
             .replace(/\n/g, '<br>'); 
 
-        div.innerHTML = `<div class="msg-bubble bubble-${type}">${processedText}</div>`;
+        div.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:${sender === 'user' ? 'flex-end' : 'flex-start'}; max-width:100%;">
+                ${label}
+                <div class="msg-bubble bubble-${type}">${processedText}</div>
+            </div>
+        `;
+        
         const area = el('tc-msgs');
         area.appendChild(div);
         area.scrollTop = area.scrollHeight;
