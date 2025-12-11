@@ -1,8 +1,8 @@
 (function() {
-    console.log("🚀 Widget TirraCred: Iniciando...");
+    console.log("🚀 Widget TirraCred: Iniciando Versão Otimizada...");
 
     // --------------------------------------------------------
-    // 1. ESTILOS (CSS)
+    // 1. ESTILOS (CSS CORRIGIDO E TRAVADO)
     // --------------------------------------------------------
     const style = document.createElement('style');
     style.innerHTML = `
@@ -10,49 +10,102 @@
         
         /* Botão Flutuante */
         #tirra-toggle { width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        #tirra-toggle:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        #tirra-toggle:hover { transform: scale(1.1); }
         
-        /* Janela */
-        #tirra-window { display: none; margin-bottom: 15px; width: 360px; max-width: 90vw; height: 550px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; animation: popIn 0.3s ease-out; }
+        /* Janela Principal - FLEXBOX CORRIGIDO */
+        #tirra-window { 
+            display: none; 
+            margin-bottom: 15px; 
+            width: 360px; 
+            max-width: 90vw; 
+            height: 550px; 
+            max-height: 80vh; /* Segurança para mobile */
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            flex-direction: column; /* Essencial */
+            overflow: hidden; 
+            border: 1px solid #e5e7eb; 
+            animation: popIn 0.3s ease-out; 
+        }
         
-        /* Header */
-        .tc-header { background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* Header - Fixo no topo */
+        .tc-header { 
+            flex-shrink: 0; /* Não encolhe */
+            background: #16a34a; 
+            padding: 16px; 
+            color: white; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        /* Área de Conteúdo (Telas) */
+        .tc-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* O scroll vai dentro dos filhos */
+            height: 100%;
+        }
+
+        /* Área de Mensagens - Com Scroll */
+        #tc-msgs { 
+            flex: 1; /* Ocupa todo o espaço disponível */
+            overflow-y: auto; /* Scroll só aqui */
+            padding: 16px; 
+            background: #f9fafb; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            scroll-behavior: smooth; 
+        }
+
+        /* Área do Input - Fixa embaixo */
+        .tc-footer-input {
+            flex-shrink: 0; /* Não encolhe */
+            padding: 12px; 
+            border-top: 1px solid #e5e7eb; 
+            background: white; 
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+        }
+
+        /* Elementos Gerais */
         .tc-avatar { width: 36px; height: 36px; background: white; border-radius: 50%; padding: 2px; position: relative; }
-        .tc-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; } /* Ajuste para a foto ficar redondinha */
+        .tc-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .tc-status { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border: 2px solid #16a34a; border-radius: 50%; }
         
-        /* Inputs e Botões */
-        .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; transition: background 0.2s; }
+        .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
         .tc-btn:hover { background: #15803d; }
-        .tc-btn:disabled { background: #86efac; cursor: not-allowed; opacity: 0.8; }
+        .tc-btn:disabled { background: #86efac; opacity: 0.8; }
         
-        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; background: #f9fafb; transition: all 0.2s; }
-        .tc-input:focus { border-color: #16a34a; background: white; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1); }
-        .tc-input:disabled { background: #f3f4f6; cursor: wait; }
+        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 14px; background: #f9fafb; }
+        .tc-input:focus { border-color: #16a34a; background: white; }
 
-        /* Mensagens */
-        #tc-msgs { flex: 1; overflow-y: auto; padding: 16px; background: #ffffff; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+        /* Balões de Mensagem */
         .msg-row { display: flex; width: 100%; }
         .msg-user { justify-content: flex-end; }
         .msg-ai { justify-content: flex-start; }
-        
-        .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; word-wrap: break-word; }
-        .bubble-user { background: #16a34a; color: white; border-bottom-right-radius: 4px; }
-        .bubble-ai { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 4px; }
-        .bubble-admin { background: #2563eb; color: white; border-bottom-left-radius: 4px; }
-        
+        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .bubble-user { background: #16a34a; color: white; border-bottom-right-radius: 2px; }
+        .bubble-ai { background: #e5e7eb; color: #1f2937; border-bottom-left-radius: 2px; }
         .msg-label { font-size: 10px; color: #6b7280; margin-bottom: 2px; margin-left: 4px; font-weight: 600; }
         
-        /* Links dentro das msgs */
         .msg-bubble a { color: inherit; text-decoration: underline; font-weight: bold; }
-        .bubble-ai a { color: #16a34a; }
+        .bubble-ai a { color: #047857; }
+
+        /* Botões do Header */
+        .tc-header-btn { background: none; border: none; color: white; cursor: pointer; padding: 4px 8px; font-size: 18px; opacity: 0.9; transition: opacity 0.2s; }
+        .tc-header-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); border-radius: 4px; }
 
         @keyframes popIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     `;
     document.head.appendChild(style);
 
     // --------------------------------------------------------
-    // 2. HTML (ATUALIZADO COM FOTO E NOME)
+    // 2. HTML (Minimizar e Encerrar Adicionados)
     // --------------------------------------------------------
     const root = document.createElement('div');
     root.id = 'tirra-widget-container';
@@ -65,32 +118,31 @@
                         <div class="tc-status"></div>
                     </div>
                     <div>
-                        <div style="font-weight:bold; font-size:15px;">Isabel - Atendimento</div>
-                        <div style="font-size:12px; opacity:0.9;">Online agora ⚡</div>
+                        <div style="font-weight:bold; font-size:15px;">Isabel - Crédito</div>
+                        <div style="font-size:12px; opacity:0.9;">Online ⚡</div>
                     </div>
                 </div>
-                <button id="tc-close" style="background:none; border:none; color:white; font-size:24px; cursor:pointer; padding:0 8px;">&times;</button>
+                <div>
+                    <button id="tc-minimize" class="tc-header-btn" title="Minimizar">_</button>
+                    <button id="tc-close" class="tc-header-btn" title="Encerrar Atendimento">&times;</button>
+                </div>
             </div>
 
-            <div id="tc-screen-login" style="padding:24px; flex:1; display:flex; flex-direction:column; justify-content:center;">
-                <h3 style="text-align:center; color:#111827; margin-bottom:8px; font-size:18px;">Falar com a Isabel 👋</h3>
-                <p style="text-align:center; color:#6b7280; font-size:14px; margin-bottom:24px;">Preencha seus dados para receber atendimento especializado.</p>
-                
+            <div id="tc-screen-login" class="tc-screen" style="padding:24px; justify-content:center;">
+                <h3 style="text-align:center; color:#111827; margin-bottom:8px;">Falar com a Isabel 👋</h3>
+                <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Informe seus dados para iniciar a triagem de crédito.</p>
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo">
-                    <input id="tc-phone" class="tc-input" placeholder="Seu WhatsApp (DDD + Número)">
+                    <input id="tc-phone" class="tc-input" placeholder="WhatsApp (DDD + Número)">
                     <button id="tc-start-btn" class="tc-btn">INICIAR ATENDIMENTO ➤</button>
                 </div>
-                <p style="text-align:center; color:#9ca3af; font-size:11px; margin-top:16px;">Seus dados estão 100% seguros.</p>
             </div>
 
-            <div id="tc-screen-chat" style="display:none; flex:1; flex-direction:column; height:100%; background:#fff;">
+            <div id="tc-screen-chat" class="tc-screen" style="display:none;">
                 <div id="tc-msgs"></div>
-                <div style="padding:16px; border-top:1px solid #f3f4f6; display:flex; gap:10px; background:white; align-items:center;">
-                    <input id="tc-msg-input" class="tc-input" style="margin:0;" placeholder="Digite sua resposta..." autocomplete="off">
-                    <button id="tc-send-btn" style="width:46px; height:46px; border-radius:12px; background:#16a34a; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(22,163,74,0.3);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/></svg>
-                    </button>
+                <div class="tc-footer-input">
+                    <input id="tc-msg-input" class="tc-input" placeholder="Digite sua resposta..." autocomplete="off">
+                    <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer;">➤</button>
                 </div>
             </div>
         </div>
@@ -102,51 +154,67 @@
     document.body.appendChild(root);
 
     // --------------------------------------------------------
-    // 3. LÓGICA (Mantida a versão blindada)
+    // 3. LÓGICA DO CLIENTE
     // --------------------------------------------------------
     
+    // CONFIGURAÇÃO SUPABASE
     const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
     const EDGE_URL = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
 
-    let client = null;
+    let client = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
     let session = localStorage.getItem('tc_sess');
     let visitor = localStorage.getItem('tc_vis');
-    let isSending = false; 
+    let isSending = false;
 
-    if (window.supabase) {
-        client = window.supabase.createClient(SB_URL, SB_KEY);
-    } else {
-        console.error("Supabase SDK não carregado.");
-    }
-
+    // Elementos
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
-    const input = el('tc-msg-input');
-    const sendBtn = el('tc-send-btn');
-
-    // Toggle
+    
+    // --- CONTROLES DA JANELA ---
+    
+    // Toggle (Abrir/Fechar)
     el('tirra-toggle').onclick = () => {
         const isClosed = win.style.display === 'none' || win.style.display === '';
         win.style.display = isClosed ? 'flex' : 'none';
-        if (isClosed) {
-            if(session) showChatScreen();
-            else setTimeout(() => el('tc-name').focus(), 100);
+        if (isClosed && session) showChatScreen();
+    };
+
+    // Minimizar (Apenas esconde)
+    el('tc-minimize').onclick = () => {
+        win.style.display = 'none';
+    };
+
+    // Encerrar Atendimento (Reseta Tudo)
+    el('tc-close').onclick = () => {
+        if(confirm("Deseja encerrar o atendimento e apagar o histórico?")) {
+            localStorage.removeItem('tc_sess');
+            localStorage.removeItem('tc_vis');
+            session = null;
+            visitor = null;
+            el('tc-msgs').innerHTML = ''; // Limpa visual
+            el('tc-name').value = '';
+            el('tc-phone').value = '';
+            
+            // Volta pro login
+            el('tc-screen-chat').style.display = 'none';
+            el('tc-screen-login').style.display = 'flex';
         }
     };
-    el('tc-close').onclick = () => win.style.display = 'none';
 
-    // Login
+    // --- LOGIN ---
     el('tc-start-btn').onclick = async () => {
         const name = el('tc-name').value;
         const phone = el('tc-phone').value;
-        if (!name || !phone) return alert('Por favor, preencha todos os campos.');
+        if (!name || !phone) return alert('Preencha nome e WhatsApp.');
 
-        el('tc-start-btn').innerText = 'Conectando...';
+        el('tc-start-btn').innerText = 'Iniciando...';
         el('tc-start-btn').disabled = true;
 
         try {
-            const { data, error } = await client.from('chat_sessions').insert({ visitor_name: name, visitor_phone: phone }).select().single();
+            if(!client) throw new Error("Supabase off");
+            const { data, error } = await client.from('chat_sessions')
+                .insert({ visitor_name: name, visitor_phone: phone }).select().single();
             if (error) throw error;
 
             session = data.id;
@@ -155,98 +223,87 @@
             localStorage.setItem('tc_vis', name);
             
             showChatScreen();
-            // Mensagem inicial atualizada para Isabel
-            addMsg('ai', `Oi ${name}! 👋 Aqui é a Isabel. Para eu liberar o melhor crédito pra você agora, me diz: **Você está negativado ou com o nome limpo?**`);
+            addMsg('ai', `Oi ${name}! 👋 Sou a Isabel. Para eu conseguir a melhor taxa pra você, me conta: **Seu nome está negativado ou limpo?**`);
         } catch (e) {
-            alert('Erro de conexão. Verifique sua internet.');
-            el('tc-start-btn').innerText = 'TENTAR NOVAMENTE';
+            console.error(e);
+            alert('Erro ao conectar.');
+        } finally {
+            el('tc-start-btn').innerText = 'INICIAR ATENDIMENTO ➤';
             el('tc-start-btn').disabled = false;
         }
     };
 
-    // Função de Envio BLINDADA
-    const sendMsg = async () => {
-        const txt = input.value.trim();
-        if(!txt || isSending) return;
-
-        isSending = true;
-        input.disabled = true;
-        sendBtn.style.opacity = '0.5';
-        
-        input.value = '';
-        addMsg('user', txt);
-
-        try {
-            await fetch(EDGE_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + SB_KEY 
-                },
-                body: JSON.stringify({ session_id: session, message: txt, visitor_name: visitor })
-            });
-        } catch(e) {
-            console.error(e);
-            addMsg('ai', '⚠️ Ops, minha conexão falhou. Tente enviar novamente.');
-        } finally {
-            isSending = false;
-            input.disabled = false;
-            sendBtn.style.opacity = '1';
-            input.focus(); 
-        }
-    };
-
-    sendBtn.onclick = sendMsg;
-    input.onkeypress = (e) => { 
-        if(e.key === 'Enter') {
-            e.preventDefault(); 
-            sendMsg(); 
-        }
-    };
-
+    // --- CHAT LOGIC ---
     function showChatScreen() {
         el('tc-screen-login').style.display = 'none';
-        el('tc-screen-chat').style.display = 'flex';
+        el('tc-screen-chat').style.display = 'flex'; // Flex para manter estrutura
         loadHistory();
         
-        client.channel('widget_room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
-        (payload) => {
-            if(payload.new.sender !== 'user') addMsg(payload.new.sender, payload.new.content);
-        }).subscribe();
+        // Realtime Subscription
+        client.channel('widget_room').on('postgres_changes', 
+            { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
+            (payload) => {
+                if(payload.new.sender !== 'user') addMsg(payload.new.sender, payload.new.content);
+            }
+        ).subscribe();
     }
 
     async function loadHistory() {
+        if(!session) return;
         const { data } = await client.from('chat_messages').select('*').eq('session_id', session).order('created_at');
         el('tc-msgs').innerHTML = '';
         if(data) data.forEach(m => addMsg(m.sender, m.content));
     }
 
+    const sendMsg = async () => {
+        const txt = el('tc-msg-input').value.trim();
+        if(!txt || isSending) return;
+
+        isSending = true;
+        el('tc-msg-input').disabled = true;
+        addMsg('user', txt);
+        el('tc-msg-input').value = '';
+
+        try {
+            await fetch(EDGE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+                body: JSON.stringify({ session_id: session, message: txt, visitor_name: visitor })
+            });
+        } catch(e) {
+            addMsg('ai', '⚠️ Falha na conexão. Tente novamente.');
+        } finally {
+            isSending = false;
+            el('tc-msg-input').disabled = false;
+            el('tc-msg-input').focus();
+        }
+    };
+
+    el('tc-send-btn').onclick = sendMsg;
+    el('tc-msg-input').onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
+
     function addMsg(sender, text) {
         const div = document.createElement('div');
-        const type = sender === 'user' ? 'user' : (sender === 'admin' ? 'admin' : 'ai');
-        
         div.className = `msg-row msg-${sender === 'user' ? 'user' : 'ai'}`;
         
-        let label = '';
-        if(sender === 'admin') label = '<div class="msg-label">Atendente Humano</div>';
-        if(sender === 'ai') label = '<div class="msg-label">Isabel</div>';
-
-        // Processa Links e Negrito
+        let label = sender === 'ai' ? '<div class="msg-label">Isabel</div>' : '';
+        
+        // Formata link e negrito
         const processedText = text
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
-            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>') 
-            .replace(/\n/g, '<br>'); 
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">CLIQUE AQUI 🔗</a>')
+            .replace(/\n/g, '<br>');
 
         div.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:${sender === 'user' ? 'flex-end' : 'flex-start'}; max-width:100%;">
+            <div style="display:flex; flex-direction:column; align-items:${sender === 'user' ? 'flex-end' : 'flex-start'}; width:100%;">
                 ${label}
-                <div class="msg-bubble bubble-${type}">${processedText}</div>
+                <div class="msg-bubble bubble-${sender === 'user' ? 'user' : 'ai'}">${processedText}</div>
             </div>
         `;
         
         const area = el('tc-msgs');
         area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
+        area.scrollTop = area.scrollHeight; // Rola pro fundo
     }
-
+    
 })();

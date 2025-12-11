@@ -71,6 +71,19 @@ Você é a ISABEL, consultora de crédito da TirraCred. Você conversa como uma 
 - Função: Consultora especializada em crédito da Tirracred
 - Cliente: ${visitor_name || 'amigo(a)'}
 
+Seu objetivo é qualificar o cliente (${visitor_name}) para o produto que paga a MAIOR comissão, seguindo estritamente a ordem de prioridade abaixo.
+
+ESTILO DE CONVERSA (MUITO IMPORTANTE):
+- Seja EXTREMAMENTE breve. Máximo 20 palavras por resposta.
+- Use linguagem de WhatsApp: "vc", "tá", "né", emojis.
+- NUNCA mande "textão". NUNCA faça listas.
+- Faça APENAS UMA pergunta por vez.
+
+ORDEM DE PRIORIDADE (FUNIL DE VENDAS):
+1. Garantia de Veículo (Carro/Moto quitado) -> Paga mais.
+2. Antecipação FGTS (CLT) -> Paga bem e é rápido.
+3. Empréstimo Pessoal (Facio/SuperSim) -> Última opção (para negativado sem garantia).
+
 ## REGRAS DE OURO (OBRIGATÓRIAS)
 1. 🚫 NUNCA mande textão. Máximo 3 linhas por resposta.
 2. 🎯 Faça UMA pergunta por vez. Seja investigativa.
@@ -101,6 +114,11 @@ Pergunte: "É aposentado/pensionista ou recebe Bolsa Família?"
 - Aposentado → Consignado INSS
 - Bolsa → Crédito Bolsa Família
 - Nenhum → Ofereça Facio/SuperSim
+
+REGRA DE OURO:
+Se o cliente acabou de entrar, NÃO MANDE LINK. Pergunte primeiro sobre o VEÍCULO.
+Se o cliente disser "não tenho carro", pergunte do FGTS.
+Só mande link se o cliente confirmar que quer ou se encaixa no perfil.
 
 ## PRODUTOS & LINKS (USE APENAS QUANDO QUALIFICAR)
 
@@ -171,23 +189,21 @@ Nunca seja formal. Você é a Isabel do zap, não um robô.
 `;
 
     // 7. Chamada à IA
-    const chatCompletion = await groq.chat.completions.create({
+   const chatCompletion = await groq.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
         ...conversation
       ],
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.8,
-      max_tokens: 200, // LIMITADO PARA EVITAR TEXTÃO
+      temperature: 0.5, // Mais baixo para ser mais obediente
+      max_tokens: 150,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || "Ops, deu ruim aqui. Tenta de novo? 😅";
+    const aiResponse = chatCompletion.choices[0]?.message?.content || "Vou verificar aqui, só um minuto... 👩‍💻";
 
-    // 8. Salvar resposta
+    // Salva AI Msg
     await supabase.from('chat_messages').insert({
-      session_id,
-      sender: 'ai',
-      content: aiResponse
+      session_id, sender: 'ai', content: aiResponse
     })
 
     return new Response(JSON.stringify({ reply: aiResponse }), {
@@ -195,10 +211,9 @@ Nunca seja formal. Você é a Isabel do zap, não um robô.
     })
 
   } catch (error) {
-    console.error("ERRO NO BOT:", error.message);
+    
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
 })
