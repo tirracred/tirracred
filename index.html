@@ -1835,213 +1835,383 @@ const mixed  = buildFeed(restProducts, ads, {
 </script>
 
 <!-- ============================================ -->
-    <!-- WIDGET DE CHAT - COLE AQUI EMBAIXO -->
-    <!-- ============================================ -->
-    
-    <div id="tirra-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; font-family: sans-serif;">
-        
-        <button id="tirra-toggle" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        </button>
+<!-- WIDGET DE CHAT - VERSÃO CORRIGIDA -->
+<!-- ============================================ -->
 
-        <div id="tirra-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; max-width: 90vw; height: 500px; background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb;">
+<div id="tirra-widget">
+    <!-- Botão flutuante -->
+    <button id="tirra-toggle" onclick="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+    </button>
+
+    <!-- Janela do chat -->
+    <div id="tirra-window">
+        <!-- Cabeçalho -->
+        <div class="tirra-header">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative;">
+                    <img src="public/favincon.png" style="width: 32px; height: 32px; background: white; border-radius: 50%; padding: 2px;" onerror="this.src='https://placehold.co/40x40/16a34a/fff?text=TC'">
+                    <span class="status-indicator"></span>
+                </div>
+                <div>
+                    <div style="font-weight: bold; font-size: 14px;">Atendimento TirraCred</div>
+                    <div style="font-size: 11px; opacity: 0.9;">Online agora ⚡</div>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="close-btn">✕</button>
+        </div>
+
+        <!-- Tela de Login -->
+        <div id="tirra-login" class="login-screen">
+            <h3 style="text-align: center; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Olá! 👋</h3>
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px;">Identifique-se para começar.</p>
             
-            <div style="background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div style="position: relative;">
-                        <img src="public/favincon.png" style="width: 32px; height: 32px; background: white; border-radius: 50%; padding: 2px;" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
-                        <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border-radius: 50%; border: 2px solid #16a34a;"></span>
-                    </div>
-                    <div>
-                        <div style="font-weight: bold; font-size: 14px;">Atendimento TirraCred</div>
-                        <div style="font-size: 11px; opacity: 0.9;">Online agora ⚡</div>
-                    </div>
-                </div>
-                <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
-            </div>
+            <form onsubmit="startSession(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                <input id="v-name" required placeholder="Seu Nome" class="tirra-input">
+                <input id="v-phone" required placeholder="Seu WhatsApp" class="tirra-input">
+                <button type="submit" id="btn-start" class="tirra-btn-primary">INICIAR CHAT ➤</button>
+            </form>
+        </div>
 
-            <div id="tirra-login" style="padding: 24px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                <h3 style="text-align: center; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Olá! 👋</h3>
-                <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px;">Identifique-se para começar.</p>
-                
-                <form onsubmit="startSession(event)" style="display: flex; flex-direction: column; gap: 12px;">
-                    <input id="v-name" required placeholder="Seu Nome" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
-                    <input id="v-phone" required placeholder="Seu WhatsApp" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
-                    <button type="submit" id="btn-start" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px;">INICIAR CHAT ➤</button>
+        <!-- Tela de Chat -->
+        <div id="tirra-chat" class="chat-screen">
+            <div id="msgs" class="messages-area"></div>
+            <div class="input-area">
+                <form onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 8px;">
+                    <input id="v-msg" placeholder="Digite..." class="tirra-input">
+                    <button type="submit" id="send-btn" class="send-btn">➤</button>
                 </form>
-            </div>
-
-            <div id="tirra-chat" style="display: none; flex: 1; flex-direction: column; height: 100%;">
-                <div id="msgs" style="flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb;"></div>
-                <div style="padding: 12px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; background: white;">
-                    <form onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 8px;">
-                        <input id="v-msg" placeholder="Digite..." style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
-                        <button type="submit" id="send-btn" style="padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">➤</button>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        /* =========================================
-           LÓGICA DO WIDGET (CONEXÃO ISOLADA)
-           ========================================= */
-        
-        const W_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-        const W_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-        const EDGE_FUNC = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
+<script>
+    /* =========================================
+       LÓGICA DO WIDGET (VERSÃO CORRIGIDA)
+       ========================================= */
+    
+    const W_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+    const W_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+    const EDGE_FUNC = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
 
-        let chatClient = null;
-        let sessionId = localStorage.getItem('tirracred_session_id');
-        let visitorName = localStorage.getItem('tirracred_visitor_name');
-        let realtimeSub = null;
+    let chatClient = null;
+    let sessionId = localStorage.getItem('tirracred_session_id');
+    let visitorName = localStorage.getItem('tirracred_visitor_name');
+    let realtimeSub = null;
 
-        const el = (id) => document.getElementById(id);
+    const el = (id) => document.getElementById(id);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.supabase) {
+            chatClient = window.supabase.createClient(W_URL, W_KEY);
+            console.log("✅ Chat Widget: Conectado e visível");
+        } else {
+            console.error("❌ Chat Widget: Biblioteca Supabase não encontrada.");
+        }
+    });
+
+    window.toggleChat = function() {
         const widgetWindow = el('tirra-window');
+        if (!widgetWindow) return;
+        
+        const isVisible = widgetWindow.style.display === 'flex';
+        widgetWindow.style.display = isVisible ? 'none' : 'flex';
+        
+        if (!isVisible && sessionId) {
+            showChatInterface();
+        }
+    }
+
+    window.startSession = async function(e) {
+        e.preventDefault();
+        if (!chatClient) return alert("Aguarde o carregamento da página e tente novamente.");
+        
+        const name = el('v-name').value;
+        const phone = el('v-phone').value;
+        const btn = el('btn-start');
+        
+        btn.innerText = "Conectando...";
+        btn.disabled = true;
+
+        try {
+            const { data, error } = await chatClient
+                .from('chat_sessions')
+                .insert({ visitor_name: name, visitor_phone: phone })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            sessionId = data.id;
+            visitorName = name;
+            localStorage.setItem('tirracred_session_id', sessionId);
+            localStorage.setItem('tirracred_visitor_name', name);
+
+            showChatInterface();
+            appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
+
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao iniciar. Tente novamente.");
+            btn.innerText = "INICIAR CHAT ➤";
+            btn.disabled = false;
+        }
+    }
+
+    function showChatInterface() {
         const loginScreen = el('tirra-login');
         const chatScreen = el('tirra-chat');
+        if (!loginScreen || !chatScreen) return;
+        
+        loginScreen.style.display = 'none';
+        chatScreen.style.display = 'flex';
+        loadHistory();
+        subscribeRealtime();
+    }
+
+    window.sendMessage = async function(e) {
+        e.preventDefault();
+        const input = el('v-msg');
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        appendMessage('user', text);
+
+        try {
+            el('send-btn').disabled = true;
+            await fetch(EDGE_FUNC, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId, message: text, visitor_name: visitorName })
+            });
+        } catch (err) {
+            console.error("Erro Edge Function:", err);
+            appendMessage('ai', '⚠️ Erro de conexão. Tente de novo.');
+        } finally {
+            el('send-btn').disabled = false;
+        }
+    }
+
+    function subscribeRealtime() {
+        if (realtimeSub || !chatClient) return;
+        realtimeSub = chatClient
+            .channel('widget_chat_room')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'chat_messages', 
+                filter: `session_id=eq.${sessionId}` 
+            }, (payload) => {
+                if (payload.new.sender !== 'user') {
+                    appendMessage(payload.new.sender, payload.new.content);
+                }
+            })
+            .subscribe();
+    }
+
+    async function loadHistory() {
+        if (!chatClient) return;
+        const { data } = await chatClient.from('chat_messages')
+            .select('*')
+            .eq('session_id', sessionId)
+            .order('created_at', { ascending: true });
+        
         const msgsList = el('msgs');
+        if (!msgsList) return;
+        
+        msgsList.innerHTML = '';
+        if (data) data.forEach(msg => appendMessage(msg.sender, msg.content));
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.supabase) {
-                chatClient = window.supabase.createClient(W_URL, W_KEY);
-                console.log("Chat Widget: Conectado ✅");
-            } else {
-                console.error("Chat Widget: Biblioteca Supabase não encontrada.");
-            }
-        });
+    function appendMessage(sender, text) {
+        const msgsList = el('msgs');
+        if (!msgsList) return;
+        
+        const div = document.createElement('div');
+        const isUser = sender === 'user';
+        const isAdmin = sender === 'admin';
+        
+        div.style.cssText = `display:flex; justify-content: ${isUser ? 'flex-end' : 'flex-start'}; margin-bottom: 10px; animation: fadeIn 0.3s ease;`;
+        
+        let bg = isUser ? '#16a34a' : (isAdmin ? '#2563eb' : '#f3f4f6');
+        let color = (isUser || isAdmin) ? 'white' : '#1f2937';
+        let label = isAdmin ? '<div style="font-size:10px; color:#93c5fd; margin-bottom:2px;">Humano</div>' : '';
 
-        window.toggleChat = function() {
-            widgetWindow.style.display = widgetWindow.style.display === 'none' ? 'flex' : 'none';
-            if (widgetWindow.style.display === 'flex' && sessionId) {
-                showChatInterface();
-            }
-        }
+        div.innerHTML = `
+            <div style="max-width: 80%;">
+                ${label}
+                <div style="padding: 10px 14px; border-radius: 12px; font-size: 14px; background: ${bg}; color: ${color}; border: ${isUser ? 'none' : '1px solid #e5e7eb'}; line-height: 1.4;">
+                    ${text.replace(/\n/g, '<br>')}
+                </div>
+            </div>`;
+        
+        msgsList.appendChild(div);
+        msgsList.scrollTop = msgsList.scrollHeight;
+    }
+</script>
 
-        window.startSession = async function(e) {
-            e.preventDefault();
-            if (!chatClient) return alert("Aguarde o carregamento da página e tente novamente.");
-            
-            const name = el('v-name').value;
-            const phone = el('v-phone').value;
-            const btn = el('btn-start');
-            
-            btn.innerText = "Conectando...";
-            btn.disabled = true;
+<style>
+    /* Widget Container - FORÇA VISIBILIDADE */
+    #tirra-widget {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        z-index: 2147483647 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 
-            try {
-                const { data, error } = await chatClient
-                    .from('chat_sessions')
-                    .insert({ visitor_name: name, visitor_phone: phone })
-                    .select()
-                    .single();
+    /* Botão de Toggle */
+    #tirra-toggle {
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #16a34a !important;
+        border: 4px solid white !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: transform 0.2s !important;
+    }
 
-                if (error) throw error;
+    #tirra-toggle:hover {
+        transform: scale(1.05) !important;
+    }
 
-                sessionId = data.id;
-                visitorName = name;
-                localStorage.setItem('tirracred_session_id', sessionId);
-                localStorage.setItem('tirracred_visitor_name', name);
+    /* Janela do Chat */
+    #tirra-window {
+        display: none;
+        position: absolute !important;
+        bottom: 80px !important;
+        right: 0 !important;
+        width: 350px !important;
+        max-width: 90vw !important;
+        height: 500px !important;
+        background: white !important;
+        border-radius: 16px !important;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3) !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        border: 1px solid #e5e7eb !important;
+    }
 
-                showChatInterface();
-                appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
+    /* Cabeçalho */
+    .tirra-header {
+        background: #16a34a !important;
+        padding: 16px !important;
+        color: white !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
 
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao iniciar. Tente novamente.");
-                btn.innerText = "INICIAR CHAT ➤";
-                btn.disabled = false;
-            }
-        }
+    .status-indicator {
+        position: absolute !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        width: 10px !important;
+        height: 10px !important;
+        background: #86efac !important;
+        border-radius: 50% !important;
+        border: 2px solid #16a34a !important;
+    }
 
-        function showChatInterface() {
-            loginScreen.style.display = 'none';
-            chatScreen.style.display = 'flex';
-            loadHistory();
-            subscribeRealtime();
-        }
+    .close-btn {
+        background: none !important;
+        border: none !important;
+        color: white !important;
+        cursor: pointer !important;
+        font-size: 20px !important;
+        padding: 4px 8px !important;
+    }
 
-        window.sendMessage = async function(e) {
-            e.preventDefault();
-            const input = el('v-msg');
-            const text = input.value.trim();
-            if (!text) return;
+    /* Telas */
+    .login-screen {
+        padding: 24px !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
 
-            input.value = '';
-            appendMessage('user', text);
+    .chat-screen {
+        display: none;
+        flex: 1 !important;
+        flex-direction: column !important;
+        height: 100% !important;
+    }
 
-            try {
-                el('send-btn').disabled = true;
-                await fetch(EDGE_FUNC, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, message: text, visitor_name: visitorName })
-                });
-            } catch (err) {
-                console.error("Erro Edge Function:", err);
-                appendMessage('ai', '⚠️ Erro de conexão. Tente de novo.');
-            } finally {
-                el('send-btn').disabled = false;
-            }
-        }
+    .messages-area {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 16px !important;
+        background: #f9fafb !important;
+    }
 
-        function subscribeRealtime() {
-            if (realtimeSub || !chatClient) return;
-            realtimeSub = chatClient
-                .channel('widget_chat_room')
-                .on('postgres_changes', { 
-                    event: 'INSERT', 
-                    schema: 'public', 
-                    table: 'chat_messages', 
-                    filter: `session_id=eq.${sessionId}` 
-                }, (payload) => {
-                    if (payload.new.sender !== 'user') {
-                        appendMessage(payload.new.sender, payload.new.content);
-                    }
-                })
-                .subscribe();
-        }
+    .input-area {
+        padding: 12px !important;
+        border-top: 1px solid #e5e7eb !important;
+        display: flex !important;
+        gap: 8px !important;
+        background: white !important;
+    }
 
-        async function loadHistory() {
-            if (!chatClient) return;
-            const { data } = await chatClient.from('chat_messages')
-                .select('*')
-                .eq('session_id', sessionId)
-                .order('created_at', { ascending: true });
-            
-            msgsList.innerHTML = '';
-            if (data) data.forEach(msg => appendMessage(msg.sender, msg.content));
-        }
+    /* Inputs e Botões */
+    .tirra-input {
+        width: 100% !important;
+        padding: 12px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+        font-size: 14px !important;
+        outline: none !important;
+    }
 
-        function appendMessage(sender, text) {
-            const div = document.createElement('div');
-            const isUser = sender === 'user';
-            const isAdmin = sender === 'admin';
-            
-            div.style.cssText = `display:flex; justify-content: ${isUser ? 'flex-end' : 'flex-start'}; margin-bottom: 10px; animation: fadeIn 0.3s ease;`;
-            
-            let bg = isUser ? '#16a34a' : (isAdmin ? '#2563eb' : '#f3f4f6');
-            let color = (isUser || isAdmin) ? 'white' : '#1f2937';
-            let label = isAdmin ? '<div style="font-size:10px; color:#93c5fd; margin-bottom:2px;">Humano</div>' : '';
+    .tirra-input:focus {
+        border-color: #16a34a !important;
+    }
 
-            div.innerHTML = `
-                <div style="max-width: 80%;">
-                    ${label}
-                    <div style="padding: 10px 14px; border-radius: 12px; font-size: 14px; background: ${bg}; color: ${color}; border: ${isUser ? 'none' : '1px solid #e5e7eb'}; line-height: 1.4;">
-                        ${text.replace(/\n/g, '<br>')}
-                    </div>
-                </div>`;
-            
-            msgsList.appendChild(div);
-            msgsList.scrollTop = msgsList.scrollHeight;
-        }
-    </script>
+    .tirra-btn-primary {
+        width: 100% !important;
+        padding: 12px !important;
+        background: #16a34a !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        margin-top: 8px !important;
+        font-size: 14px !important;
+    }
 
-    <style>
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    .tirra-btn-primary:hover {
+        background: #15803d !important;
+    }
 
+    .send-btn {
+        padding: 10px 16px !important;
+        background: #16a34a !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+    }
+
+    /* Animação */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 
 
 </body>
