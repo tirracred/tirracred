@@ -123,8 +123,16 @@
 
     // 2. Conecta Botões do Site (Desktop e Mobile)
     // Procura por qualquer elemento com id="tc-external-btn" ou "tc-mobile-btn"
-    ['tc-external-btn', 'tc-mobile-btn'].forEach(id => {
-        const btn = document.getElementById(id);
+['tc-external-btn', 'tc-mobile-btn', 'tc-footer-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+        btn.onclick = (e) => {
+            e.preventDefault(); 
+            openChat(); // Agora ele usa a função interna sem dar erro!
+        };
+    }
+});        
+   const btn = document.getElementById(id);
         if (btn) {
             btn.onclick = (e) => {
                 e.preventDefault(); // Não deixa a página recarregar
