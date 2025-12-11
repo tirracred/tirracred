@@ -1834,63 +1834,45 @@ const mixed  = buildFeed(restProducts, ads, {
 </script>
 
 
-
-<div id="tirra-widget" class="fixed bottom-4 right-4 z-[9999] font-sans antialiased">
+<div id="tirra-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; font-family: sans-serif;">
     
-    <button id="tirra-toggle" onclick="toggleChat()" class="bg-green-600 hover:bg-green-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-105 border-4 border-white">
+    <button id="tirra-toggle" onclick="toggleChat()" style="width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
     </button>
 
-    <div id="tirra-window" class="hidden absolute bottom-20 right-0 w-[90vw] sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col h-[550px] overflow-hidden transition-all origin-bottom-right">
+    <div id="tirra-window" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; max-width: 90vw; height: 500px; background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb;">
         
-        <div class="bg-green-600 p-4 text-white flex justify-between items-center shadow-md shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <img src="public/favincon.png" class="w-8 h-8 rounded-full bg-white p-0.5" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
-                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-300 border-2 border-green-600 rounded-full animate-pulse"></span>
+        <div style="background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative;">
+                    <img src="public/favincon.png" style="width: 32px; height: 32px; background: white; border-radius: 50%; padding: 2px;" onerror="this.src='https://placehold.co/40x40/fff/000?text=T'">
+                    <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border-radius: 50%; border: 2px solid #16a34a;"></span>
                 </div>
                 <div>
-                    <h3 class="font-bold text-sm">Atendimento TirraCred</h3>
-                    <p class="text-[10px] text-green-100 opacity-90">Responde na hora ⚡</p>
+                    <div style="font-weight: bold; font-size: 14px;">Atendimento TirraCred</div>
+                    <div style="font-size: 11px; opacity: 0.9;">Online agora ⚡</div>
                 </div>
             </div>
-            <button onclick="toggleChat()" class="text-white hover:bg-green-700 p-1 rounded-full transition">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+            <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">✕</button>
         </div>
 
-        <div id="tirra-login" class="flex-1 p-6 flex flex-col justify-center bg-gray-50">
-            <div class="text-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Olá! 👋</h3>
-                <p class="text-gray-500 text-sm">Para um atendimento personalizado, por favor nos diga quem você é.</p>
-            </div>
+        <div id="tirra-login" style="padding: 24px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="text-align: center; font-weight: bold; color: #1f2937; margin-bottom: 8px;">Olá! 👋</h3>
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px;">Identifique-se para começar.</p>
             
-            <form onsubmit="startSession(event)" class="space-y-3">
-                <div>
-                    <label class="text-xs font-bold text-gray-500 ml-1">SEU NOME</label>
-                    <input type="text" id="visitor-name" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="Ex: Maria Silva">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-gray-500 ml-1">WHATSAPP</label>
-                    <input type="tel" id="visitor-phone" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition" placeholder="(DDD) 99999-9999">
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold hover:bg-green-700 transition shadow-lg mt-2">
-                    INICIAR ATENDIMENTO ➤
-                </button>
+            <form onsubmit="startSession(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                <input id="v-name" required placeholder="Seu Nome" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
+                <input id="v-phone" required placeholder="Seu WhatsApp" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box;">
+                <button type="submit" id="btn-start" style="width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px;">INICIAR CHAT ➤</button>
             </form>
-            <p class="text-xs text-center text-gray-400 mt-4">Seus dados estão seguros conosco.</p>
         </div>
 
-        <div id="tirra-chat-area" class="hidden flex-1 flex flex-col h-full bg-gray-50">
-            <div id="messages-list" class="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
-                </div>
-            
-            <div class="p-3 bg-white border-t shrink-0">
-                <form onsubmit="sendMessage(event)" class="flex gap-2 items-center">
-                    <input type="text" id="msg-input" placeholder="Digite sua dúvida..." class="flex-1 p-3 bg-gray-100 border-0 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 outline-none transition text-sm" autocomplete="off">
-                    <button type="submit" id="send-btn" class="bg-green-600 text-white p-3 rounded-xl hover:bg-green-700 transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                    </button>
+        <div id="tirra-chat" style="display: none; flex: 1; flex-direction: column; height: 100%;">
+            <div id="msgs" style="flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb;"></div>
+            <div style="padding: 12px; border-top: 1px solid #e5e7eb; display: flex; gap: 8px; background: white;">
+                <form onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 8px;">
+                    <input id="v-msg" placeholder="Digite..." style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
+                    <button type="submit" id="send-btn" style="padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">➤</button>
                 </form>
             </div>
         </div>
@@ -1898,49 +1880,61 @@ const mixed  = buildFeed(restProducts, ads, {
 </div>
 
 <script>
+    
     /* =========================================
-       CONFIGURAÇÕES E LÓGICA DO WIDGET
+       LÓGICA DO WIDGET (CONEXÃO ISOLADA)
        ========================================= */
     
-    // URL da sua Edge Function (Já configurei com seu ID de projeto)
-    const EDGE_FUNCTION_URL = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
-    
-    // Variáveis de Estado
+    // Credenciais (Recriadas aqui para garantir que funcione independente do resto do site)
+    const W_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+    const W_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+    const EDGE_FUNC = 'https://hgravyvorwbccyufgksn.supabase.co/functions/v1/chat-bot';
+
+    let chatClient = null;
     let sessionId = localStorage.getItem('tirracred_session_id');
     let visitorName = localStorage.getItem('tirracred_visitor_name');
     let realtimeSub = null;
-    
-    // Elementos DOM
-    const widgetWindow = document.getElementById('tirra-window');
-    const loginScreen = document.getElementById('tirra-login');
-    const chatScreen = document.getElementById('tirra-chat-area');
-    const msgsList = document.getElementById('messages-list');
-    const sendBtn = document.getElementById('send-btn');
 
-    // 1. Abrir/Fechar
-    function toggleChat() {
-        widgetWindow.classList.toggle('hidden');
-        // Se já tiver sessão salva, pula o login
-        if (!widgetWindow.classList.contains('hidden') && sessionId) {
+    // Helpers de UI
+    const el = (id) => document.getElementById(id);
+    const widgetWindow = el('tirra-window');
+    const loginScreen = el('tirra-login');
+    const chatScreen = el('tirra-chat'); // Corrigido ID
+    const msgsList = el('msgs'); // Corrigido ID
+
+    // Inicialização Segura
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.supabase) {
+            // Cria um cliente EXCLUSIVO para o chat
+            chatClient = window.supabase.createClient(W_URL, W_KEY);
+            console.log("Chat Widget: Conectado ✅");
+        } else {
+            console.error("Chat Widget: Biblioteca Supabase não encontrada. Verifique o <head>.");
+        }
+    });
+
+    // 1. Abrir/Fechar (Função Global)
+    window.toggleChat = function() {
+        widgetWindow.style.display = widgetWindow.style.display === 'none' ? 'flex' : 'none';
+        if (widgetWindow.style.display === 'flex' && sessionId) {
             showChatInterface();
         }
     }
 
-    // 2. Iniciar Sessão (Login)
-    async function startSession(e) {
+    // 2. Login
+    window.startSession = async function(e) {
         e.preventDefault();
-        const name = document.getElementById('visitor-name').value;
-        const phone = document.getElementById('visitor-phone').value;
-
-        // Efeito de loading no botão
-        const btn = e.target.querySelector('button');
-        const originalText = btn.innerText;
+        if (!chatClient) return alert("Aguarde o carregamento da página e tente novamente.");
+        
+        const name = el('v-name').value;
+        const phone = el('v-phone').value;
+        const btn = el('btn-start');
+        
         btn.innerText = "Conectando...";
         btn.disabled = true;
 
         try {
-            // Cria sessão no Supabase
-            const { data, error } = await supabase
+            const { data, error } = await chatClient
                 .from('chat_sessions')
                 .insert({ visitor_name: name, visitor_phone: phone })
                 .select()
@@ -1948,86 +1942,66 @@ const mixed  = buildFeed(restProducts, ads, {
 
             if (error) throw error;
 
-            // Salva localmente para não perder se atualizar a página
             sessionId = data.id;
             visitorName = name;
             localStorage.setItem('tirracred_session_id', sessionId);
             localStorage.setItem('tirracred_visitor_name', name);
 
             showChatInterface();
-            
-            // Mensagem de boas-vindas inicial (visual)
             appendMessage('ai', `Olá ${name}! Sou a Sofia. Em que posso te ajudar hoje?`);
 
         } catch (err) {
             console.error(err);
-            alert("Erro ao iniciar chat. Tente novamente.");
-            btn.innerText = originalText;
+            alert("Erro ao iniciar. Tente novamente.");
+            btn.innerText = "INICIAR ATENDIMENTO ➤";
             btn.disabled = false;
         }
     }
 
-    // 3. Exibir Interface do Chat e Carregar Histórico
     function showChatInterface() {
-        loginScreen.classList.add('hidden');
-        chatScreen.classList.remove('hidden');
-        
+        loginScreen.style.display = 'none';
+        chatScreen.style.display = 'flex';
         loadHistory();
         subscribeRealtime();
-        
-        // Foca no input
-        setTimeout(() => document.getElementById('msg-input').focus(), 100);
     }
 
-    // 4. Enviar Mensagem
-    async function sendMessage(e) {
+    // 3. Enviar
+    window.sendMessage = async function(e) {
         e.preventDefault();
-        const input = document.getElementById('msg-input');
+        const input = el('v-msg');
         const text = input.value.trim();
-        
         if (!text) return;
 
-        // Limpa input e mostra mensagem do usuário imediatamente (Otimista)
         input.value = '';
-        appendMessage('user', text);
+        appendMessage('user', text); // Mostra logo
 
-        // Envia para a IA (Edge Function)
         try {
-            sendBtn.disabled = true; // Evita flood
-            
-            const response = await fetch(EDGE_FUNCTION_URL, {
+            el('send-btn').disabled = true;
+            // Chama a Edge Function
+            await fetch(EDGE_FUNC, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    session_id: sessionId, 
-                    message: text,
-                    visitor_name: visitorName
-                })
+                body: JSON.stringify({ session_id: sessionId, message: text, visitor_name: visitorName })
             });
-
-            if (!response.ok) throw new Error('Erro na IA');
-
         } catch (err) {
-            console.error(err);
-            appendMessage('ai', '⚠️ Tive um problema de conexão. Tente novamente.');
+            console.error("Erro Edge Function:", err);
+            appendMessage('ai', '⚠️ Erro de conexão. Tente de novo.');
         } finally {
-            sendBtn.disabled = false;
+            el('send-btn').disabled = false;
         }
     }
 
-    // 5. Escutar Respostas (IA ou Humano) via Realtime
+    // 4. Realtime
     function subscribeRealtime() {
-        if (realtimeSub) return; // Já está escutando
-
-        realtimeSub = supabase
-            .channel('widget_chat')
+        if (realtimeSub || !chatClient) return;
+        realtimeSub = chatClient
+            .channel('widget_chat_room')
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
                 table: 'chat_messages', 
                 filter: `session_id=eq.${sessionId}` 
             }, (payload) => {
-                // Se a mensagem NÃO for minha (user), então é da IA ou do Admin -> Exibe
                 if (payload.new.sender !== 'user') {
                     appendMessage(payload.new.sender, payload.new.content);
                 }
@@ -2035,59 +2009,48 @@ const mixed  = buildFeed(restProducts, ads, {
             .subscribe();
     }
 
-    // 6. Carregar Histórico Antigo
+    // 5. Histórico
     async function loadHistory() {
-        const { data } = await supabase
-            .from('chat_messages')
+        if (!chatClient) return;
+        const { data } = await chatClient.from('chat_messages')
             .select('*')
             .eq('session_id', sessionId)
             .order('created_at', { ascending: true });
         
-        msgsList.innerHTML = ''; // Limpa antes de renderizar
-        if (data) {
-            data.forEach(msg => appendMessage(msg.sender, msg.content));
-        }
+        msgsList.innerHTML = '';
+        if (data) data.forEach(msg => appendMessage(msg.sender, msg.content));
     }
 
-    // 7. Renderizar Balão de Mensagem
+    // 6. Renderizar
     function appendMessage(sender, text) {
         const div = document.createElement('div');
         const isUser = sender === 'user';
         const isAdmin = sender === 'admin';
         
-        // Estilização dos balões
-        let bubbleStyle = isUser 
-            ? 'bg-green-600 text-white rounded-br-none' 
-            : (isAdmin ? 'bg-blue-600 text-white rounded-bl-none shadow-md border border-blue-700' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm');
-            
-        let alignStyle = isUser ? 'justify-end' : 'justify-start';
-        let label = isAdmin ? '<span class="text-[10px] text-blue-500 font-bold ml-1 mb-1 block">Atendente Humano</span>' : '';
+        // Estilo Inline para garantir
+        div.style.cssText = `display:flex; justify-content: ${isUser ? 'flex-end' : 'flex-start'}; margin-bottom: 10px; animation: fadeIn 0.3s ease;`;
+        
+        let bg = isUser ? '#16a34a' : (isAdmin ? '#2563eb' : '#f3f4f6');
+        let color = (isUser || isAdmin) ? 'white' : '#1f2937';
+        let label = isAdmin ? '<div style="font-size:10px; color:#93c5fd; margin-bottom:2px;">Humano</div>' : '';
 
-        div.className = `flex ${alignStyle} animate-fade-in mb-3`;
         div.innerHTML = `
-            <div class="max-w-[85%]">
+            <div style="max-width: 80%;">
                 ${label}
-                <div class="p-3 rounded-2xl text-sm leading-relaxed ${bubbleStyle}">
-                    ${formatText(text)}
+                <div style="padding: 10px 14px; border-radius: 12px; font-size: 14px; background: ${bg}; color: ${color}; border: ${isUser ? 'none' : '1px solid #e5e7eb'}; line-height: 1.4;">
+                    ${text.replace(/\n/g, '<br>')}
                 </div>
-            </div>
-        `;
+            </div>`;
         
         msgsList.appendChild(div);
-        msgsList.scrollTop = msgsList.scrollHeight; // Rola para o final
-    }
-
-    // Helper simples para quebras de linha
-    function formatText(txt) {
-        return txt.replace(/\n/g, '<br>');
+        msgsList.scrollTop = msgsList.scrollHeight;
     }
 </script>
 
 <style>
-    /* Animação suave de entrada */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 </style>
+
 
 
 </body>
