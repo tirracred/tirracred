@@ -3,7 +3,7 @@ name: Deploy Chatbot Function
 on:
   push:
     branches:   
-      - master    # Verifique se sua branch principal cham.   a 'master' ou 'main'
+      - master    # Verifique se sua branchsdasdasdads principal cham.   a 'master' ou 'main'
     paths:
       - 'supabase/functions/**' # Só roda quando mexer na funçã
 
