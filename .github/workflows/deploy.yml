@@ -1,0 +1,26 @@
+name: Deploy Chatbot Function
+
+on:
+  push:
+    branches:
+      - master    # Verifique se sua branch principal chama 'master' ou 'main'
+    paths:
+      - 'supabase/functions/**' # Só roda quando mexer na função
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Function chat-bot
+        run: supabase functions deploy chat-bot --project-ref $PROJECT_ID
