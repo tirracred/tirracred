@@ -235,20 +235,22 @@
     el('tc-modal-cancel').onclick = () => {
         modal.classList.remove('active');
     };
-    // Confirma encerramento
+   // Confirma encerramento (O BOTÃO DE RESET)
     el('tc-modal-confirm').onclick = () => {
+        // 1. Limpa a memória do navegador (Aqui acontece a mágica do reset)
         localStorage.removeItem('tc_sess');
         localStorage.removeItem('tc_vis');
-        session = null; visitor = null;
-        el('tc-msgs').innerHTML = '';
-        el('tc-name').value = ''; el('tc-phone').value = '';
         
-        // UI Reset
-        modal.classList.remove('active');
-        el('tc-screen-chat').style.display = 'none';
-        el('tc-screen-login').style.display = 'flex';
+        // 2. Zera variáveis locais
+        session = null; 
+        visitor = null;
         
-        closeChat(); // Fecha com fade
+        // 3. Feedback visual (opcional)
+        el('tc-modal-overlay').classList.remove('active');
+        
+        // 4. Recarrega a página. 
+        // Como o localStorage foi limpo na linha 1, o chat voltará zerado na tela de Login.
+        window.location.reload();
     };
 
     // --- INDICADOR "DIGITANDO..." ---
