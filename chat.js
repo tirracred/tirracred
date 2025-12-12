@@ -410,4 +410,41 @@
         if(playSound && sender === 'ai') playNotification();
     }
 
+    // --------------------------------------------------------
+    // 4. FUNCIONALIDADE DE LINK DIRETO (AUTO-OPEN)
+    // --------------------------------------------------------
+    // Verifica se a URL tem ?chat=open ou ?chat=fullscreen
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatMode = urlParams.get('chat');
+
+    if (chatMode === 'open' || chatMode === 'fullscreen') {
+        // Abre o chat automaticamente
+        openChat();
+
+        // Se for modo fullscreen, aplicamos estilos para parecer um app nativo
+        if (chatMode === 'fullscreen') {
+            const win = document.getElementById('tirra-window');
+            const toggle = document.getElementById('tirra-toggle');
+            
+            // Estilo para ocupar a tela toda
+            win.style.position = 'fixed';
+            win.style.bottom = '0';
+            win.style.right = '0';
+            win.style.width = '100%';
+            win.style.height = '100%';
+            win.style.maxWidth = '100%';
+            win.style.maxHeight = '100%';
+            win.style.borderRadius = '0';
+            win.style.margin = '0';
+            win.style.zIndex = '999999';
+
+            // Esconde o botão de bolinha flutuante
+            if(toggle) toggle.style.display = 'none';
+            
+            // Opcional: Esconder o botão de minimizar para obrigar a ficar na tela
+            const minBtn = document.getElementById('tc-minimize');
+            if(minBtn) minBtn.style.display = 'none';
+        }
+    }
+
 })();

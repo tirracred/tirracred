@@ -25,10 +25,14 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const groq = new Groq({ apiKey: groqKey });
 
-    // 1. Salva Mensagem do Usuário
-    await supabase.from('chat_messages').insert({
-      session_id, sender: 'user', content: message
-    })
+    // 1. Salva Mensagem do Usuário (Se não for o gatilho invisível)
+    // Se a mensagem for '##START##', nós NÃO salvamos no banco, 
+    // assim a IA acha que é o início da conversa e segue o script de saudação.
+    if (message !== '##START##') {
+      await supabase.from('chat_messages').insert({
+        session_id, sender: 'user', content: message
+      })
+    }
 
     // 2. Carrega Histórico (Contexto)
     // Aumentado para 30 mensagens para garantir que a IA lembre das respostas 
