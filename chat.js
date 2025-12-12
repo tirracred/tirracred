@@ -1,27 +1,34 @@
 (function() {
-    console.log("🚀 Widget TirraCred: Versão Ultra Estável (Mobile Fix + Revisit Fix)...");
+    console.log("🚀 Widget TirraCred: Versão Final (Mobile Zoom Fix + AutoStart)...");
 
     // --------------------------------------------------------
-    // 0. SISTEMA DE SOM (Base64 para carregar instantâneo)
+    // 0. SISTEMA DE SOM
     // --------------------------------------------------------
-    const audioSrc = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFQAAAASAAADbWFqb3JfYnJhbmQAZGFzaABUWFhUAAAAEQAAA21pbm9yX3ZlcnNpb24AMABUWFhUAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzbzZtcDQxAFRTU0UAAAAOAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABCAAHCxEWFxwfIiQmKS0wNDc6PkFERkdKS0xPUFNWWVtfYWRmaW1vcXR2eXx/gYOFiIqNkJKVl5qcn6Gkp6msrrG0tbi7vcDDxcfJzc/Q09XY2tzf4OPm6Ovs7fH09vf5+/0AAAAATGF2YzU5LjM3LjEwMAAAAAAAAAAAAAAAACQCCAAAAAAABQQAABAAACxI//7UGQAAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAP/7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA";
+    const audioSrc = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFQAAAASAAADbWFqb3JfYnJhbmQAZGFzaABUWFhUAAAAEQAAA21pbm9yX3ZlcnNpb24AMABUWFhUAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzbzZtcDQxAFRTU0UAAAAOAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABCAAHCxEWFxwfIiQmKS0wNDc6PkFERkdKS0xPUFNWWVtfYWRmaW1vcXR2eXx/gYOFiIqNkJKVl5qcn6Gkp6msrrG0tbi7vcDDxcfJzc/Q09XY2tzf4OPm6Ovs7fH09vf5+/0AAAAATGF2YzU5LjM3LjEwMAAAAAAAAAAAAAAAACQCCAAAAAAABQQAABAAACxI//7UGQAAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA";
     const notificationSound = new Audio(audioSrc);
-    notificationSound.volume = 0.5;
+    notificationSound.volume = 0.8; // Aumentei o volume
 
-    // Função para desbloquear o áudio no primeiro clique (Regra do Chrome/Safari)
     let audioUnlocked = false;
     const unlockAudio = () => {
         if (!audioUnlocked) {
-            notificationSound.play().then(() => {
-                notificationSound.pause();
-                notificationSound.currentTime = 0;
-                audioUnlocked = true;
-            }).catch(e => console.log("Aguardando interação para áudio..."));
+            // Tenta tocar e pausar imediatamente para liberar o canal de áudio
+            const p = notificationSound.play();
+            if (p !== undefined) {
+                p.then(_ => {
+                    notificationSound.pause();
+                    notificationSound.currentTime = 0;
+                    audioUnlocked = true;
+                }).catch(error => {
+                    // Autoplay bloqueado, tenta de novo na próxima interação
+                });
+            }
         }
     };
+    // Tenta desbloquear em qualquer clique na página logo de cara
+    document.addEventListener('click', unlockAudio, { once: true });
 
     // --------------------------------------------------------
-    // 1. ESTILOS (CSS OTIMIZADO PARA MOBILE)
+    // 1. ESTILOS (CSS OTIMIZADO PARA MOBILE E ZOOM FIX)
     // --------------------------------------------------------
     const style = document.createElement('style');
     style.innerHTML = `
@@ -65,9 +72,11 @@
         /* MENSAGENS */
         #tc-msgs { flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         
-        /* INPUT AREA (Fix para Zoom no iOS: font-size 16px) */
+        /* INPUT AREA */
         .tc-footer-input { flex-shrink: 0; padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center; }
-        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 16px; /* IMPEDE ZOOM */ background: #f9fafb; }
+        
+        /* 🔥 ZOOM FIX: font-size 16px !important no mobile impede zoom no focus */
+        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; background: #f9fafb; font-size: 16px !important; }
         .tc-input:focus { border-color: #16a34a; background: white; }
 
         /* UI ELEMENTS */
@@ -103,13 +112,19 @@
         .tc-btn-outline { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .tc-btn-danger { flex: 1; padding: 10px; border: none; background: #dc2626; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        /* MOBILE FIXES (Tela Cheia em Celular pequeno) */
+        /* MOBILE FIXES CRÍTICOS */
         @media (max-width: 480px) {
             #tirra-widget-container { bottom: 0; right: 0; width: 100%; height: 100%; align-items: center; justify-content: flex-end; z-index: 999999; pointer-events: none; }
-            #tirra-window { width: 100%; max-width: 100%; height: 100% !important; max-height: 100% !important; border-radius: 0; margin-bottom: 0; position: fixed; top: 0; left: 0; bottom: 0; right: 0; }
+            #tirra-window { 
+                width: 100%; max-width: 100%; height: 100% !important; max-height: 100% !important; 
+                border-radius: 0; margin-bottom: 0; 
+                position: fixed; top: 0; left: 0; bottom: 0; right: 0; 
+            }
             #tirra-toggle { margin-bottom: 20px; margin-right: 20px; pointer-events: auto; }
-            /* Se o chat estiver aberto, esconde o botão flutuante no mobile */
             #tirra-window.open ~ #tirra-toggle { display: none; }
+            
+            /* Ajuste teclado mobile */
+            .tc-footer-input { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
         }
     `;
     document.head.appendChild(style);
@@ -155,7 +170,7 @@
                 <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Informe seus dados para iniciar.</p>
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo">
-                    <input id="tc-phone" class="tc-input" placeholder="WhatsApp (DDD + Número)">
+                    <input id="tc-phone" class="tc-input" type="tel" placeholder="WhatsApp (DDD + Número)">
                     <button id="tc-start-btn" class="tc-btn">INICIAR ATENDIMENTO ➤</button>
                 </div>
             </div>
@@ -182,7 +197,7 @@
     document.body.appendChild(root);
 
     // --------------------------------------------------------
-    // 3. LÓGICA (Bug Fixes)
+    // 3. LÓGICA & FIXES
     // --------------------------------------------------------
     const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -191,13 +206,14 @@
     let client = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
     let session = localStorage.getItem('tc_sess');
     let visitor = localStorage.getItem('tc_vis');
-    let isSending = false; // Reset sempre false no load
+    let isSending = false; 
     let isChatOpen = false;
 
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
     const msgsArea = el('tc-msgs');
     const typingArea = el('typing-container');
+    const inputField = el('tc-msg-input');
 
     // --- CORREÇÃO DE SCROLL MOBILE ---
     const toggleBodyScroll = (lock) => {
@@ -208,18 +224,19 @@
 
     // --- ABRIR / FECHAR ---
     const openChat = () => {
-        unlockAudio(); // Tenta desbloquear som
+        unlockAudio(); 
         isChatOpen = true;
         win.style.display = 'flex';
         toggleBodyScroll(true);
+        
+        // 🔥 FIX INPUT TRAVADO: Força destravamento ao abrir
+        isSending = false;
+        inputField.disabled = false;
         
         setTimeout(() => {
             win.classList.add('open');
             win.classList.remove('closed');
         }, 10);
-        
-        // Destrava input caso tenha ficado travado de outra sessão
-        el('tc-msg-input').disabled = false;
         
         if(session) {
             showChatScreen();
@@ -241,12 +258,6 @@
     el('tirra-toggle').onclick = () => isChatOpen ? closeChat() : openChat();
     el('tc-minimize').onclick = closeChat;
 
-    // Botões Externos
-    ['btn-chat-header', 'btn-chat-mobile', 'btn-chat-drawer'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = (e) => { e.preventDefault(); openChat(); };
-    });
-
     // --- MODAL & LOGOUT ---
     el('tc-close-trigger').onclick = () => el('tc-modal-overlay').classList.add('active');
     el('tc-modal-cancel').onclick = () => el('tc-modal-overlay').classList.remove('active');
@@ -263,16 +274,25 @@
         closeChat();
     };
 
-    // --- TYPING UI ---
-    const showTyping = () => {
-        typingArea.style.display = 'block';
-        msgsArea.scrollTop = msgsArea.scrollHeight;
+    // --- LOGIN & START ---
+    const triggerStartMessage = async () => {
+        // Envia mensagem silenciosa para o backend iniciar a conversa
+        showTyping();
+        try {
+            await fetch(EDGE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+                body: JSON.stringify({ session_id: session, message: '##START##', visitor_name: visitor })
+            });
+            // O backend vai inserir a resposta da IA no banco, e o Realtime vai pegar.
+        } catch(e) {
+            console.error("Start error", e);
+            hideTyping();
+        }
     };
-    const hideTyping = () => typingArea.style.display = 'none';
 
-    // --- LOGIN ---
     el('tc-start-btn').onclick = async () => {
-        unlockAudio(); // Garante som
+        unlockAudio();
         const name = el('tc-name').value;
         const phone = el('tc-phone').value;
         if (!name || !phone) return alert('Preencha os dados.');
@@ -293,20 +313,6 @@
             
             showChatScreen();
             
-            // 🔥 TRUQUE DA PRIMEIRA MENSAGEM: MOSTRA "DIGITANDO" NA HORA 🔥
-            // Isso engana o usuário enquanto o backend processa
-            showTyping(); 
-            
-            fetch(EDGE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-                body: JSON.stringify({ session_id: session, message: '##START##', visitor_name: visitor })
-            }).catch(e => {
-                console.error("Start error:", e);
-                // Se falhar o backend, pelo menos tira o typing
-                hideTyping();
-            });
-
         } catch (e) {
             console.error(e);
             alert('Erro ao conectar.');
@@ -320,50 +326,67 @@
         el('tc-screen-login').style.display = 'none';
         el('tc-screen-chat').style.display = 'flex';
         
-        // Limpa estado de envio anterior se houver
+        // Garante input liberado
         isSending = false;
-        el('tc-msg-input').disabled = false;
+        inputField.disabled = false;
 
-        loadHistory();
+        loadHistoryAndSetupRealtime();
+    }
+
+    async function loadHistoryAndSetupRealtime() {
+        if(!session) return;
         
-        // Remove canais antigos para evitar duplicação em revisits
-        client.removeAllChannels();
+        // 1. Carrega histórico
+        const { data } = await client.from('chat_messages').select('*').eq('session_id', session).order('created_at');
+        el('tc-msgs').innerHTML = '';
+        
+        // 🔥 FIX DA PRIMEIRA MENSAGEM 🔥
+        // Se não tiver mensagens, dispara o START automaticamente
+        if (!data || data.length === 0) {
+            triggerStartMessage();
+        } else {
+            // Se já tem mensagens, renderiza.
+            data.forEach(m => addMsg(m.sender, m.content, false));
+        }
 
+        // 2. Configura Realtime
+        client.removeAllChannels();
         client.channel('widget_room').on('postgres_changes', 
             { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
             (payload) => {
+                // Só processa se não for 'user' (porque o user nós já adicionamos na tela na hora do envio)
                 if(payload.new.sender !== 'user') handleIncoming(payload.new);
             }
         ).subscribe();
     }
 
-    async function loadHistory() {
-        if(!session) return;
-        const { data } = await client.from('chat_messages').select('*').eq('session_id', session).order('created_at');
-        el('tc-msgs').innerHTML = '';
-        if(data) data.forEach(m => addMsg(m.sender, m.content, false));
-    }
+    // UI Helpers
+    const showTyping = () => {
+        typingArea.style.display = 'block';
+        msgsArea.scrollTop = msgsArea.scrollHeight;
+    };
+    const hideTyping = () => typingArea.style.display = 'none';
 
-    // Processa mensagem recebida (AI)
     function handleIncoming(msg) {
+        // Se a mensagem for a resposta do ##START## ou qualquer outra msg da AI
         showTyping();
-        // Delay cosmético de 3s
         setTimeout(() => {
             hideTyping();
             addMsg(msg.sender, msg.content, true); // true = toca som
-        }, 3000);
+        }, 2000); // Pequeno delay pra parecer humano
     }
 
     const sendMsg = async () => {
-        const txt = el('tc-msg-input').value.trim();
+        const txt = inputField.value.trim();
         if(!txt || isSending) return;
 
         isSending = true;
-        el('tc-msg-input').disabled = true;
-        addMsg('user', txt, false);
-        el('tc-msg-input').value = '';
+        inputField.disabled = true; // Trava input
         
-        showTyping(); // Feedback imediato
+        addMsg('user', txt, false);
+        inputField.value = '';
+        
+        showTyping(); 
 
         try {
             await fetch(EDGE_URL, {
@@ -373,18 +396,25 @@
             });
         } catch(e) {
             hideTyping();
-            addMsg('ai', '⚠️ Falha na conexão.', false);
-        } finally {
+            addMsg('ai', '⚠️ Falha na conexão. Tente novamente.', false);
             isSending = false;
-            el('tc-msg-input').disabled = false;
-            el('tc-msg-input').focus();
+            inputField.disabled = false;
+        } finally {
+            // Libera o envio para a próxima msg (mas mantemos disabled até o fetch terminar é boa prática, 
+            // no entanto, se o fetch for rápido, liberamos aqui)
+            isSending = false;
+            inputField.disabled = false;
+            inputField.focus();
         }
     };
 
     el('tc-send-btn').onclick = sendMsg;
-    el('tc-msg-input').onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
+    inputField.onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
 
     function addMsg(sender, text, playSound = false) {
+        // 🔥 Ignora a mensagem técnica de start se ela aparecer por algum motivo
+        if (text === '##START##') return;
+
         const div = document.createElement('div');
         div.className = `msg-row msg-${sender === 'user' ? 'user' : 'ai'}`;
         let label = sender === 'ai' ? '<div class="msg-label">Isabel</div>' : '';
@@ -401,7 +431,9 @@
         `;
         msgsArea.appendChild(div);
         msgsArea.scrollTop = msgsArea.scrollHeight;
-        if(playSound) try { notificationSound.play().catch(() => {}); } catch(e){}
+        
+        if(playSound && audioUnlocked) {
+             notificationSound.play().catch(e => console.log("Som bloqueado pelo browser")); 
+        }
     }
-    
 })();
