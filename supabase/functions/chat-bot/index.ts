@@ -25,29 +25,39 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const groq = new Groq({ apiKey: groqKey });
 
-    // 1. Salva Mensagem do Usuário (Se não for o gatilho invisível)
-    // Se a mensagem for '##START##', nós NÃO salvamos no banco, 
-    // assim a IA acha que é o início da conversa e segue o script de saudação.
+    // --- CORREÇÃO AQUI ---
+    // 1. Se for mensagem normal do usuário, salva no banco.
+    // Se for ##START##, NÃO salva, para não sujar o histórico visual.
     if (message !== '##START##') {
       await supabase.from('chat_messages').insert({
         session_id, sender: 'user', content: message
       })
     }
 
-    // 2. Carrega Histórico (Contexto)
-    // Aumentado para 30 mensagens para garantir que a IA lembre das respostas 
-    // do início do questionário (carro, renda, etc) até o final.
+    // 2. Carrega Histórico
     const { data: history } = await supabase
       .from('chat_messages')
       .select('sender, content')
       .eq('session_id', session_id)
       .order('created_at', { ascending: false })
-      .limit(50) 
+      .limit(50) // Traz as últimas 30
 
-    const conversation = (history || []).reverse().map((msg) => ({
+    // Monta o array de conversa
+    let conversation = (history || []).reverse().map((msg) => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.content,
     }))
+
+    // --- O PULO DO GATO ---
+    // Se o histórico estiver vazio (ou seja, é o inicio ##START##),
+    // a gente INJETA uma mensagem falsa do usuário APENAS para a IA ler,
+    // forçando ela a responder a primeira pergunta.
+    if (conversation.length === 0 || message === '##START##') {
+        conversation.push({
+            role: 'user',
+            content: `Oi, meu nome é ${visitor_name}. Quero iniciar o atendimento.`
+        });
+    }
 
     // 3. PROMPT DE ATENDIMENTO - ISABEL (Atualizado)
     const systemPrompt = `

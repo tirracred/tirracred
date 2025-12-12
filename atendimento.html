@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Atendimento TirraCred</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Reset básico para ocupar a tela toda */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f0fdf4; font-family: 'Segoe UI', sans-serif; }
+        
+        /* O chat.js vai injetar o CSS dele, mas aqui forçamos o container a ser tela cheia */
+        #tirra-widget-container { 
+            bottom: 0 !important; right: 0 !important; 
+            width: 100% !important; height: 100% !important; 
+            z-index: 9999 !important;
+        }
+        #tirra-window {
+            width: 100% !important; height: 100% !important; 
+            max-width: 100% !important; max-height: 100% !important;
+            border-radius: 0 !important; margin: 0 !important;
+            box-shadow: none !important;
+            opacity: 1 !important; transform: none !important; display: flex !important;
+        }
+        /* Esconde botões que não fazem sentido em tela cheia */
+        #tirra-toggle, #tc-minimize { display: none !important; }
+    </style>
+</head>
+<body>
+    <script src="chat.js"></script>
+    <script>
+        // Força a abertura imediata ao carregar esta página específica
+        window.addEventListener('DOMContentLoaded', () => {
+            // Pequeno hack para garantir que o chat.js carregou
+            const interval = setInterval(() => {
+                const win = document.getElementById('tirra-window');
+                if (win) {
+                    clearInterval(interval);
+                    // Adiciona classe de aberto
+                    win.classList.add('open');
+                    win.style.display = 'flex';
+                    // Se tiver input de nome, foca nele
+                    document.getElementById('tc-name')?.focus();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
