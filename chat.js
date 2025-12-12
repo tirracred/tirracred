@@ -154,7 +154,7 @@
             <div id="tc-screen-chat" class="tc-screen" style="display:none;">
                 <div id="tc-msgs"></div>
                 <div id="tc-typing-area"></div> <div class="tc-footer-input">
-                    <input id="tc-msg-input" class="tc-input" placeholder="Digite sua resposta..." autocomplete="off">
+                    <input id="tc-msg-input" class="tc-input" placeholder="Digite sua mensagem aqui..." autocomplete="off">
                     <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer;">➤</button>
                 </div>
             </div>
