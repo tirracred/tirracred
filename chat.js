@@ -216,7 +216,7 @@
     };
 
     // Botões Externos (Header, Mobile)
-    ['btn-chat-header', 'btn-chat-mobile', 'btn-chat-drawer','btn-chat-mobile'].forEach(id => {
+    ['btn-chat-header', 'btn-chat-mobile', 'btn-chat-drawer','btn-chat-footer'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.onclick = (e) => { e.preventDefault(); openChat(); };
     });
