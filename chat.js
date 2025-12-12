@@ -1,44 +1,38 @@
 (function() {
-    console.log("🚀 Widget TirraCred: Versão Final (Mobile Zoom Fix + AutoStart)...");
+    console.log("🚀 Widget TirraCred: Versão Final Corrigida");
 
     // --------------------------------------------------------
-    // 0. SISTEMA DE SOM
+    // SOM FUNCIONAL (MP3 de notificação curto)
     // --------------------------------------------------------
-    const audioSrc = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFQAAAASAAADbWFqb3JfYnJhbmQAZGFzaABUWFhUAAAAEQAAA21pbm9yX3ZlcnNpb24AMABUWFhUAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzbzZtcDQxAFRTU0UAAAAOAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABCAAHCxEWFxwfIiQmKS0wNDc6PkFERkdKS0xPUFNWWVtfYWRmaW1vcXR2eXx/gYOFiIqNkJKVl5qcn6Gkp6msrrG0tbi7vcDDxcfJzc/Q09XY2tzf4OPm6Ovs7fH09vf5+/0AAAAATGF2YzU5LjM3LjEwMAAAAAAAAAAAAAAAACQCCAAAAAAABQQAABAAACxI//7UGQAAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA";
+    const audioSrc = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm////////////////////////////////////////AAAA5UxhdmM1OC45MQAAAAAAAAAAAAAAACQCgAAAAAAAAAOEfxi0HQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
     const notificationSound = new Audio(audioSrc);
-    notificationSound.volume = 0.8; // Aumentei o volume
-
+    notificationSound.volume = 0.7;
     let audioUnlocked = false;
+
     const unlockAudio = () => {
         if (!audioUnlocked) {
-            // Tenta tocar e pausar imediatamente para liberar o canal de áudio
-            const p = notificationSound.play();
-            if (p !== undefined) {
-                p.then(_ => {
-                    notificationSound.pause();
-                    notificationSound.currentTime = 0;
-                    audioUnlocked = true;
-                }).catch(error => {
-                    // Autoplay bloqueado, tenta de novo na próxima interação
-                });
-            }
+            notificationSound.play().then(() => {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                audioUnlocked = true;
+                console.log("✅ Áudio desbloqueado");
+            }).catch(() => {});
         }
     };
-    // Tenta desbloquear em qualquer clique na página logo de cara
-    document.addEventListener('click', unlockAudio, { once: true });
 
     // --------------------------------------------------------
-    // 1. ESTILOS (CSS OTIMIZADO PARA MOBILE E ZOOM FIX)
+    // CSS OTIMIZADO (Fix Mobile Completo)
     // --------------------------------------------------------
     const style = document.createElement('style');
     style.innerHTML = `
+        /* CORREÇÃO: Meta viewport no HEAD (adicione no HTML principal) */
+        /* <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, interactive-widget=resizes-content"> */
+
         #tirra-widget-container { position: fixed; bottom: 20px; right: 20px; z-index: 2147483647; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
         
-        /* Botão Flutuante */
         #tirra-toggle { pointer-events: auto; width: 60px; height: 60px; border-radius: 50%; background: #16a34a; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         #tirra-toggle:hover { transform: scale(1.1); }
         
-        /* Janela Principal */
         #tirra-window { 
             pointer-events: auto;
             display: none; 
@@ -58,34 +52,56 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        /* Animações de Estado */
         #tirra-window.open { display: flex; opacity: 1; transform: translateY(0); }
         #tirra-window.closed { opacity: 0; transform: translateY(20px); pointer-events: none; }
 
-        /* HEADER */
         .tc-header { flex-shrink: 0; background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; }
         .tc-header-btn { background: none; border: none; color: white; cursor: pointer; padding: 4px 8px; font-size: 18px; opacity: 0.9; transition: opacity 0.2s; }
         
-        /* TELA */
         .tc-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; position: relative; }
         
-        /* MENSAGENS */
-        #tc-msgs { flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        /* FIX: Área de mensagens sem influência do teclado */
+        #tc-msgs { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 16px; 
+            background: #f9fafb; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            scroll-behavior: smooth; 
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain; /* IMPEDE BOUNCE SCROLL */
+        }
         
-        /* INPUT AREA */
-        .tc-footer-input { flex-shrink: 0; padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center; }
-        
-        /* 🔥 ZOOM FIX: font-size 16px !important no mobile impede zoom no focus */
-        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; background: #f9fafb; font-size: 16px !important; }
+        /* FIX MOBILE: Input sempre 16px + sem zoom */
+        .tc-footer-input { 
+            flex-shrink: 0; 
+            padding: 12px; 
+            border-top: 1px solid #e5e7eb; 
+            background: white; 
+            display: flex; 
+            gap: 8px; 
+            align-items: center;
+            position: relative; /* Garante que não "flutue" */
+        }
+        .tc-input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 8px; 
+            outline: none; 
+            font-size: 16px !important; /* FORÇA 16px SEMPRE */
+            background: #f9fafb;
+            touch-action: manipulation; /* Previne gestos extras */
+        }
         .tc-input:focus { border-color: #16a34a; background: white; }
 
-        /* UI ELEMENTS */
         .tc-avatar { width: 36px; height: 36px; background: white; border-radius: 50%; padding: 2px; position: relative; }
         .tc-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .tc-status { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border: 2px solid #16a34a; border-radius: 50%; }
         .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
         
-        /* BALÕES */
         .msg-row { display: flex; width: 100%; animation: fadeMsg 0.3s ease forwards; }
         @keyframes fadeMsg { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .msg-user { justify-content: flex-end; }
@@ -97,14 +113,12 @@
         .msg-bubble a { color: inherit; text-decoration: underline; font-weight: bold; }
         .bubble-ai a { color: #047857; }
 
-        /* TYPING */
         .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; background: #e5e7eb; border-radius: 12px; border-bottom-left-radius: 2px; width: fit-content; }
         .typing-dot { width: 6px; height: 6px; background: #6b7280; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
-        /* MODAL */
         #tc-modal-overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; opacity: 0; transition: opacity 0.2s; }
         #tc-modal-overlay.active { display: flex; opacity: 1; }
         .tc-modal-title { font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 8px; }
@@ -112,25 +126,43 @@
         .tc-btn-outline { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .tc-btn-danger { flex: 1; padding: 10px; border: none; background: #dc2626; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        /* MOBILE FIXES CRÍTICOS */
+        /* MOBILE: Tela cheia + bloqueia scroll do body */
         @media (max-width: 480px) {
-            #tirra-widget-container { bottom: 0; right: 0; width: 100%; height: 100%; align-items: center; justify-content: flex-end; z-index: 999999; pointer-events: none; }
-            #tirra-window { 
-                width: 100%; max-width: 100%; height: 100% !important; max-height: 100% !important; 
-                border-radius: 0; margin-bottom: 0; 
-                position: fixed; top: 0; left: 0; bottom: 0; right: 0; 
+            body.tc-no-scroll { 
+                overflow: hidden !important; 
+                position: fixed !important; 
+                width: 100% !important;
+                height: 100% !important;
             }
-            #tirra-toggle { margin-bottom: 20px; margin-right: 20px; pointer-events: auto; }
-            #tirra-window.open ~ #tirra-toggle { display: none; }
             
-            /* Ajuste teclado mobile */
-            .tc-footer-input { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+            #tirra-widget-container { bottom: 0; right: 0; width: 100%; height: 100%; align-items: center; justify-content: flex-end; z-index: 999999; }
+            #tirra-window { 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                height: 100% !important; 
+                max-height: 100% !important; 
+                border-radius: 0; 
+                margin-bottom: 0; 
+                position: fixed !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+            }
+            #tirra-toggle { margin-bottom: 20px; margin-right: 20px; }
+            #tirra-window.open ~ #tirra-toggle { display: none; }
         }
     `;
     document.head.appendChild(style);
 
+    // Adiciona meta viewport se não existir
+    if (!document.querySelector('meta[name="viewport"]')) {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, interactive-widget=resizes-content';
+        document.head.appendChild(meta);
+    }
+
     // --------------------------------------------------------
-    // 2. HTML
+    // HTML
     // --------------------------------------------------------
     const root = document.createElement('div');
     root.id = 'tirra-widget-container';
@@ -169,8 +201,8 @@
                 <h3 style="text-align:center; color:#111827; margin-bottom:8px;">Falar com a Isabel 👋</h3>
                 <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Informe seus dados para iniciar.</p>
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                    <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo">
-                    <input id="tc-phone" class="tc-input" type="tel" placeholder="WhatsApp (DDD + Número)">
+                    <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo" autocomplete="name">
+                    <input id="tc-phone" class="tc-input" placeholder="WhatsApp (DDD + Número)" autocomplete="tel">
                     <button id="tc-start-btn" class="tc-btn">INICIAR ATENDIMENTO ➤</button>
                 </div>
             </div>
@@ -185,7 +217,7 @@
                 </div>
                 <div class="tc-footer-input">
                     <input id="tc-msg-input" class="tc-input" placeholder="Digite sua resposta..." autocomplete="off">
-                    <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer;">➤</button>
+                    <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer; flex-shrink:0;">➤</button>
                 </div>
             </div>
         </div>
@@ -197,7 +229,7 @@
     document.body.appendChild(root);
 
     // --------------------------------------------------------
-    // 3. LÓGICA & FIXES
+    // LÓGICA (CORRIGIDO)
     // --------------------------------------------------------
     const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -206,39 +238,42 @@
     let client = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
     let session = localStorage.getItem('tc_sess');
     let visitor = localStorage.getItem('tc_vis');
-    let isSending = false; 
+    let isSending = false;
     let isChatOpen = false;
+    let realtimeChannel = null; // Controla o canal único
 
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
     const msgsArea = el('tc-msgs');
     const typingArea = el('typing-container');
-    const inputField = el('tc-msg-input');
 
-    // --- CORREÇÃO DE SCROLL MOBILE ---
+    // FIX: Controle de scroll no body (mobile)
     const toggleBodyScroll = (lock) => {
-        if(window.innerWidth <= 480) {
-            document.body.style.overflow = lock ? 'hidden' : '';
+        if (window.innerWidth <= 480) {
+            if (lock) {
+                document.body.classList.add('tc-no-scroll');
+            } else {
+                document.body.classList.remove('tc-no-scroll');
+            }
         }
     };
 
-    // --- ABRIR / FECHAR ---
     const openChat = () => {
-        unlockAudio(); 
+        unlockAudio();
         isChatOpen = true;
         win.style.display = 'flex';
         toggleBodyScroll(true);
-        
-        // 🔥 FIX INPUT TRAVADO: Força destravamento ao abrir
-        isSending = false;
-        inputField.disabled = false;
         
         setTimeout(() => {
             win.classList.add('open');
             win.classList.remove('closed');
         }, 10);
         
-        if(session) {
+        // FIX: Sempre destrava o input ao abrir
+        el('tc-msg-input').disabled = false;
+        isSending = false;
+        
+        if (session) {
             showChatScreen();
         } else {
             setTimeout(() => el('tc-name')?.focus(), 100);
@@ -251,59 +286,65 @@
         win.classList.add('closed');
         toggleBodyScroll(false);
         setTimeout(() => {
-            if(!isChatOpen) win.style.display = 'none';
+            if (!isChatOpen) win.style.display = 'none';
         }, 300);
     };
 
     el('tirra-toggle').onclick = () => isChatOpen ? closeChat() : openChat();
     el('tc-minimize').onclick = closeChat;
 
-    // --- MODAL & LOGOUT ---
+    ['btn-chat-header', 'btn-chat-mobile', 'btn-chat-drawer'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.onclick = (e) => { e.preventDefault(); openChat(); };
+    });
+
     el('tc-close-trigger').onclick = () => el('tc-modal-overlay').classList.add('active');
     el('tc-modal-cancel').onclick = () => el('tc-modal-overlay').classList.remove('active');
     
     el('tc-modal-confirm').onclick = () => {
+        // Remove canal antes de limpar sessão
+        if (realtimeChannel) {
+            client.removeChannel(realtimeChannel);
+            realtimeChannel = null;
+        }
+        
         localStorage.removeItem('tc_sess');
         localStorage.removeItem('tc_vis');
-        session = null; visitor = null;
+        session = null; 
+        visitor = null;
+        isSending = false;
+        
         el('tc-msgs').innerHTML = '';
-        el('tc-name').value = ''; el('tc-phone').value = '';
+        el('tc-name').value = ''; 
+        el('tc-phone').value = '';
         el('tc-modal-overlay').classList.remove('active');
         el('tc-screen-chat').style.display = 'none';
         el('tc-screen-login').style.display = 'flex';
         closeChat();
     };
 
-    // --- LOGIN & START ---
-    const triggerStartMessage = async () => {
-        // Envia mensagem silenciosa para o backend iniciar a conversa
-        showTyping();
-        try {
-            await fetch(EDGE_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-                body: JSON.stringify({ session_id: session, message: '##START##', visitor_name: visitor })
-            });
-            // O backend vai inserir a resposta da IA no banco, e o Realtime vai pegar.
-        } catch(e) {
-            console.error("Start error", e);
-            hideTyping();
-        }
+    const showTyping = () => {
+        typingArea.style.display = 'block';
+        msgsArea.scrollTop = msgsArea.scrollHeight;
     };
+    const hideTyping = () => typingArea.style.display = 'none';
 
+    // LOGIN
     el('tc-start-btn').onclick = async () => {
         unlockAudio();
-        const name = el('tc-name').value;
-        const phone = el('tc-phone').value;
+        const name = el('tc-name').value.trim();
+        const phone = el('tc-phone').value.trim();
         if (!name || !phone) return alert('Preencha os dados.');
 
         el('tc-start-btn').innerText = 'Conectando...';
         el('tc-start-btn').disabled = true;
 
         try {
-            if(!client) throw new Error("Supabase off");
+            if (!client) throw new Error("Supabase offline");
+            
             const { data, error } = await client.from('chat_sessions')
                 .insert({ visitor_name: name, visitor_phone: phone }).select().single();
+            
             if (error) throw error;
 
             session = data.id;
@@ -313,6 +354,14 @@
             
             showChatScreen();
             
+            // Envia START (backend agora responde imediatamente)
+            showTyping();
+            fetch(EDGE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+                body: JSON.stringify({ session_id: session, message: '##START##', visitor_name: visitor })
+            }).catch(() => hideTyping());
+
         } catch (e) {
             console.error(e);
             alert('Erro ao conectar.');
@@ -321,72 +370,68 @@
         }
     };
 
-    // --- CHAT CORE ---
     function showChatScreen() {
         el('tc-screen-login').style.display = 'none';
         el('tc-screen-chat').style.display = 'flex';
         
-        // Garante input liberado
         isSending = false;
-        inputField.disabled = false;
+        el('tc-msg-input').disabled = false;
 
-        loadHistoryAndSetupRealtime();
-    }
-
-    async function loadHistoryAndSetupRealtime() {
-        if(!session) return;
+        loadHistory();
         
-        // 1. Carrega histórico
-        const { data } = await client.from('chat_messages').select('*').eq('session_id', session).order('created_at');
-        el('tc-msgs').innerHTML = '';
-        
-        // 🔥 FIX DA PRIMEIRA MENSAGEM 🔥
-        // Se não tiver mensagens, dispara o START automaticamente
-        if (!data || data.length === 0) {
-            triggerStartMessage();
-        } else {
-            // Se já tem mensagens, renderiza.
-            data.forEach(m => addMsg(m.sender, m.content, false));
+        // FIX: Remove canais duplicados E cria apenas um
+        if (realtimeChannel) {
+            client.removeChannel(realtimeChannel);
         }
-
-        // 2. Configura Realtime
-        client.removeAllChannels();
-        client.channel('widget_room').on('postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
-            (payload) => {
-                // Só processa se não for 'user' (porque o user nós já adicionamos na tela na hora do envio)
-                if(payload.new.sender !== 'user') handleIncoming(payload.new);
-            }
-        ).subscribe();
+        
+        realtimeChannel = client.channel(`widget_${session}`) // Nome único por sessão
+            .on('postgres_changes', 
+                { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'chat_messages', 
+                    filter: `session_id=eq.${session}` 
+                }, 
+                (payload) => {
+                    if (payload.new.sender !== 'user') {
+                        handleIncoming(payload.new);
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log("📡 Realtime status:", status);
+            });
     }
 
-    // UI Helpers
-    const showTyping = () => {
-        typingArea.style.display = 'block';
-        msgsArea.scrollTop = msgsArea.scrollHeight;
-    };
-    const hideTyping = () => typingArea.style.display = 'none';
+    async function loadHistory() {
+        if (!session) return;
+        const { data } = await client.from('chat_messages')
+            .select('*')
+            .eq('session_id', session)
+            .order('created_at');
+        
+        el('tc-msgs').innerHTML = '';
+        if (data) data.forEach(m => addMsg(m.sender, m.content, false));
+    }
 
     function handleIncoming(msg) {
-        // Se a mensagem for a resposta do ##START## ou qualquer outra msg da AI
         showTyping();
         setTimeout(() => {
             hideTyping();
-            addMsg(msg.sender, msg.content, true); // true = toca som
-        }, 2000); // Pequeno delay pra parecer humano
+            addMsg(msg.sender, msg.content, true);
+        }, 2000); // Delay cosmético reduzido
     }
 
     const sendMsg = async () => {
-        const txt = inputField.value.trim();
-        if(!txt || isSending) return;
+        const txt = el('tc-msg-input').value.trim();
+        if (!txt || isSending) return;
 
         isSending = true;
-        inputField.disabled = true; // Trava input
-        
+        el('tc-msg-input').disabled = true;
         addMsg('user', txt, false);
-        inputField.value = '';
+        el('tc-msg-input').value = '';
         
-        showTyping(); 
+        showTyping();
 
         try {
             await fetch(EDGE_URL, {
@@ -394,30 +439,23 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
                 body: JSON.stringify({ session_id: session, message: txt, visitor_name: visitor })
             });
-        } catch(e) {
+        } catch (e) {
             hideTyping();
-            addMsg('ai', '⚠️ Falha na conexão. Tente novamente.', false);
-            isSending = false;
-            inputField.disabled = false;
+            addMsg('ai', '⚠️ Falha na conexão.', false);
         } finally {
-            // Libera o envio para a próxima msg (mas mantemos disabled até o fetch terminar é boa prática, 
-            // no entanto, se o fetch for rápido, liberamos aqui)
             isSending = false;
-            inputField.disabled = false;
-            inputField.focus();
+            el('tc-msg-input').disabled = false;
+            el('tc-msg-input').focus();
         }
     };
 
     el('tc-send-btn').onclick = sendMsg;
-    inputField.onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
+    el('tc-msg-input').onkeypress = (e) => { if (e.key === 'Enter') sendMsg(); };
 
     function addMsg(sender, text, playSound = false) {
-        // 🔥 Ignora a mensagem técnica de start se ela aparecer por algum motivo
-        if (text === '##START##') return;
-
         const div = document.createElement('div');
         div.className = `msg-row msg-${sender === 'user' ? 'user' : 'ai'}`;
-        let label = sender === 'ai' ? '<div class="msg-label">Isabel</div>' : '';
+        const label = sender === 'ai' ? '<div class="msg-label">Isabel</div>' : '';
         const processedText = text
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
             .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">CLIQUE AQUI 🔗</a>')
@@ -432,8 +470,18 @@
         msgsArea.appendChild(div);
         msgsArea.scrollTop = msgsArea.scrollHeight;
         
-        if(playSound && audioUnlocked) {
-             notificationSound.play().catch(e => console.log("Som bloqueado pelo browser")); 
+        if (playSound && audioUnlocked) {
+            try { 
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(() => {}); 
+            } catch (e) {}
         }
     }
+
+    // FIX: Previne scroll ao focar input no mobile
+    el('tc-msg-input').addEventListener('focus', () => {
+        setTimeout(() => {
+            msgsArea.scrollTop = msgsArea.scrollHeight;
+        }, 300);
+    });
 })();

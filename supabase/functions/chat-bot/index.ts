@@ -14,12 +14,27 @@ Deno.serve(async (req) => {
   try {
     const { message, session_id, visitor_name } = await req.json()
 
+    // 🔥 TRATAMENTO ESPECIAL PARA PRIMEIRA MENSAGEM
+if (message === '##START##') {
+  const welcomeMsg = `Olá ${visitor_name}! 👋 Sou a Isabel da TirraCred.\n\nEstou aqui pra te ajudar a conseguir crédito hoje mesmo!\n\nVocê tá procurando **cartão de crédito** ou **empréstimo**?`;
+  
+  await supabase.from('chat_messages').insert({
+    session_id, 
+    sender: 'ai', 
+    content: welcomeMsg
+  })
+  
+  return new Response(JSON.stringify({ reply: welcomeMsg }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
     // Chaves
     const groqKey = Deno.env.get('GROQ_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!groqKey || !supabaseUrl || !supabaseKey) throw new Error("Configuração ausente.");
+    if (!groqKey || !supabaseUrl || !supabaseKey) throw new Error("ConfiguraÃ§Ã£o ausente.");
 
     
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -30,7 +45,7 @@ Deno.serve(async (req) => {
       session_id, sender: 'user', content: message
     })
 
-    // 2. Carrega Histórico (Contexto)
+    // 2. Carrega HistÃ³rico (Contexto)
     const { data: history } = await supabase
       .from('chat_messages')
       .select('sender, content')
@@ -45,46 +60,46 @@ Deno.serve(async (req) => {
 
     // 3. PROMPT DE VENDAS COM "CAMINHOS DISTINTOS"
     const systemPrompt = `
-Você é a Isabel, consultora da TirraCred.
-Seu objetivo é qualificar ${visitor_name || 'o cliente'} e enviar o LINK DE AFILIADO correto.
+VocÃª Ã© a Isabel, consultora da TirraCred.
+Seu objetivo Ã© qualificar ${visitor_name || 'o cliente'} e enviar o LINK DE AFILIADO correto.
 
 ## SEU ESTOQUE (USE APENAS ESTES LINKS):
-[EMPRÉSTIMOS]
-- Garantia de Veículo (Carro/Moto): https://curt.link/tirragv (Mande pro Zap)
-- Antecipação FGTS: https://curt.link/izabelfgts
-- Empréstimo Pessoal (Nome Sujo/Facio): https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=web-app
+[EMPRÃ‰STIMOS]
+- Garantia de VeÃ­culo (Carro/Moto): https://curt.link/tirragv (Mande pro Zap)
+- AntecipaÃ§Ã£o FGTS: https://curt.link/izabelfgts
+- EmprÃ©stimo Pessoal (Nome Sujo/Facio): https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=web-app
 - SuperSim: https://susim.co/wwjLtRkN81wwsLSCGK9aHQ==
 
-[CARTÕES DE CRÉDITO / CONTAS]
-- PicPay (Aprova Fácil): https://apretailer.com.br/click/68ebe1712bfa8110ed15a9b2/186179/355952/subaccount
+[CARTÃ•ES DE CRÃ‰DITO / CONTAS]
+- PicPay (Aprova FÃ¡cil): https://apretailer.com.br/click/68ebe1712bfa8110ed15a9b2/186179/355952/subaccount
 - Santander (Melhor Limite): https://apretailer.com.br/click/690eb20e2bfa814aa46585a1/187685/355952/subaccount
 - Mercado Pago: https://mpago.li/1hWgZWN
 
 ## REGRAS DE OURO:
-1. NUNCA cite bancos fora da lista (Nada de Nubank, Inter, Bradesco). Venda SÓ o que temos.
+1. NUNCA cite bancos fora da lista (Nada de Nubank, Inter, Bradesco). Venda SÃ“ o que temos.
 2. Respostas CURTAS (Max 20 palavras). Estilo WhatsApp Brasileiro.
-3. Se o cliente pedir CARTÃO, não ofereça EMPRÉSTIMO (e vice-versa).
+3. Se o cliente pedir CARTÃƒO, nÃ£o ofereÃ§a EMPRÃ‰STIMO (e vice-versa).
 
 ## ROTEIRO (CAMINHOS):
 
-### CAMINHO A: Cliente quer DINHEIRO/EMPRÉSTIMO (Padrão)
-1. Pergunte: "Tem carro ou moto quitado no seu nome? O valor é maior."
-   - Se SIM: Mande link Veículo.
-   - Se NÃO: Pergunte: "Trabalha CLT ou tem saldo no FGTS?"
+### CAMINHO A: Cliente quer DINHEIRO/EMPRÃ‰STIMO (PadrÃ£o)
+1. Pergunte: "Tem carro ou moto quitado no seu nome? O valor Ã© maior."
+   - Se SIM: Mande link VeÃ­culo.
+   - Se NÃƒO: Pergunte: "Trabalha CLT ou tem saldo no FGTS?"
      - Se SIM: Link FGTS.
-     - Se NÃO: Link Facio/SuperSim (Diga: "Tenho uma pré-aprovação pra vc aqui").
+     - Se NÃƒO: Link Facio/SuperSim (Diga: "Tenho uma prÃ©-aprovaÃ§Ã£o pra vc aqui").
 
-### CAMINHO B: Cliente pede CARTÃO DE CRÉDITO
-1. Não pergunte de carro. Ofereça direto as opções de fácil aprovação.
-2. Diga: "Para cartão, os que mais aprovam hoje são Santander e PicPay. Qual vc prefere tentar?"
+### CAMINHO B: Cliente pede CARTÃƒO DE CRÃ‰DITO
+1. NÃ£o pergunte de carro. OfereÃ§a direto as opÃ§Ãµes de fÃ¡cil aprovaÃ§Ã£o.
+2. Diga: "Para cartÃ£o, os que mais aprovam hoje sÃ£o Santander e PicPay. Qual vc prefere tentar?"
    - Se ele escolher um, mande o link correspondente.
    - Se disser "qualquer um" ou "todos", mande o do Santander e PicPay juntos.
 
 ## EXEMPLOS DE RESPOSTA:
-Usuario: "Quero cartão"
-Isabel: "Show! O Santander e o PicPay tão aprovando muito hoje. Quer o link deles pra tentar?"
+Usuario: "Quero cartÃ£o"
+Isabel: "Show! O Santander e o PicPay tÃ£o aprovando muito hoje. Quer o link deles pra tentar?"
 
-Usuario: "Não tenho carro"
+Usuario: "NÃ£o tenho carro"
 Isabel: "Entendi! E vc trabalha registrado ou tem saldo no FGTS parada?"
 `;
 
@@ -99,7 +114,7 @@ Isabel: "Entendi! E vc trabalha registrado ou tem saldo no FGTS parada?"
       max_tokens: 150,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || "Vou verificar aqui... 👩‍💻";
+    const aiResponse = chatCompletion.choices[0]?.message?.content || "Vou verificar aqui... ðŸ‘©â€ðŸ’»";
 
     // 5. Salvar resposta
     await supabase.from('chat_messages').insert({
