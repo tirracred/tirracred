@@ -1,20 +1,27 @@
 (function() {
-    console.log("🚀 Widget TirraCred: Versão Premium (Fade, Sons, Typing)...");
+    console.log("🚀 Widget TirraCred: Versão Ultra Estável (Mobile Fix + Revisit Fix)...");
 
     // --------------------------------------------------------
-    // 0. CONFIGURAÇÕES & SONS
+    // 0. SISTEMA DE SOM (Base64 para carregar instantâneo)
     // --------------------------------------------------------
-    const SOUND_URL = "https://cdn.freesound.org/previews/536/536108_1415754-lq.mp3"; // Som de "Pop" suave
-    const audio = new Audio(SOUND_URL);
-    audio.volume = 0.5;
+    const audioSrc = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFQAAAASAAADbWFqb3JfYnJhbmQAZGFzaABUWFhUAAAAEQAAA21pbm9yX3ZlcnNpb24AMABUWFhUAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzbzZtcDQxAFRTU0UAAAAOAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//tQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABCAAHCxEWFxwfIiQmKS0wNDc6PkFERkdKS0xPUFNWWVtfYWRmaW1vcXR2eXx/gYOFiIqNkJKVl5qcn6Gkp6msrrG0tbi7vcDDxcfJzc/Q09XY2tzf4OPm6Ovs7fH09vf5+/0AAAAATGF2YzU5LjM3LjEwMAAAAAAAAAAAAAAAACQCCAAAAAAABQQAABAAACxI//7UGQAAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAD//7UGQAABAAABAAAAAAAABAAAAlhLYW1lAAAAAAAAAAAAAP/7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA//7UGQAAF94AEDAAAAAABAAABAAACABAAAABTUD78AAAC1A/gAAAGwAAAA";
+    const notificationSound = new Audio(audioSrc);
+    notificationSound.volume = 0.5;
 
-    const playNotification = () => {
-        // Tenta tocar o som (navegadores bloqueiam se não houver interação antes, mas ok)
-        audio.play().catch(e => console.log("Audio bloqueado pelo browser até interação."));
+    // Função para desbloquear o áudio no primeiro clique (Regra do Chrome/Safari)
+    let audioUnlocked = false;
+    const unlockAudio = () => {
+        if (!audioUnlocked) {
+            notificationSound.play().then(() => {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                audioUnlocked = true;
+            }).catch(e => console.log("Aguardando interação para áudio..."));
+        }
     };
 
     // --------------------------------------------------------
-    // 1. ESTILOS (CSS) - Animações, Modal e Typing
+    // 1. ESTILOS (CSS OTIMIZADO PARA MOBILE)
     // --------------------------------------------------------
     const style = document.createElement('style');
     style.innerHTML = `
@@ -27,7 +34,7 @@
         /* Janela Principal */
         #tirra-window { 
             pointer-events: auto;
-            display: none; /* Controlado via JS + Classes */
+            display: none; 
             margin-bottom: 15px; 
             width: 360px; 
             max-width: 90vw; 
@@ -44,69 +51,71 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        /* Classes de Animação de Estado */
+        /* Animações de Estado */
         #tirra-window.open { display: flex; opacity: 1; transform: translateY(0); }
         #tirra-window.closed { opacity: 0; transform: translateY(20px); pointer-events: none; }
 
-        /* Header */
+        /* HEADER */
         .tc-header { flex-shrink: 0; background: #16a34a; padding: 16px; color: white; display: flex; justify-content: space-between; align-items: center; }
         .tc-header-btn { background: none; border: none; color: white; cursor: pointer; padding: 4px 8px; font-size: 18px; opacity: 0.9; transition: opacity 0.2s; }
-        .tc-header-btn:hover { opacity: 1; background: rgba(255,255,255,0.2); border-radius: 4px; }
-
-        /* Telas */
+        
+        /* TELA */
         .tc-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; position: relative; }
         
-        /* Chat Area */
-        #tc-msgs { flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        .tc-footer-input { flex-shrink: 0; padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center; }
+        /* MENSAGENS */
+        #tc-msgs { flex: 1; overflow-y: auto; padding: 16px; background: #f9fafb; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
         
-        /* Elementos UI */
+        /* INPUT AREA (Fix para Zoom no iOS: font-size 16px) */
+        .tc-footer-input { flex-shrink: 0; padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center; }
+        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 16px; /* IMPEDE ZOOM */ background: #f9fafb; }
+        .tc-input:focus { border-color: #16a34a; background: white; }
+
+        /* UI ELEMENTS */
         .tc-avatar { width: 36px; height: 36px; background: white; border-radius: 50%; padding: 2px; position: relative; }
         .tc-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .tc-status { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #86efac; border: 2px solid #16a34a; border-radius: 50%; }
-        .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-        .tc-btn:hover { background: #15803d; }
-        .tc-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 14px; background: #f9fafb; }
-        .tc-input:focus { border-color: #16a34a; background: white; }
-
-        /* Balões */
+        .tc-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        
+        /* BALÕES */
         .msg-row { display: flex; width: 100%; animation: fadeMsg 0.3s ease forwards; }
         @keyframes fadeMsg { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .msg-user { justify-content: flex-end; }
         .msg-ai { justify-content: flex-start; }
-        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; position: relative; }
         .bubble-user { background: #16a34a; color: white; border-bottom-right-radius: 2px; }
         .bubble-ai { background: #e5e7eb; color: #1f2937; border-bottom-left-radius: 2px; }
-        .msg-label { font-size: 10px; color: #6b7280; margin-bottom: 2px; margin-left: 4px; font-weight: 600; }
+        .msg-label { font-size: 11px; color: #6b7280; margin-bottom: 2px; margin-left: 4px; font-weight: 600; }
         .msg-bubble a { color: inherit; text-decoration: underline; font-weight: bold; }
         .bubble-ai a { color: #047857; }
 
-        /* Typing Indicator (...) */
-        .typing-indicator { display: flex; gap: 4px; padding: 4px 8px; align-items: center; }
-        .typing-dot { width: 6px; height: 6px; background: #9ca3af; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        /* TYPING */
+        .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; background: #e5e7eb; border-radius: 12px; border-bottom-left-radius: 2px; width: fit-content; }
+        .typing-dot { width: 6px; height: 6px; background: #6b7280; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
-        /* Modal de Confirmação (Estilo Site) */
-        #tc-modal-overlay { 
-            display: none; 
-            position: absolute; inset: 0; background: rgba(255,255,255,0.95); 
-            z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;
-            opacity: 0; transition: opacity 0.2s;
-        }
+        /* MODAL */
+        #tc-modal-overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.98); z-index: 50; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; opacity: 0; transition: opacity 0.2s; }
         #tc-modal-overlay.active { display: flex; opacity: 1; }
         .tc-modal-title { font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 8px; }
-        .tc-modal-desc { font-size: 14px; color: #6b7280; margin-bottom: 20px; }
-        .tc-modal-actions { display: flex; gap: 10px; width: 100%; }
+        .tc-modal-actions { display: flex; gap: 10px; width: 100%; margin-top: 15px; }
         .tc-btn-outline { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .tc-btn-danger { flex: 1; padding: 10px; border: none; background: #dc2626; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
+        /* MOBILE FIXES (Tela Cheia em Celular pequeno) */
+        @media (max-width: 480px) {
+            #tirra-widget-container { bottom: 0; right: 0; width: 100%; height: 100%; align-items: center; justify-content: flex-end; z-index: 999999; pointer-events: none; }
+            #tirra-window { width: 100%; max-width: 100%; height: 100% !important; max-height: 100% !important; border-radius: 0; margin-bottom: 0; position: fixed; top: 0; left: 0; bottom: 0; right: 0; }
+            #tirra-toggle { margin-bottom: 20px; margin-right: 20px; pointer-events: auto; }
+            /* Se o chat estiver aberto, esconde o botão flutuante no mobile */
+            #tirra-window.open ~ #tirra-toggle { display: none; }
+        }
     `;
     document.head.appendChild(style);
 
     // --------------------------------------------------------
-    // 2. HTML (Estrutura com Modal e IDs Corretos)
+    // 2. HTML
     // --------------------------------------------------------
     const root = document.createElement('div');
     root.id = 'tirra-widget-container';
@@ -134,7 +143,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                 </div>
                 <div class="tc-modal-title">Encerrar atendimento?</div>
-                <div class="tc-modal-desc">Seu histórico de conversa será apagado permanentemente.</div>
+                <div style="font-size:14px; color:#6b7280;">Seu histórico será apagado.</div>
                 <div class="tc-modal-actions">
                     <button id="tc-modal-cancel" class="tc-btn-outline">Voltar</button>
                     <button id="tc-modal-confirm" class="tc-btn-danger">Encerrar</button>
@@ -143,7 +152,7 @@
 
             <div id="tc-screen-login" class="tc-screen" style="padding:24px; justify-content:center;">
                 <h3 style="text-align:center; color:#111827; margin-bottom:8px;">Falar com a Isabel 👋</h3>
-                <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Informe seus dados para iniciar a triagem.</p>
+                <p style="text-align:center; color:#6b7280; font-size:13px; margin-bottom:24px;">Informe seus dados para iniciar.</p>
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     <input id="tc-name" class="tc-input" placeholder="Seu Nome Completo">
                     <input id="tc-phone" class="tc-input" placeholder="WhatsApp (DDD + Número)">
@@ -153,7 +162,13 @@
 
             <div id="tc-screen-chat" class="tc-screen" style="display:none;">
                 <div id="tc-msgs"></div>
-                <div id="tc-typing-area"></div> <div class="tc-footer-input">
+                <div id="typing-container" style="display:none; padding: 0 16px 16px 16px;">
+                    <div class="msg-label" style="margin-bottom:4px;">Isabel está digitando...</div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                    </div>
+                </div>
+                <div class="tc-footer-input">
                     <input id="tc-msg-input" class="tc-input" placeholder="Digite sua resposta..." autocomplete="off">
                     <button id="tc-send-btn" style="width:46px; height:46px; border-radius:8px; background:#16a34a; border:none; color:white; cursor:pointer;">➤</button>
                 </div>
@@ -167,7 +182,7 @@
     document.body.appendChild(root);
 
     // --------------------------------------------------------
-    // 3. LÓGICA DO CLIENTE & UI
+    // 3. LÓGICA (Bug Fixes)
     // --------------------------------------------------------
     const SB_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -176,21 +191,35 @@
     let client = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
     let session = localStorage.getItem('tc_sess');
     let visitor = localStorage.getItem('tc_vis');
-    let isSending = false;
+    let isSending = false; // Reset sempre false no load
     let isChatOpen = false;
 
     const el = (id) => root.querySelector('#'+id);
     const win = el('tirra-window');
+    const msgsArea = el('tc-msgs');
+    const typingArea = el('typing-container');
 
-    // --- FUNÇÕES DE CONTROLE DE JANELA (Animações) ---
+    // --- CORREÇÃO DE SCROLL MOBILE ---
+    const toggleBodyScroll = (lock) => {
+        if(window.innerWidth <= 480) {
+            document.body.style.overflow = lock ? 'hidden' : '';
+        }
+    };
+
+    // --- ABRIR / FECHAR ---
     const openChat = () => {
+        unlockAudio(); // Tenta desbloquear som
         isChatOpen = true;
-        win.style.display = 'flex'; // Primeiro torna visível
-        // Pequeno delay para permitir a transição CSS
+        win.style.display = 'flex';
+        toggleBodyScroll(true);
+        
         setTimeout(() => {
             win.classList.add('open');
             win.classList.remove('closed');
         }, 10);
+        
+        // Destrava input caso tenha ficado travado de outra sessão
+        el('tc-msg-input').disabled = false;
         
         if(session) {
             showChatScreen();
@@ -203,83 +232,47 @@
         isChatOpen = false;
         win.classList.remove('open');
         win.classList.add('closed');
-        // Espera a animação terminar para dar display none
+        toggleBodyScroll(false);
         setTimeout(() => {
             if(!isChatOpen) win.style.display = 'none';
         }, 300);
     };
 
-    // Toggle Button
-    el('tirra-toggle').onclick = () => {
-        if (isChatOpen) closeChat();
-        else openChat();
-    };
+    el('tirra-toggle').onclick = () => isChatOpen ? closeChat() : openChat();
+    el('tc-minimize').onclick = closeChat;
 
-    // Botões Externos (Header, Mobile)
+    // Botões Externos
     ['btn-chat-header', 'btn-chat-mobile', 'btn-chat-drawer'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.onclick = (e) => { e.preventDefault(); openChat(); };
     });
 
-    // Minimizar
-    el('tc-minimize').onclick = closeChat;
-
-    // --- MODAL DE ENCERRAMENTO ---
-    const modal = el('tc-modal-overlay');
+    // --- MODAL & LOGOUT ---
+    el('tc-close-trigger').onclick = () => el('tc-modal-overlay').classList.add('active');
+    el('tc-modal-cancel').onclick = () => el('tc-modal-overlay').classList.remove('active');
     
-    // Abre modal ao clicar no X
-    el('tc-close-trigger').onclick = () => {
-        modal.classList.add('active');
-    };
-    // Cancela modal
-    el('tc-modal-cancel').onclick = () => {
-        modal.classList.remove('active');
-    };
-    // Confirma encerramento
     el('tc-modal-confirm').onclick = () => {
         localStorage.removeItem('tc_sess');
         localStorage.removeItem('tc_vis');
         session = null; visitor = null;
         el('tc-msgs').innerHTML = '';
         el('tc-name').value = ''; el('tc-phone').value = '';
-        
-        // UI Reset
-        modal.classList.remove('active');
+        el('tc-modal-overlay').classList.remove('active');
         el('tc-screen-chat').style.display = 'none';
         el('tc-screen-login').style.display = 'flex';
-        
-        closeChat(); // Fecha com fade
+        closeChat();
     };
 
-    // --- INDICADOR "DIGITANDO..." ---
+    // --- TYPING UI ---
     const showTyping = () => {
-        const area = el('tc-msgs');
-        // Evita duplicatas
-        if(area.querySelector('.msg-typing-wrapper')) return;
-
-        const div = document.createElement('div');
-        div.className = 'msg-row msg-ai msg-typing-wrapper';
-        div.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:flex-start;">
-                <div class="msg-label">Isabel</div>
-                <div class="msg-bubble bubble-ai typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            </div>
-        `;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
+        typingArea.style.display = 'block';
+        msgsArea.scrollTop = msgsArea.scrollHeight;
     };
+    const hideTyping = () => typingArea.style.display = 'none';
 
-    const hideTyping = () => {
-        const typing = el('tc-msgs').querySelector('.msg-typing-wrapper');
-        if(typing) typing.remove();
-    };
-
-    // --- LOGIN E START PROATIVO ---
+    // --- LOGIN ---
     el('tc-start-btn').onclick = async () => {
+        unlockAudio(); // Garante som
         const name = el('tc-name').value;
         const phone = el('tc-phone').value;
         if (!name || !phone) return alert('Preencha os dados.');
@@ -300,15 +293,19 @@
             
             showChatScreen();
             
-            // Simula Isabel digitando proativamente
-            showTyping();
+            // 🔥 TRUQUE DA PRIMEIRA MENSAGEM: MOSTRA "DIGITANDO" NA HORA 🔥
+            // Isso engana o usuário enquanto o backend processa
+            showTyping(); 
             
-            // Disparo Silencioso
             fetch(EDGE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
                 body: JSON.stringify({ session_id: session, message: '##START##', visitor_name: visitor })
-            }).catch(e => console.error("Start error:", e));
+            }).catch(e => {
+                console.error("Start error:", e);
+                // Se falhar o backend, pelo menos tira o typing
+                hideTyping();
+            });
 
         } catch (e) {
             console.error(e);
@@ -318,19 +315,24 @@
         }
     };
 
+    // --- CHAT CORE ---
     function showChatScreen() {
         el('tc-screen-login').style.display = 'none';
         el('tc-screen-chat').style.display = 'flex';
+        
+        // Limpa estado de envio anterior se houver
+        isSending = false;
+        el('tc-msg-input').disabled = false;
+
         loadHistory();
         
-        // Listener Realtime com Delay
+        // Remove canais antigos para evitar duplicação em revisits
+        client.removeAllChannels();
+
         client.channel('widget_room').on('postgres_changes', 
             { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `session_id=eq.${session}` }, 
             (payload) => {
-                if(payload.new.sender !== 'user') {
-                    // Se for mensagem da IA, tratamos o "Digitando..."
-                    handleIncomingMessage(payload.new);
-                }
+                if(payload.new.sender !== 'user') handleIncoming(payload.new);
             }
         ).subscribe();
     }
@@ -339,15 +341,13 @@
         if(!session) return;
         const { data } = await client.from('chat_messages').select('*').eq('session_id', session).order('created_at');
         el('tc-msgs').innerHTML = '';
-        if(data) data.forEach(m => addMsg(m.sender, m.content, false)); // false = sem som no histórico
+        if(data) data.forEach(m => addMsg(m.sender, m.content, false));
     }
 
-    // Lógica de Delay e Digitação para mensagens recebidas
-    function handleIncomingMessage(msg) {
-        // Se ainda não estiver mostrando typing, mostra agora
+    // Processa mensagem recebida (AI)
+    function handleIncoming(msg) {
         showTyping();
-        
-        // Aguarda 3 segundos (3000ms) para mostrar a mensagem real
+        // Delay cosmético de 3s
         setTimeout(() => {
             hideTyping();
             addMsg(msg.sender, msg.content, true); // true = toca som
@@ -360,11 +360,10 @@
 
         isSending = true;
         el('tc-msg-input').disabled = true;
-        addMsg('user', txt, false); // User não tem som
+        addMsg('user', txt, false);
         el('tc-msg-input').value = '';
         
-        // Assim que o user envia, já mostramos que a IA vai responder
-        showTyping();
+        showTyping(); // Feedback imediato
 
         try {
             await fetch(EDGE_URL, {
@@ -388,9 +387,7 @@
     function addMsg(sender, text, playSound = false) {
         const div = document.createElement('div');
         div.className = `msg-row msg-${sender === 'user' ? 'user' : 'ai'}`;
-        
         let label = sender === 'ai' ? '<div class="msg-label">Isabel</div>' : '';
-
         const processedText = text
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
             .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">CLIQUE AQUI 🔗</a>')
@@ -402,12 +399,9 @@
                 <div class="msg-bubble bubble-${sender === 'user' ? 'user' : 'ai'}">${processedText}</div>
             </div>
         `;
-        
-        const area = el('tc-msgs');
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-
-        if(playSound && sender === 'ai') playNotification();
+        msgsArea.appendChild(div);
+        msgsArea.scrollTop = msgsArea.scrollHeight;
+        if(playSound) try { notificationSound.play().catch(() => {}); } catch(e){}
     }
-
+    
 })();
