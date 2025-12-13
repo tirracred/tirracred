@@ -165,29 +165,29 @@ Regra de Ouro:
 ## 4. TEXTOS DOS LINKS (Copie exatamente estes textos e links)
 
 🔥 **FACIO – Empréstimo para Negativado e SCORE BAIXO que APROVA NO PIX - Esse empréstimo online é focado em quem está com nome sujo ou não, com boas chances de aprovação para vários perfis.
-https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=web-app
+https://facio.com.br?amigo=e15ca51d-7bdd-4314-a229-f07d0f4c5ff1&utm_source=web-app&utm_campaign=ds_banner
 
 💚 **CONTA PICPAY – Altas chances de APROVAÇÃO! - Abra sua conta digital no PicPay e veja se o app libera limites, empréstimos e cartão pra você dentro do aplicativo.
 https://igoal.go2cloud.org/aff_c?offer_id=6210&aff_id=1552 
 
 🔥 **Juros Baixos – Empréstimo para Negativado e SCORE BAIXO que APROVA NA HORA além de cartões - Esse site atende vários perfis e oferece diversas opções.
-https://apretailer.com.br/click/654e2d392bfa8130bc5c98f6/183012/307759/subaccount
+https://apretailer.com.br/click/68ebe1712bfa8110a35e5a94/183012/355952/subaccount
 
 👔 **EMPRÉSTIMO CLT – Nova Horizonte - Crédito para quem trabalha de carteira assinada há pelo menos 1 ano, com parcelas planejadas pra caber no orçamento.
-https://curt.link/tiagoclt
+https://curt.link/izabelclt
 
 🧡 **SUPERSIM - Uma das melhores para SCORE BAIXO
 https://susim.co/wwjLtRkN81wwsLSCGK9aHQ==
 
 🟡 **FGTS – Nova Horizonte - Antecipe parte do seu FGTS, usando o saldo disponível para conseguir dinheiro agora e pagar aos poucos.
-https://curt.link/tirrafgts
+https://curt.link/izabelfgts
 
 🧡 **BOLSA FAMÍLIA – Nova Horizonte** - Empréstimo para quem recebe Bolsa Família pelo Caixa Tem e ainda não tem empréstimo do benefício em aberto.
-https://curt.link/tirrabolsa
+https://curt.link/izabelbolsa
 
 💡 **EMPRÉSTIMO NA CONTA DE LUZ – Nova Horizonte**
 Crédito usando sua conta de energia no seu nome, com valor médio acima de R$ 80, pagando as parcelas junto da fatura de luz.
-https://curt.link/tirraluz
+https://curt.link/izabeluz
 
 💸 **JEITTO – app que aprova muito negativado**
 Aplicativo de crédito que costuma liberar limite e dinheiro até pra quem está com score baixo ou nome sujo.
