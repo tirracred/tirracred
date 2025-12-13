@@ -165,33 +165,33 @@ Regra de Ouro:
 ## 4. TEXTOS DOS LINKS (Copie exatamente estes textos e links)
 
 🔥 **FACIO – Empréstimo para Negativado e SCORE BAIXO que APROVA NO PIX - Esse empréstimo online é focado em quem está com nome sujo ou não, com boas chances de aprovação para vários perfis.
-https://facio.com.br/?amigo=e15ca51d-7bdd-4314-a229-f07d0f4c5ff1&utm_source=web-app&utm_campaign=ds_banner
+https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=web-app
 
 💚 **CONTA PICPAY – Altas chances de APROVAÇÃO! - Abra sua conta digital no PicPay e veja se o app libera limites, empréstimos e cartão pra você dentro do aplicativo.
 https://igoal.go2cloud.org/aff_c?offer_id=6210&aff_id=1552 
 
 🔥 **Juros Baixos – Empréstimo para Negativado e SCORE BAIXO que APROVA NA HORA além de cartões - Esse site atende vários perfis e oferece diversas opções.
-https://apretailer.com.br/click/68ebe1712bfa8110a35e5a94/183012/355952/subaccount
+https://apretailer.com.br/click/654e2d392bfa8130bc5c98f6/183012/307759/subaccount
 
 👔 **EMPRÉSTIMO CLT – Nova Horizonte - Crédito para quem trabalha de carteira assinada há pelo menos 1 ano, com parcelas planejadas pra caber no orçamento.
-https://curt.link/izabelclt
+https://curt.link/tiagoclt
 
 🧡 **SUPERSIM - Uma das melhores para SCORE BAIXO
 https://susim.co/wwjLtRkN81wwsLSCGK9aHQ==
 
 🟡 **FGTS – Nova Horizonte - Antecipe parte do seu FGTS, usando o saldo disponível para conseguir dinheiro agora e pagar aos poucos.
-https://curt.link/izabelfgts
+https://curt.link/tirrafgts
 
 🧡 **BOLSA FAMÍLIA – Nova Horizonte** - Empréstimo para quem recebe Bolsa Família pelo Caixa Tem e ainda não tem empréstimo do benefício em aberto.
-https://curt.link/izabelbolsa
+https://curt.link/tirrabolsa
 
 💡 **EMPRÉSTIMO NA CONTA DE LUZ – Nova Horizonte**
 Crédito usando sua conta de energia no seu nome, com valor médio acima de R$ 80, pagando as parcelas junto da fatura de luz.
-https://curt.link/izabeluz
+https://curt.link/tirraluz
 
 💸 **JEITTO – app que aprova muito negativado**
 Aplicativo de crédito que costuma liberar limite e dinheiro até pra quem está com score baixo ou nome sujo.
-https://apretailer.com.br/click/692dacb62bfa8105d5676a44/187017/355952/subaccount
+https://apretailer.com.br/click/692dacb62bfa8105d5676a43/187017/307759/subaccount
 
 📲 **CONTA MERCADO PAGO**
 Conta digital para receber e pagar, com possibilidade de cartão e outras linhas de crédito conforme o uso da conta.
@@ -199,23 +199,23 @@ https://mpago.li/27t3mKa
 
 🏦 **CONTA / CARTÃO SANTANDER**
 Conta digital Santander com chance de cartão de crédito e outros produtos para quem está com nome limpo.
-https://apretailer.com.br/click/690eb20e2bfa814aa46585a1/187685/355952/subaccount
+https://apretailer.com.br/click/690eb20e2bfa814aa46585a2/187685/307759/subaccount
 
 💳 **ITAÚ PASSAI GOLD – cartão de crédito**
 Cartão de crédito Itaú Passai Gold para quem está com nome limpo, com boas chances de conseguir limite para compras e serviços.
-https://apretailer.com.br/click/68f1a59e2bfa817f215c1616/187484/355952/subaccount
+https://apretailer.com.br/click/68f1a59e2bfa817f215c1617/187484/307759/subaccount
 
 👵 **EMPRÉSTIMO INSS – Nova Horizonte** Crédito consignado para aposentados e pensionistas do INSS, com parcelas descontadas direto do benefício.
-https://curt.link/izabelinss
+https://curt.link/tirrainss
 
 🏢 **PAGBANK EMPRESA – conta PJ com crédito** Conta digital para MEI e empresas com CNPJ, que pode liberar limite e crédito para o negócio conforme o movimento da conta.
-https://apretailer.com.br/click/691bab092bfa816c970509ac/187775/355952/subaccount
+https://apretailer.com.br/click/691bab092bfa816c970509ad/187775/307759/subaccount
 
 🧾 **ACORDO CERTO – negociar dívidas** Plataforma para negociar suas dívidas com desconto e tentar limpar o nome, ajudando a melhorar as chances de crédito.
-https://apretailer.com.br/click/691e96ca2bfa817ea2016e15/187558/355952/subaccount
+https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount
 
 💰 **HIPERCASH – opção extra de crédito** Mais uma alternativa de crédito para quem já tentou outras opções e não conseguiu, oferecendo nova oportunidade de análise.
-https://apretailer.com.br/click/691bab092bfa816c970509ac/187775/355952/subaccount
+https://apretailer.com.br/click/692f4ea62bfa81426070db69/182687/307759/subaccount
 
 🚗 **EMPRÉSTIMO COM GARANTIA DE VEÍCULO – Nova Horizonte** (Use este link caso o cliente tenha veículo quitado)
 https://curt.link/tirragv
