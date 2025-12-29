@@ -239,9 +239,10 @@
 </div>
 
 <script>
+// MUDANÇA 1: Usamos _supabase para não conflitar com a biblioteca global
 const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $ = (id) => document.getElementById(id);
 const login = $('login'), app = $('app'), listEl = $('list');
@@ -250,9 +251,8 @@ const statusEl = $('status'), modal = $('modal'), form = $('form');
 let items = [];
 
 const normCsv = (txt = '') =>
-  txt.split(',').map(s => s.trim()).filter(Boolean).join(',');         // "a, b ,c" -> "a,b,c"
+  txt.split(',').map(s => s.trim()).filter(Boolean).join(',');         
 
-// Helpers para sincronizar chips <-> input CSV
 const csvToArr = (txt='') => txt.split(',').map(s => s.trim()).filter(Boolean);
 const arrToCsv = (arr=[]) => arr.filter(Boolean).join(',');
 
@@ -268,12 +268,11 @@ function syncPerfisFromChips() {
   $('perfis').value = arrToCsv(selected);
 }
 
-
 const normLines = (txt = '') =>
-  txt.split('\n').map(s => s.trim()).filter(Boolean).join('\n');       // linhas limpas
+  txt.split('\n').map(s => s.trim()).filter(Boolean).join('\n');       
 
-const displayCsv = (v) => Array.isArray(v) ? v.join(', ') : (v || ''); // para mostrar nos cards
-const editCsv    = (v) => Array.isArray(v) ? v.join(',')    : (v || ''); // para colocar no <input>
+const displayCsv = (v) => Array.isArray(v) ? v.join(', ') : (v || ''); 
+const editCsv    = (v) => Array.isArray(v) ? v.join(',')    : (v || ''); 
 
 const displayLines = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
 
@@ -314,9 +313,8 @@ const openModal = (p={}) => {
     renderPerfisChips(editCsv(p.perfis));
     }
     $('vantagens').value = displayLines(p.vantagens);
-    $('ativo').checked = (p.ativo !== false); // default true quando não vier do BD
+    $('ativo').checked = (p.ativo !== false); 
     document.body.style.overflow = 'hidden';
-
 
   modal.classList.remove('hidden');
 };
@@ -326,30 +324,22 @@ const closeModal = () => {
 };
 
 $('close').onclick = closeModal;
-// Quando marcar/desmarcar um chip, atualiza o input CSV
+
 document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
   cb.addEventListener('change', syncPerfisFromChips);
 });
 
-// Se digitar manualmente no input, atualiza os chips
 const perfisInput = $('perfis');
 if (perfisInput) {
   perfisInput.addEventListener('input', (e) => renderPerfisChips(e.target.value));
 }
+
 $('save').onclick = async () => {
   const btn = $('save');
   const original = btn.innerHTML;
 
-  // estado "salvando"
   btn.disabled = true;
-  btn.innerHTML = `
-    <span class="inline-flex items-center gap-2">
-      <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
-        <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="3" class="opacity-75"></path>
-      </svg>
-      Salvando...
-    </span>`;
+  btn.innerHTML = `Wait...`;
 
   const payload = {
     titulo: $('titulo').value,
@@ -363,26 +353,21 @@ $('save').onclick = async () => {
     tipo:       normCsv($('tipo').value),
     perfis:     normCsv( ($('perfis') && $('perfis').value) || 
         Array.from(document.querySelectorAll('[data-chip="perfil"]:checked'))
-          .map(cb => cb.value).join(',') ),    ativo:      $('ativo').checked,
+          .map(cb => cb.value).join(',') ),    
+    ativo:      $('ativo').checked,
     priority_order: Number($('priority_order').value) || 0
   };
 
   const id = $('id').value;
   let resp;
   try {
-    if (id) resp = await supabase.from('products').update(payload).eq('id', id);
-    else     resp = await supabase.from('products').insert(payload).select();
+    // MUDANÇA: usando _supabase
+    if (id) resp = await _supabase.from('products').update(payload).eq('id', id);
+    else    resp = await _supabase.from('products').insert(payload).select();
 
     if (resp.error) throw resp.error;
 
-    // sucesso (check + pulso breve)
-    btn.innerHTML = `
-      <span class="inline-flex items-center gap-2 animate-pulse">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
-          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Salvo!
-      </span>`;
+    btn.innerHTML = `Salvo!`;
     setTimeout(() => {
       btn.innerHTML = original;
       btn.disabled = false;
@@ -401,13 +386,13 @@ $('add').onclick = () => openModal({});
 
 const load = async () => {
   statusEl.textContent = 'Carregando...';
-  const { data, error } = await supabase.from('products').select('*').order('priority_order', { ascending: true });
+  // MUDANÇA: usando _supabase
+  const { data, error } = await _supabase.from('products').select('*').order('priority_order', { ascending: true });
   if (error) { statusEl.textContent = 'Erro ao carregar: ' + error.message; return; }
   items = data || [];
   listEl.innerHTML = items.map(cardHTML).join('');
   statusEl.textContent = `Total: ${items.length} produtos`;
 
-  // editar
   listEl.querySelectorAll('.edit').forEach(btn => {
     btn.onclick = (e) => {
       const id = e.target.closest('[data-id]').dataset.id;
@@ -415,15 +400,15 @@ const load = async () => {
       openModal(p);
     };
   });
-  // ativar/desativar
+
 listEl.querySelectorAll('.toggle-active').forEach(btn => {
   btn.onclick = async (e) => {
     const id = Number(e.target.closest('[data-id]').dataset.id);
     const p  = items.find(x => Number(x.id) === id);
     const novo = !(p.ativo !== false);
 
-    // Captura o error da query aqui
-    const { error } = await supabase
+    // MUDANÇA: usando _supabase
+    const { error } = await _supabase
       .from('products')
       .update({ ativo: novo })
       .eq('id', id);
@@ -433,32 +418,29 @@ listEl.querySelectorAll('.toggle-active').forEach(btn => {
       return;
     }
 
-    load(); // recarrega a lista para refletir
+    load(); 
   };
 });
 
-// excluir
 listEl.querySelectorAll('.delete').forEach(btn => {
   btn.onclick = async (e) => {
     const id = Number(e.target.closest('[data-id]').dataset.id);
     const p  = items.find(x => Number(x.id) === id);
     if (!confirm(`Excluir "${p.titulo}"? Esta ação não pode ser desfeita.`)) return;
-    const { error } = await supabase.from('products').delete().eq('id', id);
+    // MUDANÇA: usando _supabase
+    const { error } = await _supabase.from('products').delete().eq('id', id);
     if (error) { alert('Erro: ' + error.message); return; }
     load();
   };
 });
-// duplicar
+
 listEl.querySelectorAll('.duplicate').forEach(btn => {
   btn.onclick = async (e) => {
     const id = Number(e.target.closest('[data-id]').dataset.id);
     const src = items.find(x => Number(x.id) === id);
     if (!src) return;
 
-    // prioridade nova = maior prioridade atual + 1
     const nextPriority = items.reduce((m,p)=>Math.max(m, Number(p.priority_order)||0), -1) + 1;
-
-    // garante string para csv/texto caso o registro carregue como array
     const asCsv   = (v) => Array.isArray(v) ? v.join(',') : (v || '');
     const asText  = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
 
@@ -470,27 +452,27 @@ listEl.querySelectorAll('.duplicate').forEach(btn => {
       link: src.link || '',
       btnPrimario: src.btnPrimario || 'Acessar',
       btnSecundario: src.btnSecundario || 'Detalhes',
-      vantagens: asText(src.vantagens),   // sua coluna é TEXT
-      tipo: asCsv(src.tipo),              // CSV em string
-      perfis: asCsv(src.perfis),          // CSV em string
-      ativo: src.ativo !== false,         // mantém estado (default true)
+      vantagens: asText(src.vantagens),   
+      tipo: asCsv(src.tipo),              
+      perfis: asCsv(src.perfis),          
+      ativo: src.ativo !== false,         
       priority_order: nextPriority
     };
 
     statusEl.textContent = 'Copiando...';
-    const { error } = await supabase.from('products').insert(payload).select();
+    // MUDANÇA: usando _supabase
+    const { error } = await _supabase.from('products').insert(payload).select();
     statusEl.textContent = error ? ('Erro ao copiar: ' + error.message) : 'Produto copiado!';
     if (!error) load();
   };
 });
 
-  // drag and drop
   new Sortable(listEl, {
     animation: 150,
     handle: '.cursor-move',
     ghostClass: 'sortable-ghost',
   });
-  fillPicker();   // popula o <select> com #id — título
+  fillPicker();   
 };
 
 $('saveOrder').onclick = async () => {
@@ -498,14 +480,15 @@ $('saveOrder').onclick = async () => {
   const updates = ids.map((id, idx) => ({ id, priority_order: idx }));
   statusEl.textContent = 'Salvando ordem...';
 
-  // upsert em lote
-  const { error } = await supabase.from('products').upsert(updates, { onConflict: 'id' });
+  // MUDANÇA: usando _supabase
+  const { error } = await _supabase.from('products').upsert(updates, { onConflict: 'id' });
   statusEl.textContent = error ? ('Erro ao salvar: '+error.message) : 'Ordem salva!';
   if (!error) load();
 };
 
 $('logout').onclick = async () => {
-  await supabase.auth.signOut();
+  // MUDANÇA: usando _supabase
+  await _supabase.auth.signOut();
   app.classList.add('hidden');
   login.classList.remove('hidden');
 };
@@ -516,7 +499,8 @@ $('loginForm').onsubmit = async (e) => {
   const email = $('email').value.trim();
   const password = $('password').value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  // MUDANÇA: usando _supabase
+  const { error } = await _supabase.auth.signInWithPassword({ email, password });
   if (error) { $('loginError').textContent = error.message; return; }
 
   login.classList.add('hidden');
@@ -545,24 +529,25 @@ function toggleRulesBlocks(){
   if (pf === 'negativado'){
     show($('rulesNegativado'));
     hide($('rulesOutros'));
-    addTarget.classList.remove('hidden'); // mostra seletor A/B
+    addTarget.classList.remove('hidden'); 
   } else {
     hide($('rulesNegativado'));
     show($('rulesOutros'));
-    addTarget.classList.add('hidden');    // esconde seletor A/B
+    addTarget.classList.add('hidden');    
   }
 }
 
 rulesPerfil.addEventListener('change', async () => {
   toggleRulesBlocks();
-  await loadRulesUI();   // recarrega valores daquele perfil
-  renderRulesPreview();  // desenha os nomes dos produtos
+  await loadRulesUI();   
+  renderRulesPreview();  
 });
 
 
 // sessão persistida
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  // MUDANÇA: usando _supabase
+  const { data: { session } } = await _supabase.auth.getSession();
   if (session) { login.classList.add('hidden'); app.classList.remove('hidden'); load(); }
 })();
 
@@ -602,36 +587,34 @@ openRulesBtn.onclick = async () => {
   show(rulesModal);
 };
 rulesClose.onclick = () => { hide(rulesModal); document.body.style.overflow = ''; };
+
 async function loadRulesUI(){
   toggleRulesBlocks();
-  // limpa campos
   idsA.value = idsB.value = idsOutros.value = '';
   limiteNeg.value = 12; limiteOutros.value = 12; pesoA.value = 70;
 
-  const { data, error } = await supabase.from('rules').select('*').eq('is_active', true);
+  // MUDANÇA: usando _supabase
+  const { data, error } = await _supabase.from('rules').select('*').eq('is_active', true);
   if (error) { alert('Erro ao carregar regras: ' + error.message); return; }
 
   const by = (perfil, variant=null) => data?.find(r => r.perfil===perfil && r.variant===variant);
 
-  // negativado
   const rA = by('negativado','A');
   const rB = by('negativado','B');
   if (rA){ idsA.value = rA.product_ids || ''; limiteNeg.value = rA.limit_count || 12; pesoA.value = rA.ab_weight ?? 70; }
-  if (rB){ idsB.value = rB.product_ids || ''; /* limite herdado de A */ }
+  if (rB){ idsB.value = rB.product_ids || ''; }
 
-  // outros
     ['bolsafamilia','aposentado','default'].forEach(pf => {
     const r = by(pf, null);
     if (r && rulesPerfil.value === pf){ idsOutros.value = r.product_ids || ''; limiteOutros.value = r.limit_count || 12; }
   });
 
-  renderRulesPreview(); // <<<<<< desenha nomes/IDs
+  renderRulesPreview(); 
 }
 
 rulesSave.onclick = async () => {
   const perfil = rulesPerfil.value;
 
-  // monta payloads
   let payloads = [];
   if (perfil === 'negativado'){
     payloads.push({
@@ -658,25 +641,20 @@ rulesSave.onclick = async () => {
     });
   }
 
-  // grava no banco: apaga do perfil e insere os novos
-  const del = await supabase.from('rules').delete().eq('perfil', perfil);
+  // MUDANÇA: usando _supabase
+  const del = await _supabase.from('rules').delete().eq('perfil', perfil);
   if (del.error) { alert('Erro ao limpar regras: ' + del.error.message); return; }
 
-  const ins = await supabase.from('rules').insert(payloads).select();
+  // MUDANÇA: usando _supabase
+  const ins = await _supabase.from('rules').insert(payloads).select();
   if (ins.error){ alert('Erro ao salvar: ' + ins.error.message); return; }
 
-  // sucesso
   alert('Regras salvas!');
   await loadRulesUI();
   renderRulesPreview();
   hide(rulesModal);
   document.body.style.overflow = '';
 };
-
-
-
-
-
 
 function renderRulesPreview(){
   const pf = rulesPerfil.value;
@@ -728,7 +706,7 @@ function resolveCsvToRealIds(csv){
     if (!isNaN(n) && n > 0){
       const byId = productById(n);
       if (byId) return String(byId.id);
-      const idx = n - 1; // posição na lista atual (1-based)
+      const idx = n - 1; 
       if (idx >= 0 && idx < items.length) return String(items[idx].id);
     }
     return String(tok);
