@@ -81,10 +81,12 @@
   </main>
 
 <script>
-// --- CONFIGURAÇÃO SUPABASE (Mesmas chaves do seu admin.html) ---
+// --- CONFIGURAÇÃO SUPABASE ---
 const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// CORREÇÃO AQUI: Usamos '_supabase' para evitar conflito com a variável global da biblioteca
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elementos
 const sessionsList = document.getElementById('sessions-list');
@@ -100,14 +102,13 @@ let activeSessionId = null;
 let activeSessionStatus = 'ai';
 let activeSubscription = null;
 
-// --- 1. AUTH CHECK (Segurança básica igual ao admin) ---
+// --- 1. AUTH CHECK ---
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  // CORREÇÃO: chamando _supabase
+  const { data: { session } } = await _supabase.auth.getSession();
   if (!session) {
-    // Se não estiver logado, manda pro login do admin
     window.location.href = 'admin.html';
   } else {
-    // Inicia app
     loadSessions();
     subscribeToNewSessions();
   }
@@ -115,10 +116,11 @@ let activeSubscription = null;
 
 // --- 2. LISTAR SESSÕES ---
 async function loadSessions() {
-  const { data, error } = await supabase
+  // CORREÇÃO: chamando _supabase
+  const { data, error } = await _supabase
     .from('chat_sessions')
     .select('*')
-    .order('created_at', { ascending: false }); // Mais recentes primeiro
+    .order('created_at', { ascending: false }); 
 
   if (error) {
     console.error('Erro ao listar:', error);
@@ -136,7 +138,6 @@ async function loadSessions() {
     const el = document.createElement('div');
     const isActive = session.id === activeSessionId;
     
-    // Status visual
     const statusDot = session.status === 'ai' 
       ? '<span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>' 
       : '<span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>';
@@ -164,8 +165,7 @@ async function openChat(session) {
   activeSessionId = session.id;
   activeSessionStatus = session.status;
 
-  // UI Updates
-  loadSessions(); // Atualiza seleção visual na lista
+  loadSessions(); 
   emptyState.classList.add('hidden');
   chatHeader.classList.remove('hidden');
   chatMessages.classList.remove('hidden');
@@ -174,10 +174,10 @@ async function openChat(session) {
   visitorNameEl.textContent = session.visitor_name;
   updateHeaderUI();
 
-  // Carregar mensagens antigas
   chatMessages.innerHTML = '<div class="text-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div></div>';
   
-  const { data, error } = await supabase
+  // CORREÇÃO: chamando _supabase
+  const { data, error } = await _supabase
     .from('chat_messages')
     .select('*')
     .eq('session_id', session.id)
@@ -206,7 +206,7 @@ function renderMessage(msg) {
   } else if (msg.sender === 'admin') {
     alignClass = 'justify-end';
     bubbleClass = 'bg-blue-600 text-white rounded-tr-none shadow-md';
-    label = ''; // Não precisa label pro admin (sou eu)
+    label = ''; 
   }
 
   div.className = `flex ${alignClass} animate-fade-in`;
@@ -230,14 +230,13 @@ chatForm.onsubmit = async (e) => {
 
   input.value = '';
 
-  // 1. Envia msg
-  await supabase.from('chat_messages').insert({
+  // CORREÇÃO: chamando _supabase
+  await _supabase.from('chat_messages').insert({
     session_id: activeSessionId,
     sender: 'admin',
     content: text
   });
 
-  // 2. Se o robô estava ativo, muda pra humano automaticamente
   if (activeSessionStatus === 'ai') {
     toggleHumanMode(true); 
   }
@@ -249,15 +248,14 @@ async function toggleHumanMode(forceHuman = false) {
 
   const newStatus = (activeSessionStatus === 'ai' || forceHuman) ? 'human' : 'ai';
   
-  // Atualiza banco
-  await supabase.from('chat_sessions')
+  // CORREÇÃO: chamando _supabase
+  await _supabase.from('chat_sessions')
     .update({ status: newStatus })
     .eq('id', activeSessionId);
 
-  // Atualiza estado local e UI
   activeSessionStatus = newStatus;
   updateHeaderUI();
-  loadSessions(); // Atualiza bolinha na lista lateral
+  loadSessions(); 
 }
 
 function updateHeaderUI() {
@@ -280,9 +278,10 @@ function updateHeaderUI() {
 
 // --- 7. REALTIME ---
 function startRealtime(sessionId) {
-  if (activeSubscription) supabase.removeChannel(activeSubscription);
+  // CORREÇÃO: chamando _supabase
+  if (activeSubscription) _supabase.removeChannel(activeSubscription);
 
-  activeSubscription = supabase
+  activeSubscription = _supabase
     .channel('chat_room_' + sessionId)
     .on('postgres_changes', { 
       event: 'INSERT', 
@@ -296,11 +295,11 @@ function startRealtime(sessionId) {
     .subscribe();
 }
 
-// Ouve novos chats na lista lateral
-supabase
+// CORREÇÃO: chamando _supabase para a lista lateral
+_supabase
   .channel('public:chat_sessions')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions' }, () => {
-    loadSessions(); // Recarrega lista se entrar alguém novo
+    loadSessions(); 
   })
   .subscribe();
 
