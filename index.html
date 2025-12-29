@@ -1491,8 +1491,7 @@ if (whatsappInput) {
 }
   const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   // 2) Elementos
   const listEl = document.getElementById('product-list');
   const pagTop = document.getElementById('pagination-top');
@@ -1825,8 +1824,7 @@ const mixed  = buildFeed(restProducts, ads, {
   (async () => {
     listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
-  const { data, error } = await supabase
-  .from('products')
+    const { data, error } = await _supabase  // <--- Mudou aqui  .from('products')
   .select('*')
   .neq('ativo', false)          // <-- ignora desativados
   .order('priority_order', { ascending: true });
