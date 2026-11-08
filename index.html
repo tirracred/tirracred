@@ -1821,33 +1821,49 @@ const mixed  = buildFeed(restProducts, ads, {
   filters.forEach(f => f.addEventListener('change', apply));
 
  // 7) Boot
+ // 7) Boot
   (async () => {
     listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
     async function loadProducts() {
+      let d1Products = [];
+      let supabaseProducts = [];
+
+      // Tenta D1
       try {
-        // Tenta primeiro o D1 (via Worker)
+        
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length) return data;
+          if (Array.isArray(data)) d1Products = data;
         }
       } catch (e) {
-        console.warn('D1 falhou, a usar Supabase:', e);
+        console.warn('D1 falhou:', e);
       }
 
-      // Fallback para Supabase
-      const { data, error } = await _supabase
-        .from('products')
-        .select('*')
-        .neq('ativo', false)
-        .order('priority_order', { ascending: true });
-
-      if (error) {
-        console.error(error);
-        return [];
+      // Busca sempre no Supabase
+      try {
+        const { data, error } = await _supabase
+          .from('products')
+          .select('*')
+          .neq('ativo', false)
+          .order('priority_order', { ascending: true });
+        if (!error && data) supabaseProducts = data;
+      } catch (e) {
+        console.warn('Supabase falhou:', e);
       }
-      return data || [];
+
+      // Junta os dois (sem duplicar pelo título)
+      const seen = new Set();
+      const merged = [];
+      for (const p of [...d1Products, ...supabaseProducts]) {
+        const key = (p.titulo || '').toLowerCase().trim();
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          merged.push(p);
+        }
+      }
+      return merged;
     }
 
     const data = await loadProducts();
