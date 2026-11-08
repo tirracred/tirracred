@@ -1820,24 +1820,44 @@ const mixed  = buildFeed(restProducts, ads, {
 
   filters.forEach(f => f.addEventListener('change', apply));
 
-  // 7) Boot
+ // 7) Boot
   (async () => {
     listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
-    // AQUI ESTAVA O ERRO. O .from('products') TEM QUE ESTAR NA LINHA DE BAIXO OU SEM O COMENTÁRIO
-    const { data, error } = await _supabase
-      .from('products')  // <--- AGORA SIM, ELE SABE QUE É NA TABELA PRODUTOS
-      .select('*')
-      .neq('ativo', false)
-      .order('priority_order', { ascending: true });
-  
-    if (error) { 
-        console.error(error); 
-        listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>'; 
-        return; 
+    async function loadProducts() {
+      try {
+        // Tenta primeiro o D1 (via Worker)
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length) return data;
+        }
+      } catch (e) {
+        console.warn('D1 falhou, a usar Supabase:', e);
+      }
+
+      // Fallback para Supabase
+      const { data, error } = await _supabase
+        .from('products')
+        .select('*')
+        .neq('ativo', false)
+        .order('priority_order', { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return [];
+      }
+      return data || [];
     }
 
-    state.all = (data || []).map(p => ({ ...p, logo: fixLogo(p.logo) }));
+    const data = await loadProducts();
+
+    if (!data.length) {
+      listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
+      return;
+    }
+
+    state.all = data.map(p => ({ ...p, logo: fixLogo(p.logo) }));
     apply();
   })();
   
