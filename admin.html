@@ -14,6 +14,7 @@
     .sortable-ghost { opacity: .4; background: #c7d2fe; }
     .sortable-chosen { cursor: grabbing; }
     .modal-bg { background: rgba(0,0,0,.5); }
+
     .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 9999px; font-size: 12px; margin: 4px 6px 0 0; background: #f9fafb; }
     .badge .x { cursor: pointer; font-weight: 700; }
     .badge-miss { border-color: #fecaca; background: #fee2e2; color: #991b1b; }
@@ -58,14 +59,16 @@
     </header>
 
     <main class="container mx-auto px-4 py-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <h1 class="text-2xl font-bold">Gerenciar Produtos</h1>
+      <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+        <h1 class="text-2xl font-bold">Gerenciar Produtos (Cloudflare + Supabase)</h1>
         <div class="flex flex-wrap gap-2">
           <button id="add" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Novo</button>
           <button id="saveOrder" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Salvar Ordem</button>
           <button id="openRules" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Resultados</button>
-          <button id="uploadFavicon" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">Favicon</button>
+          <button id="uploadFavicon" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition" title="Trocar ícone da aba do site">Favicon do Site</button>
+          <!-- Inputs ocultos para upload -->
           <input type="file" id="faviconInput" accept="image/*" class="hidden">
+          <input type="file" id="cardLogoInput" accept="image/*" class="hidden">
         </div>
       </div>
 
@@ -76,16 +79,29 @@
     </main>
   </div>
 
-  <!-- Modal Criar/Editar Produto -->
+  <!-- Modal Produto -->
   <div id="modal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
       <h3 class="text-xl font-semibold mb-4" id="modalTitle">Editar Produto</h3>
       <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="hidden" id="id">
+        <input type="hidden" id="uid">
         <div><label class="text-sm">Título</label><input id="titulo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
         <div><label class="text-sm">Tag</label><input id="tag" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
         <div><label class="text-sm">Tag Class (red|blue|yellow|purple)</label><input id="tagClass" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Logo (public/...)</label><input id="logo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+
+        <!-- Campo de Logo / Imagem da Oferta com botão de Upload individual -->
+        <div>
+          <label class="text-sm">Logo / Imagem da Oferta</label>
+          <div class="flex gap-2 mt-1 items-center">
+            <img id="modalLogoPreview" src="https://placehold.co/64x40/e2e8f0/4a5568?text=Logo" class="w-12 h-10 object-contain border rounded p-0.5 bg-gray-50 shrink-0" alt="Preview">
+            <input id="logo" placeholder="public/... ou envie ao lado" class="w-full px-3 py-2 border rounded-lg text-sm">
+            <button type="button" id="modalUploadLogoBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm shrink-0">
+              📷 Enviar
+            </button>
+            <input type="file" id="modalLogoFile" accept="image/*" class="hidden">
+          </div>
+        </div>
+
         <div class="md:col-span-2"><label class="text-sm">Link</label><input id="link" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
         <div><label class="text-sm">Botão Primário</label><input id="btnPrimario" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
         <div><label class="text-sm">Botão Secundário</label><input id="btnSecundario" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
@@ -106,11 +122,24 @@
         <div class="md:col-span-2" id="perfis-chips">
           <label class="text-sm mb-2 block">Perfis rápidos</label>
           <div class="flex flex-wrap gap-3 text-sm">
-            <label class="inline-flex items-center gap-2"><input type="checkbox" data-chip="perfil" value="negativado" class="h-4 w-4"> Negativado</label>
-            <label class="inline-flex items-center gap-2"><input type="checkbox" data-chip="perfil" value="score-baixo" class="h-4 w-4"> Score baixo</label>
-            <label class="inline-flex items-center gap-2"><input type="checkbox" data-chip="perfil" value="aposentado" class="h-4 w-4"> Aposentado</label>
-            <label class="inline-flex items-center gap-2"><input type="checkbox" data-chip="perfil" value="bolsafamilia" class="h-4 w-4"> Bolsa Família</label>
-            <label class="inline-flex items-center gap-2"><input type="checkbox" data-chip="perfil" value="autonomo" class="h-4 w-4"> Autônomo</label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="negativado" class="h-4 w-4"> Negativado
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="score-baixo" class="h-4 w-4"> Score baixo
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="score-regular" class="h-4 w-4"> Score regular
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="aposentado" class="h-4 w-4"> Aposentado
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="bolsafamilia" class="h-4 w-4"> Bolsa Família
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="checkbox" data-chip="perfil" value="autonomo" class="h-4 w-4"> Autônomo
+            </label>
           </div>
           <p class="text-xs text-gray-500 mt-2">Marque/desmarque e eu preencho o campo acima (CSV) pra você.</p>
         </div>
@@ -221,7 +250,6 @@
   </div>
 
   <script>
-    // Supabase mantido para Autenticação e Regras (rules)
     const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
     const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -232,25 +260,85 @@
 
     let items = [];
     let sortableInstance = null;
+    let currentCardForLogo = null; // Guarda qual oferta está trocando a imagem pelo card
 
     // Helpers de formatação
+    const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
     const normCsv = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean).join(',');
     const csvToArr = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean);
     const arrToCsv = (arr = []) => arr.filter(Boolean).join(',');
     const normLines = (txt = '') => String(txt).split('\n').map(s => s.trim()).filter(Boolean).join('\n');
+
+    const toArrayLines = (v) => {
+      if (Array.isArray(v)) return v;
+      if (typeof v === 'string') {
+        try {
+          const j = JSON.parse(v);
+          if (Array.isArray(j)) return j;
+        } catch (e) {}
+        return v.split('\n').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+
     const displayCsv = (v) => Array.isArray(v) ? v.join(', ') : (v || '');
     const editCsv = (v) => Array.isArray(v) ? v.join(',') : (v || '');
-    const displayLines = (v) => Array.isArray(v) ? v.join('\n') : (v || '');
+    const displayLines = (v) => Array.isArray(v) ? v.join('\n') : toArrayLines(v).join('\n');
 
-    // Normaliza o retorno do D1 (converte ativo 1/0 para true/false)
-    const normalizeProduct = (p) => ({
+    const isAdItem = (p) => {
+      const tipo = String(p?.tipo || '').toLowerCase().trim();
+      const tag  = String(p?.tag  || '');
+      const slot = String(p?.slot || p?.link || '').toString().trim();
+      return tipo.includes('anuncio') || tag.includes('ca-pub') || /^\d+$/.test(slot);
+    };
+
+    const normalizeProduct = (p, source) => ({
       ...p,
       ativo: p.ativo !== false && p.ativo !== 0 && p.ativo !== '0',
-      priority_order: Number(p.priority_order) || 0
+      priority_order: Number(p.priority_order) || 0,
+      _source: source, // 'd1' | 'supabase' | 'both'
+      _d1_id: source === 'd1' ? p.id : null,
+      _supa_id: source === 'supabase' ? p.id : null,
+      _uid: `${source}_${p.id}`
     });
 
+    // Converte e otimiza o arquivo de imagem para caber perfeitamente na oferta (PNG/WebP leve)
+    function fileToOptimizedDataUrl(file, maxW = 280, maxH = 140) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+        reader.onload = (ev) => {
+          // Se for SVG, retorna direto
+          if (file.type === 'image/svg+xml') {
+            resolve(ev.target.result);
+            return;
+          }
+          const img = new Image();
+          img.onerror = () => resolve(ev.target.result);
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxW || h > maxH) {
+              const ratio = Math.min(maxW / w, maxH / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     function renderPerfisChips(perfisCsv = '') {
-      const set = new Set(csvToArr(perfisCsv.toLowerCase()));
+      const set = new Set(csvToArr(String(perfisCsv).toLowerCase()));
       document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
         cb.checked = set.has(cb.value);
       });
@@ -261,40 +349,62 @@
       $('perfis').value = arrToCsv(selected);
     }
 
-    const cardHTML = (p) => `
-      <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start ${!p.ativo ? 'opacity-60' : ''}" data-id="${p.id}">
-        <div class="cursor-move select-none px-2 py-1 bg-gray-100 rounded" title="Arrastar para reordenar">⇅</div>
-        <img src="${p.logo}" class="w-16 h-10 object-contain" onerror="this.onerror=null;this.src='https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';">
+    // Badge indicando se o produto está no D1, Supabase ou Ambos
+    function sourceBadgeHTML(p) {
+      if (p._source === 'both') return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">D1 + Supa</span>`;
+      if (p._source === 'd1') return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 font-medium">Cloudflare</span>`;
+      return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">Supabase</span>`;
+    }
+
+    const cardHTML = (p) => {
+      const isAd = isAdItem(p);
+      const displayId = p._supa_id ?? p._d1_id ?? p.id;
+      return `
+      <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start ${!p.ativo ? 'opacity-60' : ''}" data-uid="${p._uid}">
+        <div class="cursor-move select-none px-2 py-1 bg-gray-100 rounded" title="Arrastar">⇅</div>
+
+        <!-- Clicar na imagem também abre o seletor para trocar a imagem desta oferta -->
+        <div class="change-logo cursor-pointer group relative shrink-0" title="Clique para trocar a imagem desta oferta">
+          <img src="${fixLogo(p.logo)}" class="w-16 h-12 object-contain border rounded p-1 bg-gray-50 group-hover:opacity-75 transition"
+               onerror="this.onerror=null;this.src='https://placehold.co/64x40/e2e8f0/4a5568?text=${isAd ? 'AdSense' : 'Logo'}';">
+          <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold bg-black/50 text-white opacity-0 group-hover:opacity-100 rounded transition">Trocar</span>
+        </div>
+
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-2">
-            <h4 class="font-semibold truncate">${p.titulo}</h4>
+            <h4 class="font-semibold truncate">${p.titulo || (isAd ? 'Bloco AdSense' : 'Sem título')}</h4>
             <div class="flex items-center gap-1 shrink-0">
+              ${sourceBadgeHTML(p)}
+              ${isAd ? `<span class="text-[11px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">Anúncio</span>` : ''}
               <span class="text-[11px] px-2 py-0.5 rounded-full ${!p.ativo ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}">
                 ${!p.ativo ? 'Inativo' : 'Ativo'}
               </span>
-              ${p.tag ? `<span class="text-[11px] px-2 py-0.5 rounded bg-gray-100">${p.tag}</span>` : ''}
             </div>
           </div>
-          <p class="text-xs text-gray-500 mt-0.5">ID #${p.id} • ordem ${p.priority_order} • ${displayCsv(p.tipo)}</p>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm">Abrir</a>
-            <button class="edit text-sm px-2 py-1 border rounded hover:bg-gray-50">Editar</button>
-            <button class="duplicate text-sm px-2 py-1 border rounded hover:bg-gray-50">Copiar</button>
-            <button class="toggle-active text-sm px-2 py-1 border rounded hover:bg-gray-50">${!p.ativo ? 'Ativar' : 'Desativar'}</button>
-            <button class="delete text-sm px-2 py-1 border rounded text-red-600 hover:bg-red-50">Excluir</button>
+          <p class="text-xs text-gray-500 mt-0.5">ID #${displayId} • ordem ${p.priority_order} • ${displayCsv(p.tipo)}</p>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm mr-1 self-center">Abrir</a>
+            <button class="change-logo text-xs px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded hover:bg-purple-100 font-medium" title="Trocar a imagem/favicon desta oferta">📷 Imagem</button>
+            <button class="edit text-xs px-2 py-1 border rounded hover:bg-gray-50">Editar</button>
+            <button class="duplicate text-xs px-2 py-1 border rounded hover:bg-gray-50">Copiar</button>
+            <button class="toggle-active text-xs px-2 py-1 border rounded hover:bg-gray-50">${!p.ativo ? 'Ativar' : 'Desativar'}</button>
+            <button class="delete text-xs px-2 py-1 border rounded text-red-600 hover:bg-red-50">Excluir</button>
           </div>
         </div>
       </div>`;
+    };
 
     const openModal = (p = {}) => {
-      $('modalTitle').textContent = p.id ? 'Editar Produto' : 'Novo Produto';
-      ['id', 'titulo', 'tag', 'tagClass', 'logo', 'link', 'btnPrimario', 'btnSecundario', 'priority_order']
+      $('modalTitle').textContent = p._uid ? 'Editar Produto' : 'Novo Produto';
+      $('uid').value = p._uid || '';
+      ['titulo', 'tag', 'tagClass', 'logo', 'link', 'btnPrimario', 'btnSecundario', 'priority_order']
         .forEach(k => $(k).value = p[k] ?? '');
+      $('modalLogoPreview').src = p.logo ? fixLogo(p.logo) : 'https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';
       $('tipo').value = editCsv(p.tipo);
       $('perfis').value = editCsv(p.perfis);
       renderPerfisChips($('perfis').value);
       $('vantagens').value = displayLines(p.vantagens);
-      $('ativo').checked = p.id ? Boolean(p.ativo) : true;
+      $('ativo').checked = p._uid ? Boolean(p.ativo) : true;
       document.body.style.overflow = 'hidden';
       modal.classList.remove('hidden');
     };
@@ -307,69 +417,212 @@
     $('close').onclick = closeModal;
     $('add').onclick = () => openModal({});
 
+    $('logo').addEventListener('input', (e) => {
+      $('modalLogoPreview').src = e.target.value ? fixLogo(e.target.value) : 'https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';
+    });
+
+    // Upload de imagem dentro do Modal
+    $('modalUploadLogoBtn').onclick = () => $('modalLogoFile').click();
+    $('modalLogoFile').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await fileToOptimizedDataUrl(file);
+        $('logo').value = dataUrl;
+        $('modalLogoPreview').src = dataUrl;
+      } catch (err) {
+        alert('Erro ao carregar imagem: ' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    };
+
     document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
       cb.addEventListener('change', syncPerfisFromChips);
     });
 
     $('perfis').addEventListener('input', (e) => renderPerfisChips(e.target.value));
 
-    // 1. Carregar Produtos via Cloudflare Worker
-    const load = async () => {
-      statusEl.textContent = 'Carregando...';
-      try {
-        const res = await fetch('/api/products?all=true');
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        items = (Array.isArray(data) ? data : []).map(normalizeProduct);
-        listEl.innerHTML = items.map(cardHTML).join('');
-        statusEl.textContent = `Total: ${items.length} produtos`;
-      } catch (err) {
-        statusEl.textContent = 'Erro ao carregar: ' + err.message;
-        return;
+    // Função auxiliar que atualiza uma oferta onde ela existir (D1, Supabase ou ambos)
+    async function updateOfferEverywhere(item, updatedFields) {
+      const payload = {
+        titulo: updatedFields.titulo ?? item.titulo ?? '',
+        tag: updatedFields.tag ?? item.tag ?? '',
+        tagClass: updatedFields.tagClass !== undefined ? updatedFields.tagClass : (item.tagClass || null),
+        logo: updatedFields.logo ?? item.logo ?? '',
+        link: updatedFields.link ?? item.link ?? '',
+        btnPrimario: updatedFields.btnPrimario ?? item.btnPrimario ?? 'Acessar',
+        btnSecundario: updatedFields.btnSecundario ?? item.btnSecundario ?? 'Detalhes',
+        vantagens: updatedFields.vantagens !== undefined ? updatedFields.vantagens : displayLines(item.vantagens),
+        tipo: updatedFields.tipo !== undefined ? updatedFields.tipo : editCsv(item.tipo),
+        perfis: updatedFields.perfis !== undefined ? updatedFields.perfis : editCsv(item.perfis),
+        ativo: updatedFields.ativo !== undefined ? updatedFields.ativo : item.ativo,
+        priority_order: updatedFields.priority_order !== undefined ? Number(updatedFields.priority_order) : Number(item.priority_order) || 0
+      };
+
+      const errors = [];
+
+      // Se existe no D1, atualiza no D1
+      if (item._d1_id) {
+        try {
+          const res = await fetch(`/api/products/${item._d1_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) errors.push('D1: ' + (await res.text()));
+        } catch (err) {
+          errors.push('D1: ' + err.message);
+        }
       }
 
-      // Editar
+      // Se existe no Supabase, atualiza no Supabase
+      if (item._supa_id) {
+        try {
+          const { error } = await _supabase
+            .from('products')
+            .update(payload)
+            .eq('id', item._supa_id);
+          if (error) errors.push('Supabase: ' + error.message);
+        } catch (err) {
+          errors.push('Supabase: ' + err.message);
+        }
+      }
+
+      if (errors.length && (!item._d1_id || !item._supa_id || errors.length === 2)) {
+        throw new Error(errors.join(' | '));
+      }
+    }
+
+    // =========================================================================
+    // 1. LOAD HÍBRIDO (D1 + SUPABASE) EXATAMENTE COMO SOLICITADO
+    // =========================================================================
+    const load = async () => {
+      statusEl.textContent = 'Carregando produtos da Cloudflare (D1) e Supabase...';
+      let d1Products = [];
+      let supabaseProducts = [];
+
+      // 1) Busca no D1 (Cloudflare)
+      try {
+        const res = await fetch('/api/products?all=true');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) d1Products = data.map(p => normalizeProduct(p, 'd1'));
+        }
+      } catch (e) {
+        console.warn('D1 falhou:', e);
+      }
+
+      // 2) Busca no Supabase (com fallback direto caso a sessão bloqueie RLS)
+      try {
+        const { data, error } = await _supabase
+          .from('products')
+          .select('*')
+          .order('priority_order', { ascending: true });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          supabaseProducts = data.map(p => normalizeProduct(p, 'supabase'));
+        } else {
+          // Fallback REST direto usando a chave pública (igual ao index.html)
+          const restRes = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=priority_order.asc`, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+          });
+          if (restRes.ok) {
+            const restData = await restRes.json();
+            if (Array.isArray(restData)) {
+              supabaseProducts = restData.map(p => normalizeProduct(p, 'supabase'));
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase falhou:', e);
+      }
+
+      // 3) Junta os dois (D1 + Supabase) sem perder anúncios nem duplicar ofertas iguais
+      const byKey = new Map();
+      items = [];
+
+      for (const p of [...d1Products, ...supabaseProducts]) {
+        const titleClean = (p.titulo || '').toLowerCase().trim();
+        // Se for bloco AdSense ou sem título, usa uma chave única para não descartar
+        const key = (titleClean && !isAdItem(p))
+          ? `title:${titleClean}`
+          : `unique:${p._source}_${p.id}_${p.link || ''}`;
+
+        if (!byKey.has(key)) {
+          byKey.set(key, p);
+          items.push(p);
+        } else {
+          // Já existe com o mesmo título na outra base: vincula os IDs das duas bases!
+          const existing = byKey.get(key);
+          existing._source = 'both';
+          if (p._d1_id) existing._d1_id = p._d1_id;
+          if (p._supa_id) existing._supa_id = p._supa_id;
+        }
+      }
+
+      // Ordena respeitando priority_order
+      items.sort((a, b) => (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0));
+
+      listEl.innerHTML = items.map(cardHTML).join('');
+      statusEl.textContent = `Total: ${items.length} produtos (${d1Products.length} na Cloudflare D1 • ${supabaseProducts.length} no Supabase)`;
+
+      // Listener: Trocar Imagem/Favicon individual direto no card
+      listEl.querySelectorAll('.change-logo').forEach(btn => {
+        btn.onclick = (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (!p) return;
+          currentCardForLogo = p;
+          $('cardLogoInput').click();
+        };
+      });
+
+      // Listener: Editar
       listEl.querySelectorAll('.edit').forEach(btn => {
         btn.onclick = (e) => {
-          const id = e.target.closest('[data-id]').dataset.id;
-          const p = items.find(x => String(x.id) === String(id));
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
           if (p) openModal(p);
         };
       });
 
-      // Ativar / Desativar (via Worker PUT)
+      // Listener: Ativar / Desativar
       listEl.querySelectorAll('.toggle-active').forEach(btn => {
         btn.onclick = async (e) => {
-          const id = e.target.closest('[data-id]').dataset.id;
-          const p = items.find(x => String(x.id) === String(id));
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
           if (!p) return;
 
           try {
-            statusEl.textContent = 'Atualizando status...';
-            const res = await fetch(`/api/products/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...p, ativo: !p.ativo })
-            });
-            if (!res.ok) throw new Error(await res.text());
+            statusEl.textContent = `Alterando status de "${p.titulo}"...`;
+            await updateOfferEverywhere(p, { ativo: !p.ativo });
             await load();
           } catch (err) {
-            alert('Erro ao atualizar status: ' + err.message);
+            alert('Erro ao alterar status: ' + err.message);
           }
         };
       });
 
-      // Excluir (via Worker DELETE)
+      // Listener: Excluir
       listEl.querySelectorAll('.delete').forEach(btn => {
         btn.onclick = async (e) => {
-          const id = e.target.closest('[data-id]').dataset.id;
-          const p = items.find(x => String(x.id) === String(id));
-          if (!p || !confirm(`Excluir "${p.titulo}"? Esta ação não pode ser desfeita.`)) return;
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (!p || !confirm(`Excluir "${p.titulo}"?`)) return;
 
           try {
-            statusEl.textContent = 'Excluindo...';
-            const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error(await res.text());
+            statusEl.textContent = `Excluindo "${p.titulo}"...`;
+            if (p._d1_id) {
+              await fetch(`/api/products/${p._d1_id}`, { method: 'DELETE' }).catch(() => {});
+            }
+            if (p._supa_id) {
+              const { error } = await _supabase.from('products').delete().eq('id', p._supa_id);
+              if (error) throw error;
+            }
             await load();
           } catch (err) {
             alert('Erro ao excluir: ' + err.message);
@@ -377,18 +630,18 @@
         };
       });
 
-      // Duplicar (via Worker POST)
+      // Listener: Copiar (Duplicar)
       listEl.querySelectorAll('.duplicate').forEach(btn => {
         btn.onclick = async (e) => {
-          const id = e.target.closest('[data-id]').dataset.id;
-          const src = items.find(x => String(x.id) === String(id));
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const src = items.find(x => x._uid === uid);
           if (!src) return;
 
           const nextPriority = items.reduce((m, p) => Math.max(m, Number(p.priority_order) || 0), -1) + 1;
           const payload = {
             titulo: (src.titulo || 'Sem título') + ' (cópia)',
             tag: src.tag || '',
-            tagClass: src.tagClass || '',
+            tagClass: src.tagClass || null,
             logo: src.logo || '',
             link: src.link || '',
             btnPrimario: src.btnPrimario || 'Acessar',
@@ -400,14 +653,19 @@
             priority_order: nextPriority
           };
 
+          statusEl.textContent = 'Copiando...';
           try {
-            statusEl.textContent = 'Copiando...';
-            const res = await fetch('/api/products', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error(await res.text());
+            if (src._supa_id) {
+              const { error } = await _supabase.from('products').insert(payload).select();
+              if (error) throw error;
+            }
+            if (src._d1_id) {
+              await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              }).catch(() => {});
+            }
             statusEl.textContent = 'Produto copiado!';
             await load();
           } catch (err) {
@@ -416,7 +674,6 @@
         };
       });
 
-      // Inicializa Sortable apenas uma vez
       if (!sortableInstance) {
         sortableInstance = new Sortable(listEl, {
           animation: 150,
@@ -428,17 +685,38 @@
       fillPicker();
     };
 
-    // 2. Salvar Produto (POST / PUT via Worker)
+    // Handler para o upload de imagem individual clicando direto no Card da oferta
+    $('cardLogoInput').onchange = async (e) => {
+      const file = e.target.files[0];
+      const targetOffer = currentCardForLogo;
+      e.target.value = '';
+      if (!file || !targetOffer) return;
+
+      try {
+        statusEl.textContent = `Atualizando imagem de "${targetOffer.titulo}"...`;
+        const dataUrl = await fileToOptimizedDataUrl(file);
+        await updateOfferEverywhere(targetOffer, { logo: dataUrl });
+        statusEl.textContent = `Imagem de "${targetOffer.titulo}" atualizada com sucesso!`;
+        await load();
+      } catch (err) {
+        alert('Erro ao atualizar imagem da oferta: ' + err.message);
+        statusEl.textContent = 'Erro ao atualizar imagem.';
+      } finally {
+        currentCardForLogo = null;
+      }
+    };
+
+    // 2. Salvar Produto no Modal (Cria ou Edita em D1 e/ou Supabase)
     $('save').onclick = async () => {
       const btn = $('save');
       const original = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = 'Salvando...';
+      btn.innerHTML = 'Wait...';
 
       const payload = {
         titulo: $('titulo').value.trim(),
         tag: $('tag').value.trim(),
-        tagClass: $('tagClass').value.trim() || '',
+        tagClass: $('tagClass').value.trim() || null,
         logo: $('logo').value.trim(),
         link: $('link').value.trim(),
         btnPrimario: $('btnPrimario').value.trim() || 'Acessar',
@@ -450,16 +728,31 @@
         priority_order: Number($('priority_order').value) || 0
       };
 
-      const id = $('id').value;
+      const uid = $('uid').value;
       try {
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/products/${id}` : '/api/products';
-        const res = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(await res.text());
+        if (uid) {
+          const existing = items.find(x => x._uid === uid);
+          if (!existing) throw new Error('Oferta não encontrada na lista.');
+          await updateOfferEverywhere(existing, payload);
+        } else {
+          // Novo produto: salva no Supabase e na Cloudflare D1
+          let savedSomewhere = false;
+          try {
+            const { error } = await _supabase.from('products').insert(payload).select();
+            if (!error) savedSomewhere = true;
+          } catch (e) {}
+
+          try {
+            const res = await fetch('/api/products', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) savedSomewhere = true;
+          } catch (e) {}
+
+          if (!savedSomewhere) throw new Error('Não foi possível salvar no Supabase nem no D1.');
+        }
 
         btn.innerHTML = 'Salvo!';
         setTimeout(() => {
@@ -469,83 +762,76 @@
           load();
         }, 500);
       } catch (err) {
-        alert('Erro ao salvar: ' + err.message);
+        alert('Erro: ' + (err?.message || err));
         btn.innerHTML = original;
         btn.disabled = false;
       }
     };
 
-    // 3. Salvar Ordem (Atualiza prioridades no D1 via Worker)
+    // 3. Salvar Ordem (Atualiza no Supabase e no D1)
     $('saveOrder').onclick = async () => {
-      const btn = $('saveOrder');
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = 'Salvando...';
-      statusEl.textContent = 'Salvando nova ordem...';
+      const uids = Array.from(listEl.children).map(el => el.dataset.uid);
+      statusEl.textContent = 'Salvando ordem...';
 
       try {
-        const ids = Array.from(listEl.children).map(el => String(el.dataset.id));
-        const requests = [];
+        const supaUpdates = [];
+        const d1Promises = [];
 
-        ids.forEach((id, idx) => {
-          const p = items.find(x => String(x.id) === id);
-          // Só envia requisição se a posição do item realmente mudou
-          if (p && Number(p.priority_order) !== idx) {
-            requests.push(
-              fetch(`/api/products/${id}`, {
+        uids.forEach((uid, idx) => {
+          const p = items.find(x => x._uid === uid);
+          if (!p) return;
+          if (p._supa_id) {
+            supaUpdates.push({ id: p._supa_id, priority_order: idx });
+          }
+          if (p._d1_id && Number(p.priority_order) !== idx) {
+            d1Promises.push(
+              fetch(`/api/products/${p._d1_id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...p, priority_order: idx })
-              })
+              }).catch(() => {})
             );
           }
         });
 
-        await Promise.all(requests);
-        statusEl.textContent = 'Ordem salva com sucesso!';
+        if (supaUpdates.length) {
+          const { error } = await _supabase.from('products').upsert(supaUpdates, { onConflict: 'id' });
+          if (error) throw error;
+        }
+        if (d1Promises.length) {
+          await Promise.all(d1Promises);
+        }
+
+        statusEl.textContent = 'Ordem salva!';
         await load();
       } catch (err) {
-        statusEl.textContent = 'Erro ao salvar ordem: ' + err.message;
-      } finally {
-        btn.innerHTML = original;
-        btn.disabled = false;
+        statusEl.textContent = 'Erro ao salvar: ' + (err?.message || err);
       }
     };
 
-    // 4. Upload de Favicon (R2 via Worker)
+    // 4. Upload da Favicon geral do site
     $('uploadFavicon').onclick = () => $('faviconInput').click();
 
     $('faviconInput').onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-
-      const btn = $('uploadFavicon');
-      const originalText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Enviando...';
-      statusEl.textContent = 'Enviando novo favicon...';
-
+      const form = new FormData();
+      form.append('file', file);
+      statusEl.textContent = 'A enviar favicon do site...';
       try {
-        const form = new FormData();
-        form.append('file', file);
         const res = await fetch('/api/favicon', { method: 'POST', body: form });
-        if (!res.ok) throw new Error(await res.text());
-
-        statusEl.textContent = 'Favicon atualizado com sucesso!';
-        // Atualiza o favicon da página na hora (cache busting)
-        const favLink = $('pageFavicon');
-        if (favLink) favLink.href = `/api/favicon?t=${Date.now()}`;
+        statusEl.textContent = res.ok ? 'Favicon do site atualizada!' : 'Erro no upload';
+        if (res.ok && $('pageFavicon')) {
+          $('pageFavicon').href = `/api/favicon?t=${Date.now()}`;
+        }
       } catch (err) {
-        statusEl.textContent = 'Erro no upload do favicon: ' + err.message;
-        alert('Erro no upload: ' + err.message);
+        statusEl.textContent = 'Erro no upload: ' + err.message;
       } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
-        e.target.value = ''; // Limpa o input para permitir enviar o mesmo arquivo novamente
+        e.target.value = '';
       }
     };
 
-    // Autenticação (Supabase)
+    // 5. Login e Sessão
     $('logout').onclick = async () => {
       await _supabase.auth.signOut();
       app.classList.add('hidden');
@@ -578,7 +864,7 @@
       }
     })();
 
-    // Regras de Resultados
+    // 6. Regras de Resultados
     const rulesModal = $('rulesModal');
     const rulesPerfil = $('rulesPerfil');
     const idsA = $('idsA'), idsB = $('idsB'), pesoA = $('pesoA'), limiteNeg = $('limiteNeg');
@@ -586,13 +872,14 @@
     const pickerProduto = $('pickerProduto'), addTarget = $('addTarget');
     const openRulesBtn = $('openRules'), rulesClose = $('rulesClose'), rulesSave = $('rulesSave');
 
-    const show = (el) => el.classList.remove('hidden');
-    const hide = (el) => el.classList.add('hidden');
-    const arrCsv = (v) => (v || '').split(',').map(s => s.trim()).filter(Boolean);
-    const csvJoin = (a) => (a || []).filter(Boolean).join(',');
+    function show(el) { el.classList.remove('hidden'); }
+    function hide(el) { el.classList.add('hidden'); }
+    function arrCsv(v) { return (v || '').split(',').map(s => s.trim()).filter(Boolean); }
+    function csvJoin(a) { return (a || []).filter(Boolean).join(','); }
 
     function toggleRulesBlocks() {
-      if (rulesPerfil.value === 'negativado') {
+      const pf = rulesPerfil.value;
+      if (pf === 'negativado') {
         show($('rulesNegativado'));
         hide($('rulesOutros'));
         addTarget.classList.remove('hidden');
@@ -609,10 +896,17 @@
       renderRulesPreview();
     });
 
+    function getRealId(p) {
+      return p._supa_id ?? p._d1_id ?? p.id;
+    }
+
     function fillPicker() {
       if (!pickerProduto) return;
       pickerProduto.innerHTML = '<option value="">Selecione um produto…</option>' +
-        items.map(p => `<option value="${p.id}">#${p.id} — ${p.titulo}</option>`).join('');
+        items.map(p => {
+          const rid = getRealId(p);
+          return `<option value="${rid}">#${rid} — ${p.titulo}</option>`;
+        }).join('');
     }
 
     $('addIdBtn').onclick = () => {
@@ -664,9 +958,9 @@
       }
 
       const by = (perfil, variant = null) => data?.find(r => r.perfil === perfil && r.variant === variant);
+
       const rA = by('negativado', 'A');
       const rB = by('negativado', 'B');
-
       if (rA) {
         idsA.value = rA.product_ids || '';
         limiteNeg.value = rA.limit_count || 12;
@@ -731,13 +1025,18 @@
 
     function renderRulesPreview() {
       const pf = rulesPerfil.value;
+
       const mk = (idsCsv, listName) => {
         const ids = arrCsv(idsCsv);
         if (!ids.length) return '<p class="text-xs text-gray-500">Sem IDs.</p>';
         return ids.map(id => {
           const found = !!productById(id);
           const cls = 'badge' + (found ? '' : ' badge-miss');
-          return `<span class="${cls}" data-id="${id}" data-list="${listName || ''}">${labelFor(id)} <span class="x" title="remover">×</span></span>`;
+          return `
+            <span class="${cls}" data-id="${id}" data-list="${listName || ''}">
+              ${labelFor(id)} <span class="x" title="remover">×</span>
+            </span>
+          `;
         }).join('');
       };
 
@@ -758,21 +1057,24 @@
 
       if (rulesPerfil.value === 'negativado') {
         const input = (list === 'B') ? idsB : idsA;
-        input.value = csvJoin(arrCsv(input.value).filter(v => v !== id));
+        const arr = arrCsv(input.value).filter(v => v !== id);
+        input.value = csvJoin(arr);
       } else {
-        idsOutros.value = csvJoin(arrCsv(idsOutros.value).filter(v => v !== id));
+        const arr = arrCsv(idsOutros.value).filter(v => v !== id);
+        idsOutros.value = csvJoin(arr);
       }
       renderRulesPreview();
     });
 
     function resolveCsvToRealIds(csv) {
-      return csvJoin(arrCsv(csv).map(tok => {
+      const arr = arrCsv(csv);
+      return csvJoin(arr.map(tok => {
         const n = Number(tok);
         if (!isNaN(n) && n > 0) {
           const byId = productById(n);
-          if (byId) return String(byId.id);
+          if (byId) return String(getRealId(byId));
           const idx = n - 1;
-          if (idx >= 0 && idx < items.length) return String(items[idx].id);
+          if (idx >= 0 && idx < items.length) return String(getRealId(items[idx]));
         }
         return String(tok);
       }));
@@ -781,7 +1083,7 @@
     [idsA, idsB, idsOutros].forEach(el => el && el.addEventListener('input', renderRulesPreview));
 
     function productById(id) {
-      return items.find(x => String(x.id) === String(id));
+      return items.find(x => String(x._supa_id) === String(id) || String(x._d1_id) === String(id) || String(x.id) === String(id));
     }
 
     function labelFor(id) {
