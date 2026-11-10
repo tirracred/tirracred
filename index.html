@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
-<head><link rel="icon" type="image/png" href="public/favincon.png"/>
-<link rel="preload" href="public/banner-1.png" as="image">
-<link rel="preload" href="public/banner3.png" as="image">
-<link rel="preload" href="public/banner2.png" as="image">
-
-
+<head>
+    <link rel="icon" type="image/png" href="public/favincon.png"/>
+    <link rel="preload" href="public/banner-1.png" as="image">
+    <link rel="preload" href="public/banner3.png" as="image">
+    <link rel="preload" href="public/banner2.png" as="image">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -17,50 +16,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0fdf4; /* Fundo verde claro */
-    }
+            background-color: #f0fdf4;
+        }
 
-/* Adicione este CSS para a animação do formulário */
+        #pagination { margin-bottom: 2.5rem; }
+        @media (min-width: 768px) { #pagination { margin-bottom: 4rem; } }
 
-
-#pagination { margin-bottom: 2.5rem; }
-@media (min-width: 768px) { #pagination { margin-bottom: 4rem; } }
-
-#pagination-top { margin-top: .5rem; margin-bottom: 2rem; }
-
-@media (min-width: 768px) { #pagination-top { margin-bottom: 2rem; } }
-
-
-
-    .form-viewport {
-        overflow-x: hidden; /* Esconde a parte do formulário que não está visível */
-        transition: height 0.4s ease-in-out; /* ADICIONE ESTA LINHA */
-
-    }
-
-    .form-track {
-        display: flex;
-        width: 200%; /* Largura total para comportar os 2 passos */
-        transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1); /* Animação suave */
-    }
-
-    .form-step {
-        width: 50%; /* Cada passo ocupa metade do 'track' */
-        padding: 0 0.5rem; /* Um pequeno espaçamento para evitar que os elementos toquem as bordas */
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem; /* Mantém o espaçamento 'space-y-6' do seu form */
-    }
-
-    /* Quando a classe é adicionada, o track desliza para a esquerda */
-    .form-track.step-2-active {
-        transform: translateX(-50%);
-    }
-
+        #pagination-top { margin-top: .5rem; margin-bottom: 2rem; }
+        @media (min-width: 768px) { #pagination-top { margin-bottom: 2rem; } }
 
         /* Estilos para o slider */
         input[type=range] {
@@ -75,7 +43,7 @@
             width: 100%;
             height: 8px;
             cursor: pointer;
-            background: #d1fae5; /* Verde mais claro */
+            background: #d1fae5;
             border-radius: 5px;
         }
         input[type=range]::-webkit-slider-thumb {
@@ -83,13 +51,13 @@
             height: 24px;
             width: 24px;
             border-radius: 50%;
-            background: #10b981; /* Verde principal */
+            background: #10b981;
             cursor: pointer;
             margin-top: -8px;
             box-shadow: 0 0 5px rgba(0,0,0,0.3);
             transition: transform 0.2s;
         }
-         input[type=range]::-webkit-slider-thumb:hover {
+        input[type=range]::-webkit-slider-thumb:hover {
             transform: scale(1.1);
         }
         input[type=range]::-moz-range-track {
@@ -107,21 +75,11 @@
             cursor: pointer;
             border: none;
         }
-        /* Animações */
-        .fade-in { animation: fadeIn 0.8s ease-in-out forwards; opacity: 0; }
-        .fade-in-delay-1 { animation-delay: 0.2s; }
-        .fade-in-delay-2 { animation-delay: 0.4s; }
-        .fade-in-delay-3 { animation-delay: 0.6s; }
-        
-        .slide-in-up { animation: slideInUp 0.6s ease-out forwards; opacity: 0; }
 
+        /* Animações */
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(50px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -130,8 +88,9 @@
         }
         .page-container.active {
             display: block;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-in-out;
         }
+
         /* Animação do carrossel de logos */
         .logo-carousel {
             overflow: hidden;
@@ -141,7 +100,7 @@
         }
         .logo-carousel-track {
             display: flex;
-            width: calc(200px * 16); /* 2x o número de logos para loop infinito */
+            width: calc(200px * 16);
             animation: scroll 40s linear infinite;
         }
         .logo-carousel-track:hover {
@@ -156,222 +115,40 @@
         }
         @keyframes scroll {
             0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-200px * 8)); } /* Metade da largura total */
+            100% { transform: translateX(calc(-200px * 8)); }
         }
 
         /* === AD CARDS (lista de produtos) === */
-
-        #product-list .ad-card{
-        background:#fff; border:1px solid #e5e7eb; border-radius:0.75rem;
-        box-shadow:0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-        padding:1.5rem;
+        #product-list .ad-card,
+        #results-grid .ad-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+            padding: 0.75rem;
         }
-        #product-list .ad-card{ padding:0.75rem; }                /* reduz padding */
-        #product-list .ad-card-inner{ display:block; width:100%; min-height:120px; }
-        @media (min-width:640px){
-        #product-list .ad-card-inner{ min-height:140px; }
+        #product-list .ad-card-inner,
+        #results-grid .ad-card-inner {
+            display: block;
+            width: 100%;
+            min-height: 120px;
         }
-        /* Selo “Anúncio” */
-        #product-list .ad-badge{
-        display:inline-block; font-size:.75rem; font-weight:700; margin-bottom:.75rem;
-        padding:.25rem .625rem; border-radius:9999px; background:#F3F4F6; color:#111827;
+        @media (min-width: 640px) {
+            #product-list .ad-card-inner,
+            #results-grid .ad-card-inner { min-height: 140px; }
         }
-        
-        </style>
+        #product-list .ad-badge,
+        #results-grid .ad-badge {
+            display: inline-block;
+            font-size: .75rem;
+            font-weight: 700;
+            margin-bottom: .75rem;
+            padding: .25rem .625rem;
+            border-radius: 9999px;
+            background: #F3F4F6;
+            color: #111827;
+        }
 
-<!-- [ADSENSE LOADER ÚNICO | HEAD] -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
-</head>
-<body class="bg-green-50 text-gray-800">
-
-   <!-- Alerta Topo (fixo) -->
-<div id="top-alert" class="fixed inset-x-0 top-0 z-[60] bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
-  Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
-</div>
-<!-- Espaçador para não “empurrar” o header -->
-<div id="top-alert-spacer" aria-hidden="true"></div>
-
-    <!-- Header -->
-
-<header id="main-header" class="bg-white shadow-md sticky z-50" style="top: var(--alert-h, 0px);">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-
-            <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow">
-                <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
-                    <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
-                </a>
-            </div>
-
-            <!-- Desktop Navigation -->
-             
-                <nav class="hidden md:flex md:space-x-8">
-                <a href="index.html" onclick="showPage('emprestimos-page')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos 🤑</a>
-                <!-- Adicione a classe 'scroll-toggle' aqui -->
-                <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito 💳</a>
-                <!-- Adicione a classe 'scroll-toggle' aqui -->
-                <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Limpar Nome 🧹</a>
-                <a href="https://www.youtube.com/@tirracred"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-gray-600 hover:text-green-600 font-medium transition-colors">
-                YouTube 📺
-                </a>            </nav>
-
-            <!-- Desktop CTttA -->
-            <a id="btn-chat-mobile" href="javascript:void(0)" class="whatsapp-outline-button hidden md:flex items-center justify-center">
-    <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
-        <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
-    </svg>
-    <span>Atendimento</span>
-</a>
-            
-            <!-- Mobile: WhatsApp Icon + Menu Button -->
-            <div class="md:hidden flex items-center space-x-4">
-
-
-    <a id="btn-chat-footer" href="javascript:void(0)" class="transition-transform transform hover:scale-110">
-       <img src="public/whatsapp logo.webp" alt="Falar com Isabel" class="h-8 w-auto">
-    </a>
-
-    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-    </button>
-</div>
-        </div>
-    </div>
-    <!-- Mobile Menu -->
-   <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
-    <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-    <a href="#home-filters" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-    <a href="#renegociacao" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
-    <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
-    <div class="px-4 py-3 border-t">
-<a id="btn-chat-footer" href="javascript:void(0)" class="whatsapp-outline-button mt-3 inline-flex">
-  <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
-    <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
-  </svg>
-  <span>Falar com a Isabel</span>
-</a>    </div>
-</div>
-    
-</header>
-
-
-    <!-- Conteúdo da Página Inicial -->
-    <div id="page-home" class="page-container active">
-        <main>
-            
-            <!-- Hero e Simulador -->
-         <section id="hero-section" class="relative text-white py-16 sm:py-24">
-    <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('public/banner-1.png'); z-index: -1;"></div>
-
-    <div class="relative z-10 container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
-        <div class="text-center lg:text-left">
-            <h1 id="hero-title" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                Compare e contrate o produto financeiro certo para você.
-            </h1>
-            <p id="hero-subtitle" class="text-lg md:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0">
-                Soluções prontas para te ajudar a retomar o controle da sua vida financeira.
-            </p>
-        </div>
-
-        <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 shadow-2xl text-gray-800 w-full max-w-lg mx-auto">
-            <h2 class="text-2xl font-bold text-center mb-6">Simule seu empréstimo agora</h2>
-
-    <form id="leadFormHome" novalidate>
-    <fieldset id="form-step-1" class="space-y-6">
-        <div>
-            <label for="valorHome" class="block text-sm font-medium text-gray-700">Valor desejado</label>
-            <div class="flex items-center justify-between mt-1 text-sm sm:text-base">
-                <span class="text-gray-500" id="valor-min-label">R$ 500</span>
-                <span id="valor-display-home" class="text-lg sm:text-xl font-bold text-green-600">R$ 1.000</span>
-                <span class="text-gray-500" id="valor-max-label">R$ 50.000</span>
-            </div>
-            <input id="valorHome" name="valor" type="range" min="500" max="50000" value="1000" step="100" class="w-full">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Número de parcelas</label>
-            <div class="grid grid-cols-3 gap-2">
-                <button type="button" data-parcelas="12" class="parcela-btn-home bg-green-500 text-white p-2 sm:p-3 rounded-lg text-sm font-medium">12x</button>
-                <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 sm:p-3 rounded-lg text-sm font-medium">24x</button>
-                <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-200 text-gray-700 p-2 sm:p-3 rounded-lg text-sm font-medium">36x</button>
-            </div>
-            <input type="hidden" name="parcelas" id="parcelasHome" value="12">
-        </div>
-
-        <div class="space-y-4">
-            <label class="flex items-center cursor-pointer">
-                <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                <span class="ml-3 text-gray-700 font-medium">Estou Negativado!</span>
-            </label>
-            <label class="flex items-center cursor-pointer">
-                <input type="checkbox" name="aposentado_inss" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                <span class="ml-3 text-gray-700 font-medium">Sou Aposentado/Pensionista!</span>
-            </label>
-            <label class="flex items-center cursor-pointer">
-                <input type="checkbox" name="bolsafamilia" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                <span class="ml-3 text-gray-700 font-medium">Recebo Bolsa Família!</span>
-            </label>
-        </div>
-
-        <button id="next-step-btn" type="button" class="w-full rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
-            Continuar
-        </button>
-    </fieldset>
-
-    <fieldset id="form-step-2" class="hidden space-y-4">
-        <input id="nomeInput" name="nome" placeholder="Nome completo (Nome e Sobrenome)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
-
-        <div>
-            <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="14">
-            <p id="cpf-message" class="text-xs mt-1 h-4"></p>
-            <p id="facio-status" class="text-xs mt-1 h-4 text-gray-500"></p>
-        </div>
-
-        <!-- Card Facio (atualizado) -->
-        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50 p-4 shadow-md transition-all">
-            <div class="flex items-center justify-between mb-2">
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                    ✨ CPF Disponível na Facio
-                </span>
-                <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
-            </div>
-            <p id="facio-offer-desc" class="text-sm font-bold text-gray-800 mb-1"></p>
-            <p id="facio-offer-details" class="text-xs text-gray-700 mb-2"></p>
-            <p class="text-xs text-gray-600">
-                Preencha WhatsApp e E-mail e clique em <strong>Contratar Agora na Facio</strong>.
-            </p>
-        </div>
-
-        <input id="whatsapp" name="whatsapp" placeholder="WhatsApp com DDD (ex: 11 99999-9999)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="15">
-        <input id="emailInput" name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
-
-        <div class="flex flex-col gap-3 pt-2">
-            <button id="btn-facio-direct" type="button" class="hidden w-full order-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-base font-bold text-white shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2">
-                <span>⚡ Contratar Agora na Facio</span>
-            </button>
-
-            <button id="submit-btn-home" type="submit" class="w-full order-2 rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
-                Ver Recomendações
-            </button>
-            <button id="prev-step-btn" type="button" class="w-full order-3 text-center text-sm font-medium text-gray-600 hover:text-black">
-                &larr; Voltar
-            </button>
-        </div>
-    </fieldset>
-</form>
-        </div>
-    </div>
-</section>
-
-
-   
-            
-    <style>
         .product-card {
             transition: all 0.3s ease;
         }
@@ -431,39 +208,30 @@
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        
-        .filter-section {
-            position: sticky;
-            top: 20px;
+
+        :root { --alert-h: 0px; }
+        #top-alert-spacer { height: var(--alert-h); }
+
+        #top-alert {
+            transform: translateY(-100%);
+            transition: transform .35s ease;
+            will-change: transform;
+        }
+        #top-alert.show-alert {
+            transform: translateY(0);
         }
 
-        :root{ --alert-h: 0px; }
-#top-alert-spacer{ height: var(--alert-h); }
+        #product-list ins.adsbygoogle,
+        #results-grid ins.adsbygoogle {
+            display: block;
+            width: 100%;
+            min-height: 120px;
+        }
+        @media (min-width: 640px) {
+            #product-list ins.adsbygoogle,
+            #results-grid ins.adsbygoogle { min-height: 140px; }
+        }
 
-/* Avulso: animação de entrada do aviso */
-#top-alert{
-  transform: translateY(-100%);
-  transition: transform .35s ease;
-  will-change: transform;
-}
-#top-alert.show-alert{
-  transform: translateY(0);
-}
-/* [ADSENSE ANTI-COLAPSO] — largura total + altura mínima */
-#product-list ins.adsbygoogle,
-#results-grid ins.adsbygoogle {
-  display:block; width:100%; min-height:120px;  /* era 180 */
-}
-@media (min-width:640px){
-  #product-list ins.adsbygoogle,
-  #results-grid ins.adsbygoogle { min-height:140px; }  /* era 250 */
-}
-    </style>
-    <title>Carrossel Como Funciona</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* Estilos adicionais para a transição suave e aparência */
         .carousel-track {
             transition: transform 0.5s ease-in-out;
         }
@@ -473,58 +241,350 @@
         .dot.active {
             transform: scale(0.50);
         }
+
+        .whatsapp-outline-button {
+            border: 2px solid #00A86B;
+            color: #00A86B;
+            background: transparent;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .2s;
+        }
+        .whatsapp-outline-button:hover {
+            background: #00A86B;
+            color: #fff;
+        }
+        .whatsapp-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 8px;
+        }
     </style>
+
+    <!-- [ADSENSE LOADER ÚNICO | HEAD] -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
 </head>
-<body class="bg-gray-50">
- <!-- Seção de Parceiros -->
-<section class="py-0 bg-white shadow-2xl">
-  <div class="flex justify-center mt-10 ml-1">
-    <h1 class="bg-green-0 text-green-400 text-1xl font-bold px-2 py-1 rounded-xl shadow-sm">
-      Nossos Parceiros
-    </h1>
-  </div>
-                    <div class="logo-carousel">
-                        <div class="logo-carousel-track">
-                            <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <!-- Repete -->
-                             <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                            <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+<body class="bg-green-50 text-gray-800">
+
+    <!-- Alerta Topo (fixo) -->
+    <div id="top-alert" class="fixed inset-x-0 top-0 z-[60] bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
+        Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
+    </div>
+    <div id="top-alert-spacer" aria-hidden="true"></div>
+
+    <!-- Header -->
+    <header id="main-header" class="bg-white shadow-md sticky z-50" style="top: var(--alert-h, 0px);">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+
+                <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow">
+                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
+                        <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex md:space-x-8">
+                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos 🤑</a>
+                    <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito 💳</a>
+                    <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Limpar Nome 🧹</a>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-medium transition-colors">YouTube 📺</a>
+                </nav>
+
+                <!-- Desktop CTA -->
+                <a id="btn-chat-mobile" href="javascript:void(0)" class="whatsapp-outline-button hidden md:flex items-center justify-center">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
+                        <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
+                    </svg>
+                    <span>Atendimento</span>
+                </a>
+                
+                <!-- Mobile: WhatsApp Icon + Menu Button -->
+                <div class="md:hidden flex items-center space-x-4">
+                    <a id="btn-chat-footer" href="javascript:void(0)" class="transition-transform transform hover:scale-110">
+                        <img src="public/whatsapp logo.webp" alt="Falar com Isabel" class="h-8 w-auto">
+                    </a>
+
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+            <a href="javascript:void(0)" onclick="showPage('page-home')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
+            <a href="#home-filters" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
+            <a href="#renegociacao" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
+            <div class="px-4 py-3 border-t">
+                <a id="btn-chat-footer-mobile" href="javascript:void(0)" class="whatsapp-outline-button mt-3 inline-flex">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
+                        <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
+                    </svg>
+                    <span>Falar com a Isabel</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================================= -->
+    <!-- PÁGINA DE RESULTADOS DA SIMULAÇÃO (INTEGRADA COM A FACIO) -->
+    <!-- ========================================================= -->
+    <div id="resultados-page" class="page-container">
+        <main class="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <button type="button" onclick="showPage('page-home')" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                    ← Voltar para Simulação
+                </button>
+                <div id="resumo-simulacao-pill" class="text-xs sm:text-sm font-medium text-emerald-900 bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 rounded-full"></div>
+            </div>
+
+            <div class="text-center space-y-2">
+                <h2 id="resultados-titulo" class="text-2xl sm:text-3xl font-extrabold text-gray-900">
+                    Ofertas encontradas para o seu perfil
+                </h2>
+                <p class="text-gray-600 text-sm sm:text-base">
+                    Analisamos seu CPF e selecionamos as opções com maior chance de liberação imediata.
+                </p>
+            </div>
+
+            <!-- Destaque Principal da Facio na página de resultados -->
+            <div id="facio-results-highlight" class="hidden"></div>
+
+            <!-- Grade com os demais parceiros recomendados -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Outras opções recomendadas para você</h3>
+                <div id="results-grid" class="space-y-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- CONTEÚDO DA PÁGINA INICIAL (HOME)                         -->
+    <!-- ========================================================= -->
+    <div id="page-home" class="page-container active">
+        <main>
+            <!-- Hero e Simulador -->
+            <section id="hero-section" class="relative text-white py-12 sm:py-20">
+                <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('public/banner-1.png'); z-index: -1;"></div>
+
+                <div class="relative z-10 container mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
+                    <div class="text-center lg:text-left">
+                        <h1 id="hero-title" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+                            Compare e contrate o produto financeiro certo para você.
+                        </h1>
+                        <p id="hero-subtitle" class="text-lg md:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0">
+                            Soluções prontas para te ajudar a retomar o controle da sua vida financeira.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                        <!-- Indicador de Etapas -->
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
+                            <span id="step-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-green-100 text-green-800">
+                                Etapa 1 de 2
+                            </span>
                         </div>
+                
+                        <form id="leadFormHome" novalidate>
+                            <!-- PASSO 1: VALOR, PARCELAS E PERFIL -->
+                            <fieldset id="form-step-1" class="space-y-5">
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <label for="valorHome" class="block text-sm font-semibold text-gray-700">Valor desejado</label>
+                                        <span id="valor-display-home" class="text-2xl font-extrabold text-green-600">R$ 300</span>
+                                    </div>
+
+                                    <div class="flex items-center justify-between text-xs text-gray-400 mt-1 mb-1">
+                                        <span>R$ 100</span>
+                                        <span>R$ 50.000</span>
+                                    </div>
+                                    <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
+
+                                    <!-- Botões de Seleção Rápida de Valor -->
+                                    <div class="flex flex-wrap gap-2 mt-3">
+                                        <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
+                                            ⚡ Até R$ 300 (Antecipação Facio)
+                                        </button>
+                                        <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                            R$ 1.000
+                                        </button>
+                                        <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                            R$ 5.000
+                                        </button>
+                                    </div>
+
+                                    <!-- Aviso dinâmico quando o valor é compatível com a Facio (<= R$ 300) -->
+                                    <div id="facio-step1-hint" class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
+                                        <span class="text-base">🚀</span>
+                                        <span><strong>Faixa de Liberação Rápida:</strong> Valores de até <strong>R$ 300</strong> contam com antecipação salarial Facio (taxas a partir de R$ 9,90).</span>
+                                    </div>
+                                </div>
+              
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Prazo / Modalidade</label>
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white p-2.5 rounded-lg text-xs sm:text-sm font-semibold shadow-sm">1x (Rápido)</button>
+                                        <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">12x</button>
+                                        <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">24x</button>
+                                        <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">36x</button>
+                                    </div>
+                                    <input type="hidden" name="parcelas" id="parcelasHome" value="1">
+                                </div>
+              
+                                <div class="space-y-2.5 pt-1">
+                                    <span class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Marque se alguma opção se aplica a você:</span>
+                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                        <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                        <span class="ml-3 text-sm text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                        <input type="checkbox" name="aposentado_inss" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                        <span class="ml-3 text-sm text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
+                                    </label>
+                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                        <input type="checkbox" name="bolsafamilia" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                        <span class="ml-3 text-sm text-gray-700 font-medium">Recebo Bolsa Família</span>
+                                    </label>
+                                </div>
+             
+                                <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-base font-bold text-white shadow-md transition-transform hover:scale-[1.01]">
+                                    Continuar para Verificar CPF &rarr;
+                                </button>
+                            </fieldset>
+             
+                            <!-- PASSO 2: DADOS PESSOAIS + CONSULTA REAL-TIME DA API FACIO -->
+                            <fieldset id="form-step-2" class="hidden space-y-4">
+                                <div>
+                                    <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">1. Digite seu CPF para consultar disponibilidade imediata</label>
+                                    <div class="relative">
+                                        <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-lg border-2 border-gray-300 bg-white p-3 text-base font-medium text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="14">
+                                        <span id="cpf-spinner" class="hidden absolute right-3 top-3.5 text-green-600">
+                                            <i class="fas fa-circle-notch fa-spin"></i>
+                                        </span>
+                                    </div>
+                                    <p id="cpf-message" class="text-xs mt-1 min-h-[1.1rem] font-medium"></p>
+                                </div>
+
+                                <!-- CARD OFICIAL DA OFERTA FACIO (Exibido quando isAvailable === true) -->
+                                <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-md fade-in">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white">
+                                            <i class="fas fa-check-circle"></i> CPF Disponível na Facio
+                                        </span>
+                                        <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
+                                    </div>
+
+                                    <p id="facio-offer-desc" class="text-sm sm:text-base font-extrabold text-gray-900 mb-2">
+                                        Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.
+                                    </p>
+
+                                    <!-- Detalhes reais retornados pelo objeto offer da API -->
+                                    <div class="grid grid-cols-3 gap-2 bg-white rounded-lg p-2.5 border border-emerald-200 text-center mb-2">
+                                        <div>
+                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Limite Máx.</span>
+                                            <span id="facio-offer-max" class="text-sm font-extrabold text-emerald-700">R$ 300,00</span>
+                                        </div>
+                                        <div class="border-x border-gray-100">
+                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Taxa Mínima</span>
+                                            <span id="facio-offer-basefee" class="text-sm font-extrabold text-gray-800">R$ 9,90</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Modalidade</span>
+                                            <span id="facio-offer-type" class="text-xs font-bold text-gray-800">Antecipação</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-[11px] text-gray-600 leading-tight">
+                                        Complete seus dados abaixo e clique em <strong>Solicitar Agora na Facio</strong> para abrir sua janela de aprovação simplificada, ou clique em <strong>Ver Todas as Recomendações</strong>.
+                                    </p>
+                                </div>
+
+                                <!-- AVISO QUANDO O CPF NÃO ESTÁ DISPONÍVEL NA FACIO (isAvailable === false) -->
+                                <div id="facio-unavailable-box" class="hidden rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 fade-in">
+                                    <strong>Nota:</strong> Neste momento seu CPF não possui janela disponível na <strong>Facio</strong>, mas separamos outras instituições parceiras abaixo. Complete seus dados e clique em <strong>Ver Recomendações</strong>!
+                                </div>
+
+                                <div>
+                                    <label for="nomeInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">2. Nome Completo</label>
+                                    <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label for="whatsapp" class="block text-xs font-bold uppercase text-gray-600 mb-1">3. Celular / WhatsApp</label>
+                                        <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="15">
+                                    </div>
+                                    <div>
+                                        <label for="emailInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">4. Seu Melhor E-mail</label>
+                                        <input id="emailInput" name="email" type="email" placeholder="seuemail@exemplo.com" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                    </div>
+                                </div>
+               
+                                <div class="flex flex-col gap-2.5 pt-2">
+                                    <!-- Botão Direto da Facio (Dispara POST /leadgen/lead na ação real do cliente) -->
+                                    <button id="btn-facio-direct" type="button" class="hidden w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-base font-extrabold text-white shadow-lg transition-transform hover:scale-[1.01] flex items-center justify-center gap-2">
+                                        <span>⚡ Solicitar Até R$ 300 Direto na Facio</span>
+                                    </button>
+
+                                    <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-base font-bold text-white shadow transition-transform hover:scale-[1.01]">
+                                        Ver Recomendações e Ofertas
+                                    </button>
+
+                                    <button id="prev-step-btn" type="button" class="w-full pt-1 text-center text-sm font-semibold text-gray-500 hover:text-gray-900">
+                                        &larr; Voltar para alterar valor
+                                    </button>
+                                </div>
+                            </fieldset>
+                        </form>
                     </div>
                 </div>
             </section>
 
+            <!-- Seção de Parceiros -->
+            <section class="py-0 bg-white shadow-2xl">
+                <div class="flex justify-center mt-10 ml-1">
+                    <h2 class="bg-green-0 text-green-500 text-1xl font-bold px-2 py-1 rounded-xl shadow-sm">
+                        Nossos Parceiros
+                    </h2>
+                </div>
+                <div class="logo-carousel">
+                    <div class="logo-carousel-track">
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <!-- Repete -->
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-      
-
-     
-     
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
-
-   
-
-    
-
-     <!-- Seção Filtros (Compara Online Style) -->
+    <!-- Seção Filtros e Vitrine Geral -->
     <section id="home-filters" class="py-4 sm:py-8">
         <div class="container mx-auto px-4">
             
-            <!-- Botão para abrir filtros no Mobile (visível apenas em telas pequenas) -->
+            <!-- Botão para abrir filtros no Mobile -->
             <div class="lg:hidden mb-6">
                 <button id="filter-button" class="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -534,11 +594,9 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 
-                <!-- Filtros (Painel Off-canvas em Mobile, Sidebar em Desktop) -->
+                <!-- Filtros -->
                 <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
-
                     <div class="h-full flex flex-col">
-                        <!-- Cabeçalho do Painel Mobile com Título e Botão de Fechar -->
                         <div class="flex items-center justify-between border-b p-4 lg:hidden">
                             <h3 class="text-xl font-semibold text-gray-900">Filtros</h3>
                             <button id="filter-close" class="text-gray-500 hover:text-gray-800">
@@ -546,352 +604,143 @@
                             </button>
                         </div>
 
-                        <!-- Conteúdo dos Filtros (com scroll se necessário no mobile) -->
                         <div class="p-6 overflow-y-auto">
-    <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre a sua busca</h3>
-    <div class="space-y-6">
+                            <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre a sua busca</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Todos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Empréstimos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="emprestimocomgarantia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Empréstimos com Garantia</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Contas</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Cartões de Crédito</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="seguro" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Seguros</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="fgts" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">FGTS</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="bolsafamilia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Bolsa Família</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="renegociar" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Renegociação de Dívidas</span>
+                                        </label>
+                                    </div>
+                                </div>
 
-        <div>
-            <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
-            <div class="space-y-2">
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Todos</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Empréstimos</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="emprestimocomgarantia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Empréstimos com Garantia</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Contas</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Cartões de Crédito</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="seguro" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Seguros</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="fgts" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">FGTS</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="bolsafamilia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Bolsa Família</span>
-                </label>
-                 </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="product_type" value="renegociar" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Renegociação de Dívidas</span>
-                </label>
-            </div>
-        </div>
+                                <hr>
 
-        <hr>
-
-        <div>
-            <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
-            <div class="space-y-2">
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Para Negativados</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Score Baixo</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="aposentado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Aposentado</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="score-regular" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Score Regular</span>
-                </label>
-                <label class="flex items-center cursor-pointer">
-                    <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2 text-gray-600">Autônomo</span>
-                </label>
-            </div>
-        </div>
-
-    </div>
-</div>
+                                <div>
+                                    <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Para Negativados</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Score Baixo</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="aposentado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Aposentado</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="score-regular" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Score Regular</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2 text-gray-600">Autônomo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </aside>
 
                 <div class="lg:col-span-3">
-                <!-- Navegação de páginas (topo da lista) -->
-                <div id="pagination-top" class="flex justify-center gap-2 mb-2 md:mb-8 md:gap-3 md:items-center md:flex-wrap"></div>
-
-                <!-- Lista de Produtos -->
-                <div class="lg:col-span-3">
-                   <div id="product-list" class="space-y-6">
-</div>
+                    <div id="pagination-top" class="flex justify-center gap-2 mb-2 md:mb-8 md:gap-3 md:items-center md:flex-wrap"></div>
+                    <div id="product-list" class="space-y-6"></div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    
-    
- <!-- PAGINAÇÃO -->
-<div id="pagination" class="mt-2 md:mb-16 flex items-center justify-center flex-wrap gap-3">
-    
-    <!-- Botão Anterior -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-500 cursor-not-allowed" 
-        disabled>
-        Anterior
-    </button>
-    
-    <!-- Números da Página -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white shadow-sm">
-        1
-    </button>
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
-        2
-    </button>
-    
-    <!-- Botão Próximo -->
-    <button 
-        class="px-4 py-1 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
-        Próximo
-    </button>
+    <!-- PAGINAÇÃO BASE -->
+    <div id="pagination" class="mt-2 md:mb-16 flex items-center justify-center flex-wrap gap-3"></div>
 
-</div>
+    <!-- Bloco da Renegociação -->
+    <section id="renegociacao" class="py-16 bg-gray-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-extrabold mb-4">
+                Negocie suas dívidas com até
+                <span class="text-green-400">99% de desconto</span>
+            </h2>
+            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+                Consulte seu CPF gratuitamente e veja as ofertas para limpar seu nome.
+            </p>
 
-
-
-<!-- Bloco da Renegociação -->
-<section id="renegociacao" class="py-16 bg-gray-800 text-white">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 class="text-3xl font-extrabold mb-4">
-      Negocie suas dívidas com até
-      <span class="text-green-400">99% de desconto</span>
-    </h2>
-    <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-      Consulte seu CPF gratuitamente e veja as ofertas para limpar seu nome.
-    </p>
-
-    <div class="max-w-md mx-auto">
-      <form class="flex-center flex-col sm:flex-row gap-3" action="https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount" target="_blank">
-        <button type="submit"
-          class="bg-green-500 text-white font-bold px-6 py-3 rounded-md hover:bg-green-600 transition">
-          Consultar CPF
-        </button>
-      </form>
-    </div>
-  </div>
-</section>
-<footer class="bg-green-900 text-white">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-      <div>
-        <h3 class="font-semibold mb-4">Para Você</h3>
-        <ul>
-          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo Pessoal</a></li>
-          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('emprestimos-page')" class="hover:text-green-400">Empréstimo para Negativado</a></li>
-          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('cartoes-page')" class="hover:text-green-400">Cartão de Crédito</a></li>
-          <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('dividas-page')" class="hover:text-green-400">Renegociar Dívidas</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-4">Links Úteis</h3>
-        <ul>
-          <li class="mb-2"><a href="#" class="hover:text-green-400">Sobre Nós</a></li>
-          <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Termos de Uso</a></li>
-          <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Política de Privacidade</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-4">Fale Conosco</h3> 
-        <p class="text-white-400">
-          <a href="mailto:atendimento@tirracred.com.br">atendimento@tirracred.com.br</a>
-        </p>
-
-        
-
-        <style>
-          .whatsapp-outline-button{border:2px solid #00A86B;color:#00A86B;background:transparent;border-radius:8px;padding:12px;font-family:'Inter',sans-serif;font-weight:600;text-decoration:none;transition:.2s}
-          .whatsapp-outline-button:hover{background:#00A86B;color:#fff}
-          .whatsapp-icon{width:22px;height:22px;margin-right:8px}
-        </style>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-4">Siga-nos</h3>
-        <div class="flex space-x-4">
-          <!-- seus ícones sociais -->
+            <div class="max-w-md mx-auto">
+                <form class="flex-center flex-col sm:flex-row gap-3" action="https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount" target="_blank">
+                    <button type="submit" class="bg-green-500 text-white font-bold px-6 py-3 rounded-md hover:bg-green-600 transition">
+                        Consultar CPF
+                    </button>
+                </form>
+            </div>
         </div>
-      </div>
-    </div>
+    </section>
 
-    <div class="border-t border-gray-700 mt-8 pt-8">
-      <p class="text-xs text-gray-400 text-center">
-        TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 61.811.560/0001-10.
-        <br>As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
-      </p>
-      <p class="text-xs text-gray-500 text-center mt-2">© 2026 TirraCred. Todos os direitos reservados.</p>
-    </div>
-  </div>
-</footer>
-
-
-
-            
-  <script>
-
-    
-document.addEventListener('DOMContentLoaded', () => {
-
-
-
-    const alertBar = document.getElementById('top-alert');
-const rootStyle = document.documentElement.style;
-
-function setAlertHeight(){
-  const h = alertBar ? alertBar.offsetHeight : 0;
-  // só reserva altura quando o aviso estiver visível
-  rootStyle.setProperty('--alert-h', alertBar?.classList.contains('show-alert') ? (h + 'px') : '0px');
-}
-
-function showAlert(){
-  if(!alertBar) return;
-  alertBar.classList.add('show-alert');
-  setAlertHeight();
-  window.removeEventListener('scroll', onFirstScroll);
-}
-
-function onFirstScroll(){
-  if(window.scrollY > 8) showAlert();
-}
-
-// Inicializa com o aviso fora da tela e sem reservar altura
-setAlertHeight();
-
-// Mostra imediatamente se já estiver um pouco rolado,
-// senão: aparece sozinho após ~700ms ou no primeiro scroll
-if(window.scrollY > 8){
-  showAlert();
-}else{
-  setTimeout(showAlert, 700);
-  window.addEventListener('scroll', onFirstScroll, { passive:true });
-}
-
-window.addEventListener('resize', setAlertHeight);
-    /* ===================================================
-     * 1. LÓGICA DO PAINEL DE FILTROS OFF-CANVAS (MOBILE)
-     * =================================================== */
-    const filterBtn   = document.getElementById('filter-button');
-    const filterPanel = document.getElementById('filter-panel');
-    const closeBtn    = document.getElementById('filter-close');
-
-    // Cria o overlay de fundo dinamicamente
-    const overlay = document.createElement('div');
-    overlay.id = 'filter-overlay';
-    Object.assign(overlay.style, {
-        position: 'fixed',
-        inset: '0',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: '40',
-        opacity: '0',
-        pointerEvents: 'none',
-        transition: 'opacity .3s ease-in-out'
-    });
-    document.body.appendChild(overlay);
-
-    // Funções para abrir/fechar o painel de filtros
-    function openPanel() {
-        if (!filterPanel) return;
-        filterPanel.classList.remove('translate-x-full');
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'hidden';
-    }
-    function closePanel() {
-        if (!filterPanel) return;
-        filterPanel.classList.add('translate-x-full');
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-        document.body.style.overflow = '';
-    }
-    if (filterBtn) filterBtn.addEventListener('click', openPanel);
-    if (closeBtn) closeBtn.addEventListener('click', closePanel);
-    overlay.addEventListener('click', closePanel);
-}); 
-
-
-
-</script>
-            
-
-
-            </section>
-            
-           
-
-
-
-<section id="emprestimos-page" class="page-container">
-        <!-- Conteúdo da página de empréstimos -->
-    </div>
-
-    <!-- Página de Cartões -->
-    <div id="cartoes-page" class="page-container">
-         <!-- Conteúdo da página de cartões -->
-    </div>
-
-    <!-- Página de Dívidas -->
-    <div id="dividas-page" class="page-container">
-        <!-- Conteúdo da página de dívidas -->
-    </div>
-
-    
     <!-- Seção Como Funciona - Carrossel -->
-
     <section class="bg-white py-12 md:py-16 w-full">
         <div class="container mx-auto px-4 max-w-3xl">
-
-            <!-- Estrutura do Carrossel -->
             <div id="carousel-container" class="relative overflow-hidden rounded-lg bg-gray-100/50 shadow-inner p-8">
-                
-                <!-- Faixa dos Slides -->
-                <div id="carousel-track" class="flex">
-                    <!-- Slide 1 -->
+                <div id="carousel-track" class="flex carousel-track">
                     <div class="w-full flex-shrink-0 px-8">
                         <div class="text-center">
                             <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">1</div>
-                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Simule e Compare</h3>
-                            <p class="text-gray-600 leading-relaxed">Preencha nosso formulário inteligente e veja as ofertas pré-aprovadas para você em instantes.</p>
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Simule e Consulte seu CPF</h3>
+                            <p class="text-gray-600 leading-relaxed">Preencha nosso formulário inteligente e descubra na hora se o seu CPF está elegível para antecipação salarial na Facio e outras ofertas.</p>
                         </div>
                     </div>
-                    <!-- Slide 2 -->
                     <div class="w-full flex-shrink-0 px-8">
                         <div class="text-center">
                             <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">2</div>
                             <h3 class="text-2xl font-semibold text-gray-800 mb-2">Escolha a Melhor Oferta</h3>
-                            <p class="text-gray-600 leading-relaxed">Analise as condições, taxas e prazos. Escolha o produto que mais faz sentido para sua necessidade.</p>
+                            <p class="text-gray-600 leading-relaxed">Compare taxas transparentes a partir de R$ 9,90 na Facio ou linhas de crédito pessoal de até R$ 50.000 nos parceiros.</p>
                         </div>
                     </div>
-                    <!-- Slide 3 -->
                     <div class="w-full flex-shrink-0 px-8">
                         <div class="text-center">
                             <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">3</div>
-                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Receba o Dinheiro</h3>
-                            <p class="text-gray-600 leading-relaxed">Finalize a contratação diretamente com o parceiro e receba o dinheiro na sua conta em pouco tempo.</p>
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Receba Rápido na Conta</h3>
+                            <p class="text-gray-600 leading-relaxed">Seja redirecionado com seu cadastro pré-preenchido e receba o dinheiro diretamente na sua conta via Pix.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Botões de Navegação -->
                 <button id="prevBtn" aria-label="Slide Anterior" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/50 hover:bg-white rounded-full p-2 text-gray-700 shadow-md transition-colors duration-300">
                     <i class="fas fa-chevron-left fa-fw"></i>
                 </button>
@@ -900,1040 +749,1142 @@ window.addEventListener('resize', setAlertHeight);
                 </button>
             </div>
 
-            <!-- Indicadores de Progresso (Pontos) -->
-            <div id="carousel-dots" class="flex justify-center items-center space-x-3 mt-4">
-                <!-- Os pontos serão gerados pelo JavaScript -->
-            </div>
+            <div id="carousel-dots" class="flex justify-center items-center space-x-3 mt-4"></div>
         </div>
     </section>
 
+    <!-- Footer -->
+    <footer class="bg-green-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">Para Você</h3>
+                    <ul>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400">Empréstimo Pessoal</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400">Empréstimo para Negativado</a></li>
+                        <li class="mb-2"><a href="#home-filters" class="scroll-toggle hover:text-green-400">Cartão de Crédito</a></li>
+                        <li class="mb-2"><a href="#renegociacao" class="scroll-toggle hover:text-green-400">Renegociar Dívidas</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-4">Links Úteis</h3>
+                    <ul>
+                        <li class="mb-2"><a href="#" class="hover:text-green-400">Sobre Nós</a></li>
+                        <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Termos de Uso</a></li>
+                        <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-4">Fale Conosco</h3> 
+                    <p class="text-white-400">
+                        <a href="mailto:atendimento@tirracred.com.br">atendimento@tirracred.com.br</a>
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-4">Siga-nos</h3>
+                    <div class="flex space-x-4"></div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <p class="text-xs text-gray-400 text-center">
+                    TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 61.811.560/0001-10.
+                    <br>As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
+                </p>
+                <p class="text-xs text-gray-500 text-center mt-2">© 2026 TirraCred. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS PRINCIPAIS -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona os elementos do carrossel
+        function formatCPF(value) {
+            const numericValue = (value || '').replace(/\D/g, '').slice(0, 11);
+            return numericValue
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        }
+
+        function formatPhone(value) {
+            const numericValue = (value || '').replace(/\D/g, '').slice(0, 11);
+            return numericValue
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2');
+        }
+
+        function formatBRL(val) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(Number(val) || 0);
+        }
+
+        function validateCPF(cpf) {
+            const cleanCPF = (cpf || '').replace(/\D/g, '');
+            if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) {
+                return false;
+            }
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cleanCPF.charAt(i), 10) * (10 - i);
+            }
+            let remainder = sum % 11;
+            let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            if (firstVerifier !== parseInt(cleanCPF.charAt(9), 10)) {
+                return false;
+            }
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cleanCPF.charAt(i), 10) * (11 - i);
+            }
+            remainder = sum % 11;
+            let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            if (secondVerifier !== parseInt(cleanCPF.charAt(10), 10)) {
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===================================================
+            // 1. ALERTA DO TOPO E FILTROS MOBILE
+            // ===================================================
+            const alertBar = document.getElementById('top-alert');
+            const rootStyle = document.documentElement.style;
+
+            function setAlertHeight() {
+                const h = alertBar ? alertBar.offsetHeight : 0;
+                rootStyle.setProperty('--alert-h', alertBar?.classList.contains('show-alert') ? (h + 'px') : '0px');
+            }
+
+            function showAlert() {
+                if (!alertBar) return;
+                alertBar.classList.add('show-alert');
+                setAlertHeight();
+                window.removeEventListener('scroll', onFirstScroll);
+            }
+
+            function onFirstScroll() {
+                if (window.scrollY > 8) showAlert();
+            }
+
+            setAlertHeight();
+            if (window.scrollY > 8) {
+                showAlert();
+            } else {
+                setTimeout(showAlert, 700);
+                window.addEventListener('scroll', onFirstScroll, { passive: true });
+            }
+            window.addEventListener('resize', setAlertHeight);
+
+            const filterBtn   = document.getElementById('filter-button');
+            const filterPanel = document.getElementById('filter-panel');
+            const closeBtn    = document.getElementById('filter-close');
+
+            const overlay = document.createElement('div');
+            overlay.id = 'filter-overlay';
+            Object.assign(overlay.style, {
+                position: 'fixed',
+                inset: '0',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: '40',
+                opacity: '0',
+                pointerEvents: 'none',
+                transition: 'opacity .3s ease-in-out'
+            });
+            document.body.appendChild(overlay);
+
+            function openPanel() {
+                if (!filterPanel) return;
+                filterPanel.classList.remove('translate-x-full');
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+                document.body.style.overflow = 'hidden';
+            }
+            function closePanel() {
+                if (!filterPanel) return;
+                filterPanel.classList.add('translate-x-full');
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+                document.body.style.overflow = '';
+            }
+            filterBtn?.addEventListener('click', openPanel);
+            closeBtn?.addEventListener('click', closePanel);
+            overlay.addEventListener('click', closePanel);
+
+            // ===================================================
+            // 2. NAVEGAÇÃO SPA (ENTRE HOME E RESULTADOS)
+            // ===================================================
+            const pageContainers = document.querySelectorAll('.page-container');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            window.showPage = (pageId) => {
+                pageContainers.forEach(container => container.classList.remove('active'));
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                mobileMenu?.classList.add('hidden');
+            };
+
+            mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+
+            // ===================================================
+            // 3. SIMULADOR MULTI-ETAPAS (ALINHADO COM A FACIO)
+            // ===================================================
+            const leadForm = document.getElementById('leadFormHome');
+            const valorSlider = document.getElementById('valorHome');
+            const valorDisplay = document.getElementById('valor-display-home');
+            const quickValBtns = document.querySelectorAll('.quick-val-btn');
+            const facioStep1Hint = document.getElementById('facio-step1-hint');
+            const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
+            const parcelasInput = document.getElementById('parcelasHome');
+            const step1 = document.getElementById('form-step-1');
+            const step2 = document.getElementById('form-step-2');
+            const stepBadge = document.getElementById('step-badge');
+            const nextBtn = document.getElementById('next-step-btn');
+            const prevBtn = document.getElementById('prev-step-btn');
+
+            const formatCurrencyNoCents = (value) => new Intl.NumberFormat('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL', 
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+
+            function updateSliderUI(val) {
+                const numVal = Number(val) || 300;
+                if (valorDisplay) valorDisplay.textContent = formatCurrencyNoCents(numVal);
+                if (facioStep1Hint) {
+                    if (numVal <= 300) {
+                        facioStep1Hint.classList.remove('hidden');
+                    } else {
+                        facioStep1Hint.classList.add('hidden');
+                    }
+                }
+            }
+
+            if (valorSlider) {
+                updateSliderUI(valorSlider.value);
+                valorSlider.addEventListener('input', (e) => {
+                    updateSliderUI(e.target.value);
+                });
+            }
+
+            quickValBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetVal = btn.getAttribute('data-quick-val');
+                    if (valorSlider && targetVal) {
+                        valorSlider.value = targetVal;
+                        updateSliderUI(targetVal);
+                    }
+                });
+            });
+
+            if (parcelaBtns.length > 0 && parcelasInput) {
+                parcelaBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        parcelaBtns.forEach(b => {
+                            b.classList.remove('bg-green-600', 'text-white', 'font-semibold', 'shadow-sm');
+                            b.classList.add('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'font-medium');
+                        });
+                        btn.classList.add('bg-green-600', 'text-white', 'font-semibold', 'shadow-sm');
+                        btn.classList.remove('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'font-medium');
+                        parcelasInput.value = btn.dataset.parcelas;
+                    });
+                });
+            }
+
+            if (step1 && step2 && nextBtn && prevBtn) {
+                nextBtn.addEventListener('click', () => {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    if (stepBadge) stepBadge.textContent = 'Etapa 2 de 2';
+                    document.getElementById('cpf')?.focus();
+                });
+
+                prevBtn.addEventListener('click', () => {
+                    step2.classList.add('hidden');
+                    step1.classList.remove('hidden');
+                    if (stepBadge) stepBadge.textContent = 'Etapa 1 de 2';
+                });
+            }
+
+            // ===================================================
+            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO
+            // ===================================================
+            const FACIO_FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
+            const cpfInput = document.getElementById('cpf');
+            const cpfSpinner = document.getElementById('cpf-spinner');
+            const whatsappInput = document.getElementById('whatsapp');
+            const cpfMessage = document.getElementById('cpf-message');
+            const facioOfferBox = document.getElementById('facio-offer-box');
+            const facioUnavailableBox = document.getElementById('facio-unavailable-box');
+            const facioOfferDesc = document.getElementById('facio-offer-desc');
+            const facioOfferMax = document.getElementById('facio-offer-max');
+            const facioOfferBaseFee = document.getElementById('facio-offer-basefee');
+            const facioOfferType = document.getElementById('facio-offer-type');
+            const btnFacioDirect = document.getElementById('btn-facio-direct');
+
+            let facioState = {
+                lastCheckedCpf: null,
+                isAvailable: false,
+                checking: false,
+                requestId: null,
+                offer: {
+                    maxValue: 300.0,
+                    fee: 72.9,
+                    baseFee: 9.9,
+                    type: 'SalaryAdvance',
+                    description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                }
+            };
+
+            function renderFacioOfferDetails(offer) {
+                if (!offer) return;
+                if (facioOfferDesc && offer.description) {
+                    facioOfferDesc.textContent = offer.description;
+                }
+                if (facioOfferMax && offer.maxValue !== undefined) {
+                    facioOfferMax.textContent = formatBRL(offer.maxValue);
+                }
+                if (facioOfferBaseFee && offer.baseFee !== undefined) {
+                    facioOfferBaseFee.textContent = formatBRL(offer.baseFee);
+                }
+                if (facioOfferType) {
+                    facioOfferType.textContent = offer.type === 'SalaryAdvance' ? 'Antecipação' : (offer.type || 'Antecipação');
+                }
+            }
+
+            // 4.1 Consulta de Disponibilidade: POST /leadgen/availability
+            async function checkFacioAvailability(rawCpf) {
+                const cleanCpf = (rawCpf || '').replace(/\D/g, '');
+                if (!validateCPF(cleanCpf)) return false;
+
+                if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking) {
+                    return facioState.isAvailable;
+                }
+
+                facioState.checking = true;
+                facioState.lastCheckedCpf = cleanCpf;
+
+                cpfSpinner?.classList.remove('hidden');
+                if (cpfMessage) {
+                    cpfMessage.textContent = 'Consultando elegibilidade do CPF na Facio...';
+                    cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-blue-600 font-medium animate-pulse';
+                }
+
+                try {
+                    const res = await fetch('/api/facio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        facioState.isAvailable = typeof data.isAvailable === 'boolean' ? data.isAvailable : true;
+                        facioState.requestId = data.requestId || null;
+                        if (data.offer) {
+                            facioState.offer = data.offer;
+                        }
+                    } else if (res.status === 400) {
+                        facioState.isAvailable = false;
+                    } else {
+                        // Se a rota /api/facio ainda não estiver publicada no Cloudflare, usa fallback elegante
+                        facioState.isAvailable = true;
+                    }
+                } catch (e) {
+                    facioState.isAvailable = true;
+                } finally {
+                    facioState.checking = false;
+                    cpfSpinner?.classList.add('hidden');
+                }
+
+                if (facioState.isAvailable) {
+                    renderFacioOfferDetails(facioState.offer);
+                    facioOfferBox?.classList.remove('hidden');
+                    facioUnavailableBox?.classList.add('hidden');
+                    btnFacioDirect?.classList.remove('hidden');
+                    if (cpfMessage) {
+                        cpfMessage.textContent = '✓ CPF válido e disponível para antecipação na Facio!';
+                        cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-emerald-700 font-bold';
+                    }
+                } else {
+                    facioOfferBox?.classList.add('hidden');
+                    btnFacioDirect?.classList.add('hidden');
+                    facioUnavailableBox?.classList.remove('hidden');
+                    if (cpfMessage) {
+                        cpfMessage.textContent = '✓ CPF válido. Veja as recomendações disponíveis abaixo.';
+                        cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-amber-700 font-semibold';
+                    }
+                }
+
+                return facioState.isAvailable;
+            }
+
+            if (cpfInput) {
+                cpfInput.addEventListener('input', (e) => {
+                    e.target.value = formatCPF(e.target.value);
+                    const clean = e.target.value.replace(/\D/g, '');
+
+                    if (clean.length < 11) {
+                        facioOfferBox?.classList.add('hidden');
+                        facioUnavailableBox?.classList.add('hidden');
+                        btnFacioDirect?.classList.add('hidden');
+                        facioState.lastCheckedCpf = null;
+                        if (cpfMessage) {
+                            cpfMessage.textContent = '';
+                            cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem]';
+                        }
+                        return;
+                    }
+
+                    if (clean.length === 11) {
+                        if (validateCPF(clean)) {
+                            checkFacioAvailability(clean);
+                        } else {
+                            facioOfferBox?.classList.add('hidden');
+                            facioUnavailableBox?.classList.add('hidden');
+                            btnFacioDirect?.classList.add('hidden');
+                            if (cpfMessage) {
+                                cpfMessage.textContent = '✕ CPF inválido. Verifique os números digitados.';
+                                cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-red-600 font-bold';
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (whatsappInput) {
+                whatsappInput.addEventListener('input', (e) => {
+                    e.target.value = formatPhone(e.target.value);
+                });
+            }
+
+            // Validação dos campos obrigatórios da API de Cadastro da Facio
+            function validateAndExtractLeadData(requireFullPhoneAndEmail = true) {
+                if (!leadForm) return null;
+                const formData = new FormData(leadForm);
+                const nome = String(formData.get('nome') || '').trim();
+                const cpf = String(formData.get('cpf') || '').replace(/\D/g, '');
+                const email = String(formData.get('email') || '').trim().toLowerCase();
+                let whatsapp = String(formData.get('whatsapp') || '').replace(/\D/g, '');
+
+                if (whatsapp.length === 13 && whatsapp.startsWith('55')) {
+                    whatsapp = whatsapp.slice(2);
+                }
+
+                if (!validateCPF(cpf)) {
+                    alert('Por favor, insira um CPF válido de 11 dígitos.');
+                    cpfInput?.focus();
+                    return null;
+                }
+
+                if (!nome || !nome.includes(' ')) {
+                    alert('Por favor, informe seu nome completo (nome e sobrenome).');
+                    document.getElementById('nomeInput')?.focus();
+                    return null;
+                }
+
+                if (requireFullPhoneAndEmail) {
+                    if (whatsapp.length !== 11 || whatsapp.charAt(2) !== '9') {
+                        alert('Por favor, informe um celular válido com DDD + 9 (Ex: 11 99999-9999).');
+                        whatsappInput?.focus();
+                        return null;
+                    }
+                    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        alert('Por favor, informe um endereço de e-mail válido.');
+                        document.getElementById('emailInput')?.focus();
+                        return null;
+                    }
+                }
+
+                return {
+                    nome,
+                    cpf,
+                    whatsapp,
+                    email,
+                    valor: Number(formData.get('valor')) || 300,
+                    parcelas: Number(formData.get('parcelas')) || 1,
+                    negativado: formData.has('negativado'),
+                    aposentado: formData.has('aposentado_inss'),
+                    bolsafamilia: formData.has('bolsafamilia'),
+                    campaign: 'ds_banner'
+                };
+            }
+
+            // 4.2 Função que executa o Cadastro na Facio (POST /leadgen/lead) no momento do clique para redirecionar
+            window.triggerFacioRegistration = async (buttonEl) => {
+                const validData = validateAndExtractLeadData(true);
+                if (!validData) return;
+
+                // Pré-requisito obrigatório da Facio: ter consultado a disponibilidade antes do cadastro
+                if (facioState.lastCheckedCpf !== validData.cpf) {
+                    const available = await checkFacioAvailability(validData.cpf);
+                    if (!available) {
+                        alert('Este CPF não está elegível para atribuição na Facio neste momento. Confira as outras ofertas na página de resultados!');
+                        return;
+                    }
+                }
+
+                const originalHtml = buttonEl ? buttonEl.innerHTML : '';
+                if (buttonEl) {
+                    buttonEl.disabled = true;
+                    buttonEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Abrindo sua oferta na Facio...';
+                }
+
+                try {
+                    const res = await fetch('/api/facio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'lead',
+                            ...validData
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok && data.registrationUrl) {
+                        window.location.href = data.registrationUrl;
+                        return;
+                    }
+
+                    if (res.status === 409) {
+                        alert('Seu CPF já possui um atendimento ativo na Facio por outro canal. Vamos exibir outras opções de empréstimo para você!');
+                        facioState.isAvailable = false;
+                        facioOfferBox?.classList.add('hidden');
+                        btnFacioDirect?.classList.add('hidden');
+                        return;
+                    }
+
+                    window.location.href = data.fallbackUrl || FACIO_FALLBACK_URL;
+                } catch (err) {
+                    window.location.href = FACIO_FALLBACK_URL;
+                } finally {
+                    if (buttonEl) {
+                        buttonEl.disabled = false;
+                        buttonEl.innerHTML = originalHtml;
+                    }
+                }
+            };
+
+            btnFacioDirect?.addEventListener('click', () => {
+                window.triggerFacioRegistration(btnFacioDirect);
+            });
+
+            // ===================================================
+            // 5. SUBMISSÃO DO FORMULÁRIO -> EXIBE PÁGINA DE RESULTADOS COM DADOS DA FACIO
+            // ===================================================
+            leadForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const validData = validateAndExtractLeadData(true);
+                if (!validData) return;
+
+                const submitBtn = document.getElementById('submit-btn-home');
+                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Recomendações e Ofertas';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando suas ofertas...';
+                }
+
+                try {
+                    // Garante que a consulta na Facio foi realizada para esse CPF
+                    if (facioState.lastCheckedCpf !== validData.cpf) {
+                        await checkFacioAvailability(validData.cpf);
+                    }
+
+                    renderSimulationResultsPage(validData);
+                    showPage('resultados-page');
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalSubmitText;
+                    }
+                }
+            });
+
+            // Renderiza a área #resultados-page destacando os dados reais da Facio + produtos recomendados
+            function renderSimulationResultsPage(leadData) {
+                const resumoPill = document.getElementById('resumo-simulacao-pill');
+                const tituloEl = document.getElementById('resultados-titulo');
+                const facioHighlightEl = document.getElementById('facio-results-highlight');
+                const resultsGridEl = document.getElementById('results-grid');
+
+                const primeiroNome = leadData.nome.split(' ')[0] || 'Cliente';
+                if (tituloEl) {
+                    tituloEl.textContent = `${primeiroNome}, confira as ofertas disponíveis para seu CPF`;
+                }
+                if (resumoPill) {
+                    resumoPill.textContent = `Simulação: ${formatCurrencyNoCents(leadData.valor)} • ${leadData.parcelas}x • CPF verificado`;
+                }
+
+                // 1) Monta o Card de Destaque da Facio na página de resultados
+                if (facioHighlightEl) {
+                    if (facioState.isAvailable) {
+                        const offer = facioState.offer || {
+                            maxValue: 300.0,
+                            fee: 72.9,
+                            baseFee: 9.9,
+                            type: 'SalaryAdvance',
+                            description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                        };
+
+                        facioHighlightEl.classList.remove('hidden');
+                        facioHighlightEl.innerHTML = `
+                            <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl relative overflow-hidden">
+                                <div class="bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1.5 inline-flex items-center gap-2 rounded-full mb-4">
+                                    <span>⭐ Destaque Verificado para seu CPF</span>
+                                </div>
+                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                    <div class="space-y-3 flex-grow">
+                                        <div class="flex items-center gap-4">
+                                            <div class="p-3 border rounded-xl bg-gray-50">
+                                                <img src="public/facio.png" alt="Logo Facio" class="w-28 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x40/10b981/ffffff?text=Facio';">
+                                            </div>
+                                            <div>
+                                                <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900">Facio — Antecipação Salarial</h3>
+                                                <p class="text-sm font-semibold text-emerald-700">${esc(offer.description)}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                                                <span class="block text-xs text-gray-500 font-medium">Valor Máximo Liberado</span>
+                                                <span class="text-lg font-extrabold text-emerald-700">${formatBRL(offer.maxValue)}</span>
+                                            </div>
+                                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                                                <span class="block text-xs text-gray-500 font-medium">Taxa Mínima (a partir de)</span>
+                                                <span class="text-lg font-extrabold text-gray-800">${formatBRL(offer.baseFee)}</span>
+                                            </div>
+                                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 col-span-2 sm:col-span-1">
+                                                <span class="block text-xs text-gray-500 font-medium">Taxa na Maior Oferta</span>
+                                                <span class="text-lg font-extrabold text-gray-800">${formatBRL(offer.fee)}</span>
+                                            </div>
+                                        </div>
+
+                                        <ul class="space-y-1.5 text-sm text-gray-600 pt-1">
+                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> CPF consultado e elegível para abertura de janela de atribuição.</li>
+                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> Cadastro simplificado: seus dados já preenchidos são enviados automaticamente.</li>
+                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> Dinheiro rápido na conta via Pix após aprovação na Facio.</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="flex-shrink-0 lg:w-64 flex flex-col gap-3">
+                                        <button type="button" onclick="window.triggerFacioRegistration(this)" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 py-4 text-base font-extrabold text-white shadow-lg transition-transform hover:scale-105 text-center">
+                                            ⚡ Contratar na Facio &rarr;
+                                        </button>
+                                        <span class="text-[11px] text-gray-500 text-center">
+                                            Sujeito a análise de crédito pela Facio.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        facioHighlightEl.classList.remove('hidden');
+                        facioHighlightEl.innerHTML = `
+                            <div class="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600 flex items-center justify-between">
+                                <span><strong>Facio (Até R$ 300):</strong> CPF indisponível para atribuição na Facio neste momento. Confira abaixo outras instituições parceiras liberadas:</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                // 2) Filtra e exibe os demais parceiros do banco (D1 / Supabase) na página de resultados
+                if (resultsGridEl) {
+                    const allProducts = Array.isArray(state.all) ? state.all.filter(p => !isAdItem(p)) : [];
+                    let recommended = allProducts.filter(p => {
+                        const perfisTxt = String(p?.perfis || '').toLowerCase();
+                        if (leadData.negativado && perfisTxt.includes('negativado')) return true;
+                        if (leadData.aposentado && perfisTxt.includes('aposentado')) return true;
+                        if (leadData.bolsafamilia && String(p?.tipo || '').toLowerCase().includes('bolsafamilia')) return true;
+                        return true;
+                    });
+
+                    if (recommended.length === 0) {
+                        recommended = allProducts;
+                    }
+
+                    resultsGridEl.innerHTML = recommended.slice(0, 8).map(p => renderProductCardHTML(p)).join('');
+                }
+            }
+
+            // ===================================================
+            // 6. CARROSSEL "COMO FUNCIONA" E LINKS DE SCROLL
+            // ===================================================
             const track = document.getElementById('carousel-track');
-            const slides = Array.from(track.children);
             const nextButton = document.getElementById('nextBtn');
             const prevButton = document.getElementById('prevBtn');
             const dotsNav = document.getElementById('carousel-dots');
-            const container = document.getElementById('carousel-container');
+            const carouselContainer = document.getElementById('carousel-container');
 
-            // Validação para garantir que os elementos existem
-            if (!track || !nextButton || !prevButton || !dotsNav || slides.length === 0) {
-                console.error("Elementos do carrossel não encontrados. Verifique os IDs.");
-                return;
-            }
-            
-            const slideCount = slides.length;
-            let currentIndex = 0;
+            if (track && nextButton && prevButton && dotsNav) {
+                const slides = Array.from(track.children);
+                const slideCount = slides.length;
+                let currentIndex = 0;
 
-            // Cria os pontos de navegação dinamicamente
-            for (let i = 0; i < slideCount; i++) {
-                const dot = document.createElement('button');
-                dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
-                dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
-                dot.addEventListener('click', () => {
-                    currentIndex = i;
-                    updateCarousel();
-                });
-                dotsNav.appendChild(dot);
-            }
-            const dots = Array.from(dotsNav.children);
+                dotsNav.innerHTML = '';
 
-            // Função principal para atualizar a exibição do carrossel
-            const updateCarousel = () => {
-                // Move a faixa de slides
-                track.style.transform = `translateX(-${currentIndex * 100}%)`;
-
-                // Atualiza o estado ativo dos pontos
-                dots.forEach((dot, index) => {
-                    if (index === currentIndex) {
-                        dot.classList.add('active', 'bg-green-500');
-                        dot.classList.remove('bg-gray-300');
-                    } else {
-                        dot.classList.remove('active', 'bg-green-500');
-                        dot.classList.add('bg-gray-300');
-                    }
-                });
-
-                // Oculta/mostra botões de navegação no início/fim
-                prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-                nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
-            };
-
-            // Event Listeners para os botões
-            nextButton.addEventListener('click', () => {
-                if (currentIndex < slideCount - 1) {
-                    currentIndex++;
-                    updateCarousel();
+                for (let i = 0; i < slideCount; i++) {
+                    const dot = document.createElement('button');
+                    dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+                    dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
+                    dot.addEventListener('click', () => {
+                        currentIndex = i;
+                        updateCarousel();
+                    });
+                    dotsNav.appendChild(dot);
                 }
-            });
+                const dots = Array.from(dotsNav.children);
 
-            prevButton.addEventListener('click', () => {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updateCarousel();
-                }
-            });
+                const updateCarousel = () => {
+                    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    dots.forEach((dot, index) => {
+                        const isActive = index === currentIndex;
+                        dot.classList.toggle('active', isActive);
+                        dot.classList.toggle('bg-green-500', isActive);
+                        dot.classList.toggle('bg-gray-300', !isActive);
+                    });
+                    prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
+                    nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+                };
 
-            // Funcionalidade de Swipe para dispositivos móveis
-            let touchstartX = 0;
-            let touchendX = 0;
-
-            container.addEventListener('touchstart', e => {
-                touchstartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-
-            container.addEventListener('touchend', e => {
-                touchendX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-
-            const handleSwipe = () => {
-                // Swipe para a esquerda (próximo)
-                if (touchendX < touchstartX - 50) {
+                nextButton.addEventListener('click', () => {
                     if (currentIndex < slideCount - 1) {
                         currentIndex++;
                         updateCarousel();
                     }
-                }
-                // Swipe para a direita (anterior)
-                if (touchendX > touchstartX + 50) {
+                });
+
+                prevButton.addEventListener('click', () => {
                     if (currentIndex > 0) {
                         currentIndex--;
                         updateCarousel();
                     }
+                });
+
+                let touchstartX = 0;
+                carouselContainer?.addEventListener('touchstart', e => {
+                    touchstartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                carouselContainer?.addEventListener('touchend', e => {
+                    const touchendX = e.changedTouches[0].screenX;
+                    if (touchendX < touchstartX - 50 && currentIndex < slideCount - 1) currentIndex++;
+                    if (touchendX > touchstartX + 50 && currentIndex > 0) currentIndex--;
+                    updateCarousel();
+                });
+
+                updateCarousel();
+            }
+
+            const toggleLinks = document.querySelectorAll('.scroll-toggle');
+            const header = document.getElementById('main-header');
+            const headerHeight = header ? header.offsetHeight : 0;
+
+            toggleLinks.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    showPage('page-home');
+                    const targetHref = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetHref);
+
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+
+                    if (targetElement) {
+                        const targetPosition = targetElement.offsetTop - headerHeight;
+                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ===================================================
+            // 7. CARROSSEL DO BANNER HERO
+            // ===================================================
+            const heroSlides = [
+                {
+                    image: 'public/banner-1.png',
+                    title: 'Crédito para negativados? Temos a solução!',
+                    subtitle: 'Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.'
+                },
+                {
+                    image: 'public/banner2.png',
+                    title: 'Antecipe até R$ 300 com a Facio hoje mesmo!',
+                    subtitle: 'Consulte seu CPF gratuitamente no simulador ao lado e veja se você tem liberação rápida com taxas a partir de R$ 9,90.'
+                },
+                {
+                    image: 'public/banner3.png',
+                    title: 'Compare e contrate o produto financeiro certo para você.',
+                    subtitle: 'Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.'
                 }
+            ];
+
+            const heroBg = document.getElementById('hero-background');
+            const titleEl = document.getElementById('hero-title');
+            const subtitleEl = document.getElementById('hero-subtitle');
+            let currentSlideIndex = 0;
+
+            if (heroBg && titleEl && subtitleEl) {
+                titleEl.style.transition = 'opacity 0.5s ease-in-out';
+                subtitleEl.style.transition = 'opacity 0.5s ease-in-out';
+
+                setInterval(() => {
+                    currentSlideIndex = (currentSlideIndex + 1) % heroSlides.length;
+                    const nextSlide = heroSlides[currentSlideIndex];
+
+                    titleEl.style.opacity = '0';
+                    subtitleEl.style.opacity = '0';
+
+                    setTimeout(() => {
+                        heroBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${nextSlide.image}')`;
+                        titleEl.textContent = nextSlide.title;
+                        titleEl.style.opacity = '1';
+
+                        setTimeout(() => {
+                            subtitleEl.textContent = nextSlide.subtitle;
+                            subtitleEl.style.opacity = '1';
+                        }, 400);
+                    }, 500);
+                }, 8000);
+            }
+
+            // ===================================================
+            // 8. LISTA DE PRODUTOS (CLOUDFLARE D1 + SUPABASE)
+            // ===================================================
+            const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+            const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const listEl = document.getElementById('product-list');
+            const pagTop = document.getElementById('pagination-top');
+            const pagBottom = document.getElementById('pagination');
+            const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
+
+            const state = { all: [], filtered: [], page: 1, perPage: 10 };
+
+            const toArray = (v, lower = false) => {
+                if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
+                if (typeof v === 'string') {
+                    try {
+                        const j = JSON.parse(v);
+                        if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j;
+                    } catch (e) {}
+                    const arr = v.replace(/^\{|\}$/g, '').split(',')
+                        .map(s => s.replace(/"/g, '').trim()).filter(Boolean);
+                    return lower ? arr.map(s => s.toLowerCase()) : arr;
+                }
+                return [];
             };
 
-            // Inicia o carrossel no estado correto
-            updateCarousel();
+            const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
+
+            function activateAds() {
+                window.adsbygoogle = window.adsbygoogle || [];
+                document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
+                    .forEach(() => {
+                        try { (adsbygoogle).push({}); } catch (e) {}
+                    });
+            }
+
+            const esc = (s) => String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            const safeURL = (u) => /^https?:\/\//i.test(String(u || '')) ? String(u) : '#';
+
+            const badgeMap = {
+                red: 'bg-red-100 text-red-800',
+                blue: 'bg-blue-100 text-blue-800',
+                yellow: 'bg-yellow-100 text-yellow-800',
+                purple: 'bg-purple-100 text-purple-800'
+            };
+            const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
+
+            const isAdItem = (p) => {
+                const tipo = String(p?.tipo || '').toLowerCase().trim();
+                const tag  = String(p?.tag  || '');
+                const slot = String(p?.slot || p?.link || '').toString().trim();
+                return (
+                    tipo.includes('anuncio') ||
+                    tag.includes('ca-pub')   ||
+                    /^\d+$/.test(slot)
+                );
+            };
+
+            function renderProductCardHTML(p) {
+                const vantagens = toArray(p.vantagens, false);
+                const vHtml = vantagens.map(v => `
+                    <li class="flex items-start">
+                        <span class="mr-2 text-green-800">✓</span><span>${v}</span>
+                    </li>`
+                ).join('');
+
+                return `
+                    <div class="product-card">
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
+                            <div class="flex flex-col lg:flex-row gap-6">
+                                <div class="flex-shrink-0 flex justify-center lg:justify-start">
+                                    <div class="p-3 border rounded-lg bg-gray-50">
+                                        <img src="${fixLogo(p.logo)}" alt="Logo ${esc(p.titulo || '')}" class="w-32 h-auto object-contain"
+                                             onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                        <div class="flex-grow">
+                                            <span class="inline-block ${safeBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                                                ${esc(p.tag || '')}
+                                            </span>
+                                            <h4 class="text-xl font-bold text-gray-800 mb-3">${esc(p.titulo || '')}</h4>
+                                            <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
+                                        </div>
+                                        <div class="flex-shrink-0 mt-4 sm:mt-0">
+                                            <div class="product-actions flex flex-col gap-2">
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-primary text-center">
+                                                    ${esc(p.btnPrimario || 'Acessar')}
+                                                </a>
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-secondary text-center">
+                                                    ${esc(p.btnSecundario || 'Detalhes')}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            function buildFeed(products, ads, opts = {}) {
+                const EVERY = opts.every ?? 3;
+                const FIRST_INDEX = opts.first ?? 2;
+                const MAX_ADS_TOTAL = opts.maxAdsTotal ?? ads.length;
+
+                const merged = [];
+                let adPtr = 0;
+                let adsPlaced = 0;
+
+                for (let i = 0; i < products.length; i++) {
+                    merged.push(products[i]);
+                    const pos = merged.length - 1;
+
+                    const hitFrequency = (pos >= FIRST_INDEX) && ((pos - FIRST_INDEX + 1) % EVERY === 0);
+                    if (hitFrequency && adPtr < ads.length && adsPlaced < MAX_ADS_TOTAL) {
+                        const previousIsAd = merged.length > 0 && isAdItem(merged[merged.length - 1]);
+                        if (!previousIsAd) {
+                            merged.push(ads[adPtr++]);
+                            adsPlaced++;
+                        }
+                    }
+                }
+
+                if (products.length === 0 && ads.length > 0) {
+                    merged.push(ads[0]);
+                }
+
+                return merged;
+            }
+
+            const render = () => {
+                const start = (state.page - 1) * state.perPage;
+                const end   = start + state.perPage;
+                const items = state.filtered.slice(start, end);
+
+                listEl.innerHTML = items.length ? items.map(p => {
+                    if (isAdItem(p)) {
+                        const adClient  = p.tag;
+                        const adSlot    = (p.slot || p.link || '').toString().trim();
+                        const layoutKey = (p.tagClass || '').trim();
+
+                        if (!adClient || !/^\d+$/.test(adSlot)) return '';
+
+                        const formatAttrs = layoutKey
+                            ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
+                            : `data-ad-format="auto" data-full-width-responsive="true"`;
+
+                        return `
+                            <div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
+                                <div class="ad-card">
+                                    <span class="ad-badge">Anúncio</span>
+                                    <div class="ad-card-inner">
+                                        <ins class="adsbygoogle"
+                                             style="display:block"
+                                             data-ad-client="${adClient}"
+                                             data-ad-slot="${adSlot}"
+                                             ${formatAttrs}></ins>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    return renderProductCardHTML(p);
+                }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
+
+                setTimeout(activateAds, 0);
+
+                const total = Math.ceil(state.filtered.length / state.perPage);
+                [pagTop, pagBottom].forEach(c => {
+                    if (!c) return;
+                    c.innerHTML = '';
+                    if (total <= 1) return;
+                    const mk = (label, p, dis = false, cur = false) => {
+                        const b = document.createElement('button');
+                        b.textContent = label;
+                        b.disabled = dis || cur;
+                        b.className = cur
+                            ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
+                            : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
+                                   : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
+                        function scrollToProductsTop() {
+                            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
+                            const headerH = header ? header.offsetHeight : 0;
+                            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
+                            const y = window.pageYOffset + rect.top - headerH - 8;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                        if (!b.disabled) {
+                            b.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                state.page = p;
+                                render();
+                                scrollToProductsTop();
+                            });
+                        }
+                        return b;
+                    };
+                    c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
+                    for (let i = 1; i <= total; i++) c.appendChild(mk(String(i), i, false, i === state.page));
+                    c.appendChild(mk('Próximo', state.page + 1, state.page === total));
+                });
+            };
+
+            (function () {
+                const qs = new URLSearchParams(location.search);
+                const fromQS = qs.get('adEvery');
+                const fromLS = localStorage.getItem('adEvery');
+                const parsed = Number(fromQS ?? fromLS);
+                window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
+
+                window.setAdEvery = (n) => {
+                    n = Math.max(1, Math.floor(Number(n) || 2));
+                    localStorage.setItem('adEvery', String(n));
+                    window.AD_EVERY = n;
+                    apply();
+                };
+            })();
+
+            const apply = () => {
+                const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+                const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+                    .map(e => String(e.value || '').toLowerCase());
+
+                const all = Array.isArray(state.all) ? state.all : [];
+
+                const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
+                const matchesPerfis = (p) => {
+                    if (!perfisSel.length) return true;
+                    const txt = String(p?.perfis || '').toLowerCase();
+                    return perfisSel.every(v => txt.includes(v));
+                };
+
+                const isFiltered = !(type === 'all' && perfisSel.length === 0);
+                if (!isFiltered) {
+                    state.filtered = [...state.all];
+                    state.page = 1;
+                    render();
+                    if (window.innerWidth < 1024) closePanel();
+                    return;
+                }
+
+                const products = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
+                const ads      = all.filter(p => isAdItem(p));
+
+                const featured     = products.slice(0, 2);
+                const restProducts = products.slice(2);
+
+                const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2));
+                const maxAds = Math.min(ads.length, Math.floor(restProducts.length / every));
+                const mixed  = buildFeed(restProducts, ads, {
+                    every,
+                    first: 0,
+                    maxAdsTotal: maxAds
+                });
+
+                state.filtered = [...featured, ...mixed];
+                state.page = 1;
+                render();
+
+                if (window.innerWidth < 1024) closePanel();
+            };
+
+            filters.forEach(f => f.addEventListener('change', apply));
+
+            (async () => {
+                listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+                async function loadProducts() {
+                    let d1Products = [];
+                    let supabaseProducts = [];
+
+                    try {
+                        const res = await fetch('/api/products');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (Array.isArray(data)) d1Products = data;
+                        }
+                    } catch (e) {
+                        console.warn('D1 falhou:', e);
+                    }
+
+                    try {
+                        const { data, error } = await _supabase
+                            .from('products')
+                            .select('*')
+                            .neq('ativo', false)
+                            .order('priority_order', { ascending: true });
+                        if (!error && data) supabaseProducts = data;
+                    } catch (e) {
+                        console.warn('Supabase falhou:', e);
+                    }
+
+                    const seen = new Set();
+                    const merged = [];
+                    for (const p of [...d1Products, ...supabaseProducts]) {
+                        const key = (p.titulo || '').toLowerCase().trim();
+                        if (key && !seen.has(key)) {
+                            seen.add(key);
+                            merged.push(p);
+                        }
+                    }
+                    return merged;
+                }
+
+                const data = await loadProducts();
+
+                if (!data.length) {
+                    listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
+                    return;
+                }
+
+                state.all = data.map(p => ({ ...p, logo: fixLogo(p.logo) }));
+                apply();
+            })();
+
+            showPage('page-home');
         });
     </script>
 
+    <script src="chat.js" defer></script>
 </body>
-</html>
-
-  
-
-    <!-- Página de Resultados -->
-    <div id="resultados-page" class="page-container">
-         <main class="mx-auto max-w-6xl space-y-6 p-6">
-            <div id="loading-results" class="flex min-h-[60vh] items-center justify-center">
-                <p class="animate-pulse text-gray-500 text-2xl">Carregando as melhores ofertas para você...</p>
-            </div>
-            <div id="results-content" class="hidden">
-                 <button onclick="showPage('page-home')" class="sticky top-4 inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700 shadow hover:bg-gray-200">
-                     ← Voltar
-                 </button>
-                 <div id="results-message" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg my-6 hidden"></div>
-                 <h2 class="text-center text-2xl font-bold">
-                     Confira o que você pode pedir
-                 </h2>
-                 <div id="results-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                     <!-- Cards de parceiros serão inseridos aqui pelo JS -->
-                 </div>
-            </div>
-        </main>
-    </div>
-
-
-
-<script>
-
-   document.addEventListener('DOMContentLoaded', () => {
-    // ===================================================
-    // 1. CORE APP LOGIC & UI
-    // ===================================================
-
-    const pageContainers = document.querySelectorAll('.page-container');
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const leadForm = document.getElementById('leadFormHome');
-
-    // --- App Functions ---
-    window.showPage = (pageId) => {
-        pageContainers.forEach(container => container.classList.remove('active'));
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        mobileMenu?.classList.add('hidden');
-    };
-
-    // --- UI Event Listeners ---
-    mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
-    // ao carregar, posiciona a viewport no formulário do herói
-        requestAnimationFrame(() => {
-        const header = document.getElementById('main-header');
-        const hero   = document.getElementById('hero-section'); // onde está o form
-        if (!hero) return;
-        const headerH = header ? header.offsetHeight : 0;
-        const rect = hero.getBoundingClientRect();
-        const y = window.pageYOffset + rect.top - headerH - 8;
-        // use 'instant' para evitar "animação" inicial no mobile
-        window.scrollTo({ top: y, behavior: 'instant' });
-        });
-
-    // ===================================================
-    // 2. HOME PAGE SIMULATOR
-    // ===================================================
-
-    
-    const valorDisplay = document.getElementById('valor-display-home');
-    const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
-    const parcelasInput = document.getElementById('parcelasHome');
-    
-    // --- 2. ELEMENTOS DO FORMULÁRIO MULTI-ETAPAS ---
-    const step1 = document.getElementById('form-step-1');
-    const step2 = document.getElementById('form-step-2');
-    const nextBtn = document.getElementById('next-step-btn');
-    const prevBtn = document.getElementById('prev-step-btn');
-
-    // --- LÓGICA DO SLIDER DE VALOR ---
-    if (valorSlider && valorDisplay) {
-        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { 
-            style: 'currency', 
-            currency: 'BRL', 
-            minimumFractionDigits: 0 
-        }).format(value);
-
-        valorDisplay.textContent = formatCurrency(valorSlider.value);
-
-        valorSlider.addEventListener('input', (e) => {
-    valorDisplay.textContent = formatCurrency(e.target.value);
-        });
-    }
-
-    // --- LÓGICA DOS BOTÕES DE PARCELAS ---
-    if (parcelaBtns.length > 0 && parcelasInput) {
-        parcelaBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                parcelaBtns.forEach(b => {
-                    b.classList.remove('bg-green-500', 'text-white');
-                    b.classList.add('bg-gray-200', 'text-gray-700');
-                });
-                btn.classList.add('bg-green-500', 'text-white');
-                btn.classList.remove('bg-gray-200', 'text-gray-700');
-                
-                parcelasInput.value = btn.dataset.parcelas;
-            });
-        });
-    }
-
-    // --- LÓGICA DA NAVEGAÇÃO ENTRE ETAPAS DO FORMULÁRIO ---
-    if (step1 && step2 && nextBtn && prevBtn) {
-        nextBtn.addEventListener('click', () => {
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
-        });
-
-        prevBtn.addEventListener('click', () => {
-            step2.classList.add('hidden');
-            step1.classList.remove('hidden');
-        });
-    }
-
-    // ===================================================
-    // 3. INTEGRAÇÃO PAREADA FACIO (LEADGEN API + LINK AFILIADO)
-    // ===================================================
-    const FACIO_PARTNER_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
-const facioOfferBox = document.getElementById('facio-offer-box');
-const facioOfferDesc = document.getElementById('facio-offer-desc');
-const facioOfferDetails = document.getElementById('facio-offer-details');
-const btnFacioDirect = document.getElementById('btn-facio-direct');
-const facioStatus = document.getElementById('facio-status');
-const valorSlider = document.getElementById('valorHome');
-const valorMaxLabel = document.getElementById('valor-max-label');
-
-let facioState = {
-    lastCheckedCpf: null,
-    isAvailable: false,
-    offer: null
-};
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(value);
-}
-
-function adjustSliderForFacio(maxValue) {
-    if (!valorSlider || !maxValue) return;
-    const max = Math.min(300, maxValue); // Facio geralmente 300
-    valorSlider.max = max;
-    if (Number(valorSlider.value) > max) valorSlider.value = max;
-    valorMaxLabel.textContent = formatCurrency(max);
-    document.getElementById('valor-display-home').textContent = formatCurrency(valorSlider.value);
-}
-
-function resetSlider() {
-    if (!valorSlider) return;
-    valorSlider.max = 50000;
-    valorMaxLabel.textContent = 'R$ 50.000';
-}
-
-async function checkFacioAvailability(rawCpf) {
-    const cleanCpf = (rawCpf || '').replace(/\D/g, '');
-    if (!validateCPF(cleanCpf)) return false;
-
-    if (facioState.lastCheckedCpf === cleanCpf) {
-        return facioState.isAvailable;
-    }
-
-    facioState.lastCheckedCpf = cleanCpf;
-    facioStatus.textContent = 'Verificando disponibilidade na Facio...';
-    facioStatus.className = 'text-xs mt-1 h-4 text-blue-600';
-
-    try {
-        const res = await fetch('/api/facio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            facioState.isAvailable = !!data.isAvailable;
-            facioState.offer = data.offer || null;
-        } else {
-            facioState.isAvailable = false;
-            facioState.offer = null;
-        }
-    } catch (e) {
-        facioState.isAvailable = false;
-        facioState.offer = null;
-    }
-
-    updateFacioUI();
-    return facioState.isAvailable;
-}
-
-function updateFacioUI() {
-    if (facioState.isAvailable && facioState.offer) {
-        const o = facioState.offer;
-        facioOfferDesc.textContent = o.description || 'Antecipe até R$ 300 com a Facio.';
-        facioOfferDetails.textContent = `Até ${formatCurrency(o.maxValue)} • Taxa a partir de ${formatCurrency(o.baseFee)}`;
-        
-        facioOfferBox?.classList.remove('hidden');
-        btnFacioDirect?.classList.remove('hidden');
-        facioStatus.textContent = '✓ CPF disponível na Facio!';
-        facioStatus.className = 'text-xs mt-1 h-4 text-emerald-600 font-semibold';
-        
-        adjustSliderForFacio(o.maxValue);
-    } else {
-        facioOfferBox?.classList.add('hidden');
-        btnFacioDirect?.classList.add('hidden');
-        facioStatus.textContent = facioState.lastCheckedCpf ? 'CPF não disponível para a Facio no momento.' : '';
-        facioStatus.className = 'text-xs mt-1 h-4 text-gray-500';
-        resetSlider();
-    }
-}
-
-function buildFacioLeadPayload(formData) {
-    const name = String(formData.get('nome') || '').trim();
-    const cpf = String(formData.get('cpf') || '').replace(/\D/g, '');
-    const email = String(formData.get('email') || '').trim().toLowerCase();
-    let phone = String(formData.get('whatsapp') || '').replace(/\D/g, '');
-
-    if (phone.length === 13 && phone.startsWith('55')) phone = phone.slice(2);
-
-    if (!name || !name.includes(' ')) {
-        alert('Informe nome completo (nome e sobrenome).');
-        document.getElementById('nomeInput')?.focus();
-        return null;
-    }
-    if (!validateCPF(cpf)) {
-        alert('CPF inválido.');
-        return null;
-    }
-    if (phone.length !== 11 || phone.charAt(2) !== '9') {
-        alert('Informe celular válido com DDD e 9 (ex: 11999999999).');
-        return null;
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert('E-mail inválido.');
-        return null;
-    }
-
-    return {
-        personalInfo: { name, cpf },
-        contactInfo: { email, phone },
-        campaign: 'ds_banner',
-        financialInfo: { loanAmount: Number(formData.get('valor')) || 300 },
-        otherInfo: { hasCreditRestrictions: formData.has('negativado') }
-    };
-}
-
-btnFacioDirect?.addEventListener('click', async () => {
-    if (!leadForm) return;
-    const formData = new FormData(leadForm);
-    const payload = buildFacioLeadPayload(formData);
-    if (!payload) return;
-
-    const originalText = btnFacioDirect.innerHTML;
-    btnFacioDirect.disabled = true;
-    btnFacioDirect.innerHTML = 'Redirecionando para a Facio...';
-
-    try {
-        const res = await fetch('/api/facio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'lead',
-                ...payload,
-                nome: payload.personalInfo.name,
-                cpf: payload.personalInfo.cpf,
-                email: payload.contactInfo.email,
-                whatsapp: payload.contactInfo.phone
-            })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            if (data.registrationUrl) {
-                window.location.href = data.registrationUrl;
-                return;
-            }
-        } else if (res.status === 409) {
-            alert('Este CPF não pode ser atribuído à Facio no momento.');
-        }
-    } catch (e) {
-        console.error(e);
-    }
-
-    // Fallback
-    window.location.href = FACIO_PARTNER_URL;
-    btnFacioDirect.disabled = false;
-    btnFacioDirect.innerHTML = originalText;
-});
-
-// Monitora CPF
-if (cpfInput) {
-    cpfInput.addEventListener('input', (e) => {
-        const clean = e.target.value.replace(/\D/g, '');
-        if (clean.length < 11) {
-            facioOfferBox?.classList.add('hidden');
-            btnFacioDirect?.classList.add('hidden');
-            facioState.lastCheckedCpf = null;
-            facioStatus.textContent = '';
-            resetSlider();
-        } else if (clean.length === 11 && validateCPF(clean)) {
-            checkFacioAvailability(clean);
-        }
-    });
-}
-
-    // ===================================================
-    // 4. "HOW IT WORKS" CAROUSEL
-    // ===================================================
-    const track = document.getElementById('carousel-track');
-    const nextButton = document.getElementById('nextBtn');
-    const prevButton = document.getElementById('prevBtn');
-    const dotsNav = document.getElementById('carousel-dots');
-    const carouselContainer = document.getElementById('carousel-container');
-
-    if (track && nextButton && prevButton && dotsNav) {
-        const slides = Array.from(track.children);
-        const slideCount = slides.length;
-        let currentIndex = 0;
-
-        dotsNav.innerHTML = ''; 
-
-        for (let i = 0; i < slideCount; i++) {
-            const dot = document.createElement('button');
-            dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
-            dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
-            dot.addEventListener('click', () => {
-                currentIndex = i;
-                updateCarousel();
-            });
-            dotsNav.appendChild(dot);
-        }
-        const dots = Array.from(dotsNav.children);
-
-        const updateCarousel = () => {
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
-            dots.forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
-            prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-            nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
-        };
-
-        nextButton.addEventListener('click', () => {
-            if (currentIndex < slideCount - 1) {
-                currentIndex++;
-                updateCarousel();
-            }
-        });
-        
-        prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCarousel();
-            }
-        });
-        
-        let touchstartX = 0;
-        carouselContainer?.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, { passive: true });
-        carouselContainer?.addEventListener('touchend', e => {
-            const touchendX = e.changedTouches[0].screenX;
-            if (touchendX < touchstartX - 50 && currentIndex < slideCount - 1) currentIndex++;
-            if (touchendX > touchstartX + 50 && currentIndex > 0) currentIndex--;
-            updateCarousel();
-        });
-
-        updateCarousel();
-    }
-
-    // ===================================================
-    // 5. INITIALIZATION
-    // ===================================================
-    
-    showPage('page-home');
-});
-
-    function setupScrollToggle() {
-        const toggleLinks = document.querySelectorAll('.scroll-toggle');
-        const header = document.getElementById('main-header');
-        const headerHeight = header ? header.offsetHeight : 0;
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        let activeToggleHref = null;
-
-        toggleLinks.forEach(link => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-
-                const targetHref = this.getAttribute('href');
-                const targetElement = document.querySelector(targetHref);
-
-                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
-                }
-
-                if (activeToggleHref === targetHref) {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                    activeToggleHref = null;
-                } else {
-                    if (targetElement) {
-                        const targetPosition = targetElement.offsetTop - headerHeight;
-                        window.scrollTo({
-                            top: targetPosition,
-                            behavior: 'smooth'
-                        });
-                        activeToggleHref = targetHref;
-                    } else {
-                        console.warn('Elemento de destino para o scroll não encontrado:', targetHref);
-                    }
-                }
-            });
-        });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupScrollToggle);
-    } else {
-        setupScrollToggle();
-    }
-    
-    const cpfInput = document.getElementById('cpf');
-    const whatsappInput = document.getElementById('whatsapp');
-    const cpfMessage = document.getElementById('cpf-message');
-
-function formatCPF(value) {
-    const numericValue = value.replace(/\D/g, '');
-    return numericValue
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})/, '$1-$2');
-}
-
-function formatPhone(value) {
-    const numericValue = value.replace(/\D/g, '');
-    return numericValue
-        .replace(/^(\d{2})(\d)/g, '($1) $2')
-        .replace(/(\d{5})(\d)/, '$1-$2');
-}
-
-function validateCPF(cpf) {
-    const cleanCPF = (cpf || '').replace(/\D/g, '');
-    if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) {
-        return false;
-    }
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-        sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
-    }
-    let remainder = sum % 11;
-    let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
-    if (firstVerifier !== parseInt(cleanCPF.charAt(9))) {
-        return false;
-    }
-    sum = 0;
-    for (let i = 0; i < 10; i++) {
-        sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
-    }
-    remainder = sum % 11;
-    let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
-    if (secondVerifier !== parseInt(cleanCPF.charAt(10))) {
-        return false;
-    }
-    return true;
-}
-
-if (cpfInput) {
-    cpfInput.addEventListener('input', (e) => {
-        e.target.value = formatCPF(e.target.value);
-        cpfInput.classList.remove('valid-input', 'invalid-input');
-        if (cpfMessage) {
-            cpfMessage.textContent = '';
-            cpfMessage.className = 'text-xs mt-1 h-4';
-        }
-        if (e.target.value.length === 14) {
-            const isValid = validateCPF(e.target.value);
-            if (isValid) {
-                cpfInput.classList.add('valid-input');
-                if (cpfMessage) {
-                    cpfMessage.textContent = '✓ CPF válido!';
-                    cpfMessage.classList.add('text-green-600');
-                }
-            } else {
-                cpfInput.classList.add('invalid-input');
-                if (cpfMessage) {
-                    cpfMessage.textContent = 'CPF inválido.';
-                    cpfMessage.classList.add('text-red-600');
-                }
-            }
-        }
-    });
-}
-if (whatsappInput) {
-    whatsappInput.addEventListener('input', (e) => {
-        e.target.value = formatPhone(e.target.value);
-    });
-}
-
-{
-    // --- Lógica do Carrossel do Banner ---
-    const slides = [
-        {
-            image: 'public/banner-1.png',
-            title: 'Crédito para negativados? Temos a solução!',
-            subtitle: 'Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.'
-        },
-
-        {
-            image: 'public/banner2.png', 
-            title: 'É Aposentado ou Pensionista do INSS?',
-            subtitle: 'Aproveite condições de crédito exclusivas e vantajosas, pensadas especialmente para valorizar sua história.'
-        },
-        {
-            image: 'public/banner3.png',
-            title: 'Compare e contrate o produto financeiro certo para você.',
-            subtitle: 'Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.'
-        },
-
-        {
-            image: 'https://placehold.co/1920x1080/059669/FFFFFF?text=FGTS',
-            title: 'Antecipe seu FGTS com as melhores taxas do mercado.',
-            subtitle: 'Use seu saldo do FGTS como garantia e consiga crédito rápido, fácil e com juros baixos.'
-        },
-    ];
-
-    const heroSection = document.getElementById('hero-section');
-    const titleEl = document.getElementById('hero-title');
-    const subtitleEl = document.getElementById('hero-subtitle');
-
-    let currentSlideIndex = 0;
-
-    function changeSlide() {
-        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-        const nextSlide = slides[currentSlideIndex];
-
-        titleEl.style.opacity = '0';
-        subtitleEl.style.opacity = '0';
-        
-        setTimeout(() => {
-            heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${nextSlide.image}')`;
-            titleEl.textContent = nextSlide.title;
-            titleEl.style.opacity = '1';
-
-            setTimeout(() => {
-                subtitleEl.textContent = nextSlide.subtitle;
-                subtitleEl.style.opacity = '1';
-            }, 500);
-
-        }, 600);
-    }
-
-    function initializeCarousel() {
-        if (!heroSection || !titleEl || !subtitleEl) return;
-
-        titleEl.style.transition = 'opacity 0.5s ease-in-out';
-        subtitleEl.style.transition = 'opacity 0.5s ease-in-out';
-
-        const initialSlide = slides[0];
-        heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${initialSlide.image}')`;
-        titleEl.textContent = initialSlide.title;
-        subtitleEl.textContent = initialSlide.subtitle;
-
-        setInterval(changeSlide, 8000);
-    }
-
-    initializeCarousel();
-}
-  const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // 2) Elementos
-  const listEl = document.getElementById('product-list');
-  const pagTop = document.getElementById('pagination-top');
-  const pagBottom = document.getElementById('pagination');
-  const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
-  
-
-  // 3) Estado
-  const state = { all: [], filtered: [], page: 1, perPage: 10 };
-
-  // 4) Helpers de normalização
-  const toArray = (v, lower = false) => {
-    if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
-    if (typeof v === 'string') {
-      try { const j = JSON.parse(v); if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j; } catch(e){}
-      const arr = v.replace(/^\{|\}$/g,'').split(',')
-        .map(s => s.replace(/"/g,'').trim()).filter(Boolean);
-      return lower ? arr.map(s => s.toLowerCase()) : arr;
-    }
-    return [];
-  };
-  const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
-  const tagBadge = (c) => ({ red:'bg-red-100 text-red-800', blue:'bg-blue-100 text-blue-800', yellow:'bg-yellow-100 text-yellow-800', purple:'bg-purple-100 text-purple-800' }[c] || 'bg-green-100 text-green-800');
-
-   function activateAds(){
-    window.adsbygoogle = window.adsbygoogle || [];
-    document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
-    .forEach(() => {
-    try { (adsbygoogle).push({}); } catch(e) { }
-    });
-    }
-
-  // ==== SANITIZADORES/WHITELISTS ====
-  const esc = (s) => String(s ?? '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-
-  const safeURL = (u) => /^https?:\/\//i.test(String(u || '')) ? String(u) : '#';
-
-  const ADS_CLIENT = 'ca-pub-4935884639623224';
-  const safeSlot = (s) => /^\d+$/.test(String(s || '')) ? String(s) : '';
-  const safeLayoutKey = (k) => /^[A-Za-z0-9._-]+$/.test(String(k || '')) ? String(k) : '';
-
-  const badgeMap = {
-    red:'bg-red-100 text-red-800',
-    blue:'bg-blue-100 text-blue-800',
-    yellow:'bg-yellow-100 text-yellow-800',
-    purple:'bg-purple-100 text-purple-800'
-  };
-  const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
-
-const isAdItem = (p) => {
-  const tipo = String(p?.tipo || '').toLowerCase().trim();
-  const tag  = String(p?.tag  || '');
-  const slot = String(p?.slot || p?.link || '').toString().trim();
-  return (
-    tipo.includes('anuncio') ||
-    tag.includes('ca-pub')   ||
-    /^\d+$/.test(slot)
-  );
-};
-
-  function buildFeed(products, ads, opts = {}) {
-    const EVERY = opts.every ?? 3;
-    const FIRST_INDEX = opts.first ?? 2;
-    const MAX_ADS_TOTAL = opts.maxAdsTotal ?? ads.length;
-
-    const merged = [];
-    let adPtr = 0;
-    let adsPlaced = 0;
-
-    for (let i = 0; i < products.length; i++) {
-      merged.push(products[i]);
-      const pos = merged.length - 1;
-
-      const hitFrequency = (pos >= FIRST_INDEX) && ((pos - FIRST_INDEX + 1) % EVERY === 0);
-      if (hitFrequency && adPtr < ads.length && adsPlaced < MAX_ADS_TOTAL) {
-        const previousIsAd = merged.length > 0 && isAdItem(merged[merged.length - 1]);
-        if (!previousIsAd) {
-          merged.push(ads[adPtr++]);
-          adsPlaced++;
-        }
-      }
-    }
-
-    if (products.length === 0 && ads.length > 0) {
-      merged.push(ads[0]);
-    }
-
-    return merged;
-  }
-
-
-  const render = () => {
-    const start = (state.page - 1) * state.perPage;
-    const end   = start + state.perPage;
-    const items = state.filtered.slice(start, end);
-
-    listEl.innerHTML = items.length ? items.map(p => {
-
-if (isAdItem(p)) {  
-  const adClient  = p.tag;
-  const adSlot    = (p.slot || p.link || '').toString().trim();
-  const layoutKey = (p.tagClass || '').trim();
-
-  if (!adClient || !/^\d+$/.test(adSlot)) return '';
-
-  const formatAttrs = layoutKey
-    ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
-    : `data-ad-format="auto" data-full-width-responsive="true"`;
-
-  return `
-    <div class="product-card w-full bg-transparent p-0 border-0 shadow-none col-span-full">
-      <div class="ad-card">
-        <span class="ad-badge">Anúncio</span>
-        <div class="ad-card-inner">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="${adClient}"
-               data-ad-slot="${adSlot}"
-               ${formatAttrs}></ins>
-        </div>
-      </div>
-    </div>`;
-}
-
-      const vantagens = toArray(p.vantagens, false);
-      const vHtml = vantagens.map(v => `
-  <li class="flex items-start">
-    <span class="mr-2 text-green-800">✓</span><span>${v}</span>
-  </li>`
-).join('');
-      return `
-  <div class="product-card">
-    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <div class="flex-shrink-0 flex justify-center lg:justify-start">
-          <div class="p-3 border rounded-lg bg-gray-50">
-            <img src="${fixLogo(p.logo)}" alt="Logo ${esc(p.titulo || '')}" class="w-32 h-auto object-contain"
-                 onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
-          </div>
-        </div>
-        <div class="flex-grow">
-          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div class="flex-grow">
-              <span class="inline-block ${safeBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                ${esc(p.tag || '')}
-              </span>
-              <h4 class="text-xl font-bold text-gray-800 mb-3">${esc(p.titulo || '')}</h4>
-              <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
-            </div>
-            <div class="flex-shrink-0 mt-4 sm:mt-0">
-              <div class="product-actions flex flex-col gap-2">
-                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-primary text-center">
-                  ${esc(p.btnPrimario || 'Acessar')}
-                </a>
-                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-secondary text-center">
-                  ${esc(p.btnSecundario || 'Detalhes')}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-
-    }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
-
-    setTimeout(activateAds, 0);
-
-    const total = Math.ceil(state.filtered.length / state.perPage);
-    [pagTop, pagBottom].forEach(c => {
-      if (!c) return; c.innerHTML = ''; if (total <= 1) return;
-      const mk = (label, p, dis=false, cur=false) => {
-        const b = document.createElement('button');
-        b.textContent = label; b.disabled = dis || cur;
-        b.className = cur
-          ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-          : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
-                 : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
-        function scrollToProductsTop() {
-            const header = document.getElementById('main-header');
-            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
-            const headerH = header ? header.offsetHeight : 0;
-            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
-            const y = window.pageYOffset + rect.top - headerH - 8;
-
-            window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-        if (!b.disabled) b.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            state.page = p;
-            render();
-            scrollToProductsTop();
-        });
-        
-        return b;
-      };
-      c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
-      for (let i=1;i<=total;i++) c.appendChild(mk(String(i), i, false, i === state.page));
-      c.appendChild(mk('Próximo', state.page + 1, state.page === total));
-      
-    });
-    
-  };
-
-  setTimeout(activateAds, 0);
-
-(function () {
-  const qs = new URLSearchParams(location.search);
-  const fromQS = qs.get('adEvery');
-  const fromLS = localStorage.getItem('adEvery');
-  const parsed = Number(fromQS ?? fromLS);
-  window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
-
-  window.setAdEvery = (n) => {
-    n = Math.max(1, Math.floor(Number(n) || 2));
-    localStorage.setItem('adEvery', String(n));
-    window.AD_EVERY = n;
-    apply();
-  };
-})();
-
-const apply = () => {
-  const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-  const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-    .map(e => String(e.value || '').toLowerCase());
-
-  const all = Array.isArray(state.all) ? state.all : [];
-
-  const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
-  const matchesPerfis = (p) => {
-    if (!perfisSel.length) return true;
-    const txt = String(p?.perfis || '').toLowerCase();
-    return perfisSel.every(v => txt.includes(v));
-  };
-
-  const isFiltered = !(type === 'all' && perfisSel.length === 0);
-  if (!isFiltered) {
-    state.filtered = [...state.all];
-    state.page = 1;
-    render();
-    if (window.innerWidth < 1024) {
-      const panel = document.getElementById('filter-panel');
-      const overlay = document.getElementById('filter-overlay');
-      panel?.classList.add('translate-x-full');
-      if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
-      document.body.style.overflow = '';
-    }
-    return;
-  }
-
-  const products = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
-  const ads      = all.filter(p => isAdItem(p));
-
-  const featured     = products.slice(0, 2);
-  const restProducts = products.slice(2);
-
-const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2));
-const maxAds = Math.min(ads.length, Math.floor(restProducts.length / every));
-const mixed  = buildFeed(restProducts, ads, {
-  every,
-  first: 0,
-  maxAdsTotal: maxAds
-});
-
-  state.filtered = [...featured, ...mixed];
-  state.page = 1;
-  render();
-
-  if (window.innerWidth < 1024) {
-    const panel = document.getElementById('filter-panel');
-    const overlay = document.getElementById('filter-overlay');
-    panel?.classList.add('translate-x-full');
-    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
-    document.body.style.overflow = '';
-  }
-};
-
-  filters.forEach(f => f.addEventListener('change', apply));
-
- // 7) Boot
-  (async () => {
-    listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-
-    async function loadProducts() {
-      let d1Products = [];
-      let supabaseProducts = [];
-
-      // Tenta D1
-      try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) d1Products = data;
-        }
-      } catch (e) {
-        console.warn('D1 falhou:', e);
-      }
-
-      // Busca sempre no Supabase
-      try {
-        const { data, error } = await _supabase
-          .from('products')
-          .select('*')
-          .neq('ativo', false)
-          .order('priority_order', { ascending: true });
-        if (!error && data) supabaseProducts = data;
-      } catch (e) {
-        console.warn('Supabase falhou:', e);
-      }
-
-      // Junta os dois (sem duplicar pelo título)
-      const seen = new Set();
-      const merged = [];
-      for (const p of [...d1Products, ...supabaseProducts]) {
-        const key = (p.titulo || '').toLowerCase().trim();
-        if (key && !seen.has(key)) {
-          seen.add(key);
-          merged.push(p);
-        }
-      }
-      return merged;
-    }
-
-    const data = await loadProducts();
-
-    if (!data.length) {
-      listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
-      return;
-    }
-
-    state.all = data.map(p => ({ ...p, logo: fixLogo(p.logo) }));
-    apply();
-  })();
-  
-</script>
-
-
-
-<script src="chat.js" defer></script>
-</body>
-
-
-
-
-
 </html>
