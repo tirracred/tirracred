@@ -1,19 +1,10 @@
-Para resolver definitivamente o problema de a imagem da Velotax (ou de qualquer alteração feita no seu admin) não aparecer na página de resultados (resultados.html), e para deixar a interface dos resultados muito mais robusta, profissional e interativa, ajustamos os seguintes pontos críticos:
- * Correção do Caminho das Logos: No seu código antigo de resultados, a função de renderização buscava as imagens usando ../${product.logo}. Porém, o admin envia caminhos que começam com public/..., URLs completas (como Supabase Storage) ou strings em data:image/... (Base64 otimizada). Quando concatenado com ../, o caminho quebrava (virando ../public/... ou gerando erro de carregamento). Agora, utilizamos a função inteligente resolveLogo() que trata perfeitamente qualquer formato de imagem salvo pelo admin.
- * Interface Premium e Completa: A página de resultados agora conta com:
-   * Dashboard de Diagnóstico de Perfil: Um painel superior interativo que exibe o resumo da simulação do cliente (Nome, Valor pretendido, Perfil selecionado como Negativado, Aposentado ou Bolsa Família, e o status em tempo real da análise da Facio).
-   * Abas de Filtro Rápido: O usuário pode alternar instantaneamente entre "Todas as Ofertas", "Empréstimos / Pix", "Aceita Negativado" e "Cartões" sem recarregar a página.
-   * Cards Visuais de Alta Conversão: Cada oferta exibe o selo de recomendação do admin (tag e tagClass), medidor de compatibilidade em barra de progresso, lista de vantagens formatadas e botão de destaque btn-pulse.
- * Sincronização 100% Híbrida (Cloudflare D1 + Supabase): A página de resultados agora consulta exatamente as mesmas fontes do seu admin e da home, garantindo que qualquer produto novo, edição de título ou troca de logo apareça instantaneamente nos resultados.
-Código Completo Atualizado: pages/resultados.html
-Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código abaixo:
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suas Recomendações de Crédito - TirraCred</title>
-    <link rel="icon" type="image/png" href="../public/favincon.png"/>
+    <title>Diagnóstico e Ofertas Pré-Aprovadas - TirraCred</title>
+    <link rel="icon" type="image/png" href="/api/favicon" onerror="this.href='../public/favincon.png'"/>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,39 +15,70 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        :root {
+            --brand-green: #10b981;
+            --brand-dark: #064e3b;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0fdf4;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.10) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(5, 150, 105, 0.08) 0px, transparent 50%);
+            overflow-x: hidden;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(16px); }
+        /* Animações Imersivas */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(22px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes pulseGlow {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
-            50% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
         }
 
-        .fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-float {
+            animation: floatSlow 3.5s ease-in-out infinite;
+        }
+
+        .shimmer-badge {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2.8s infinite;
+        }
+
+        /* Estilização dos Cards */
         .product-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .product-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-7px);
+            box-shadow: 0 24px 38px -8px rgba(6, 78, 59, 0.14), 0 10px 15px -6px rgba(0, 0, 0, 0.05);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            padding: 14px 24px;
-            border-radius: 12px;
+            padding: 14px 22px;
+            border-radius: 14px;
             font-weight: 800;
             text-decoration: none;
             display: inline-flex;
@@ -64,49 +86,105 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
             justify-content: center;
             gap: 8px;
             transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.32);
             text-align: center;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(16, 185, 129, 0.45);
+            box-shadow: 0 10px 22px rgba(16, 185, 129, 0.45);
         }
 
         .btn-pulse {
             animation: pulseGlow 2.2s infinite;
         }
 
-        .progress-bar-fill {
-            transition: width 1s ease-in-out;
+        /* Sliders customizados */
+        input[type=range].custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
         }
+        input[type=range].custom-slider:focus {
+            outline: none;
+        }
+        input[type=range].custom-slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1fae5;
+            border-radius: 999px;
+        }
+        input[type=range].custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #059669;
+            border: 3px solid #ffffff;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            transition: transform 0.15s ease;
+        }
+        input[type=range].custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Gauge Circular */
+        .gauge-circle {
+            transition: stroke-dashoffset 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Scrollbar sutil */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 
+    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
 </head>
-<body class="bg-green-50 text-gray-800 min-h-screen flex flex-col">
+<body class="text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Alerta de Segurança -->
-    <div class="bg-yellow-400 text-center p-2.5 text-xs sm:text-sm font-semibold text-yellow-950 shadow-sm">
-        🔒 Atenção! A TirraCred nunca cobra depósito antecipado para liberação de empréstimos.
+    <!-- Barra de Segurança Fixa no Topo -->
+    <div class="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 text-yellow-950 text-center py-2 px-4 text-xs sm:text-sm font-bold shadow-sm z-50">
+        <div class="container mx-auto flex items-center justify-center gap-2">
+            <i class="fas fa-shield-halved text-amber-900"></i>
+            <span>Norma de Segurança Bacen: A TirraCred e seus parceiros <u>nunca</u> cobram taxa ou depósito antecipado para liberar empréstimos.</span>
+        </div>
     </div>
 
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+    <header class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-emerald-100">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <a href="../index.html" class="flex items-center gap-2">
-                    <img src="../public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='/public/logo.png';">
+                <a href="../index.html" class="flex items-center gap-3 group">
+                    <img src="../public/logo.png" alt="TirraCred" class="h-8 w-auto transition-transform group-hover:scale-105"
+                         onerror="this.onerror=null;this.src='/public/logo.png';">
+                    <span class="hidden md:inline-block text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                        Motor Inteligente v3.5
+                    </span>
                 </a>
 
-                <div class="flex items-center gap-3">
-                    <span class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        Análise de Perfil Ativa
-                    </span>
-                    <a href="../index.html" class="text-sm text-gray-600 hover:text-green-600 font-semibold border border-gray-200 rounded-lg px-3.5 py-1.5 hover:bg-gray-50 transition">
-                        &larr; Nova Simulação
+                <div class="flex items-center gap-2.5 sm:gap-4">
+                    <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+                        </span>
+                        <span id="header-live-status">Sincronizado em Tempo Real</span>
+                    </div>
+
+                    <button type="button" onclick="openProfileTunerModal()" class="text-xs sm:text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl px-3.5 py-2 transition flex items-center gap-1.5">
+                        <i class="fas fa-sliders"></i>
+                        <span>Ajustar Perfil</span>
+                    </button>
+
+                    <a href="../index.html" class="text-xs sm:text-sm text-gray-600 hover:text-gray-900 font-semibold border border-gray-200 rounded-xl px-3.5 py-2 hover:bg-gray-50 transition">
+                        <i class="fas fa-arrow-left mr-1"></i> Início
                     </a>
                 </div>
             </div>
@@ -114,176 +192,636 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
     </header>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-grow py-8 sm:py-12">
+    <main class="flex-grow py-6 sm:py-10">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
 
-            <!-- ESTADO DE CARREGAMENTO INTERATIVO -->
-            <div id="loading-state" class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 sm:p-12 text-center max-w-xl mx-auto my-8">
-                <div class="relative w-20 h-20 mx-auto mb-6">
-                    <svg class="animate-spin w-full h-full text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="absolute inset-0 flex items-center justify-center text-2xl">🔍</span>
+            <!-- ========================================================= -->
+            <!-- 1. TELA DE CARREGAMENTO IMERSIVA (RADAR DE CRÉDITO)       -->
+            <!-- ========================================================= -->
+            <div id="loading-state" class="bg-white rounded-3xl shadow-2xl border border-emerald-100 p-6 sm:p-10 text-center max-w-2xl mx-auto my-6 relative overflow-hidden">
+                <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100">
+                    <div id="loading-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-300" style="width: 15%"></div>
                 </div>
 
-                <h1 class="text-2xl font-extrabold text-gray-900">
-                    Cruzando dados do seu perfil...
+                <div class="relative w-24 h-24 mx-auto mb-5 flex items-center justify-center">
+                    <div class="absolute inset-0 rounded-full border-4 border-emerald-100 animate-ping opacity-40"></div>
+                    <svg class="animate-spin w-full h-full text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3.5"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="loading-percent" class="absolute text-lg font-black text-emerald-800">15%</span>
+                </div>
+
+                <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 mb-2">
+                    <i class="fas fa-microchip"></i> Motor Autônomo TirraCred
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-black text-gray-900">
+                    Analisando as melhores ofertas para você...
                 </h1>
                 <p class="text-gray-600 mt-2 text-sm sm:text-base">
-                    Olá, <span id="lead-name" class="font-bold text-green-700">Cliente</span>! Estamos verificando a elegibilidade do seu CPF nas instituições parceiras.
+                    Olá, <span id="lead-name" class="font-extrabold text-emerald-700">Cliente</span>! Estamos cruzando seu perfil com as regras atualizadas dos nossos parceiros bancários.
                 </p>
 
-                <div class="mt-6 space-y-2.5 text-left bg-gray-50 p-4 rounded-2xl border border-gray-200 text-xs sm:text-sm">
-                    <div class="flex items-center gap-2.5 text-emerald-700 font-semibold">
-                        <i class="fas fa-check-circle"></i>
-                        <span>1. Validando parâmetros de crédito e valor solicitado...</span>
+                <div class="mt-6 space-y-3 text-left bg-slate-50 p-5 rounded-2xl border border-slate-200 text-xs sm:text-sm">
+                    <div id="step-load-1" class="flex items-center justify-between text-emerald-700 font-bold">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-check-circle text-base"></i>
+                            <span>1. Parâmetros de valor e modalidade validados</span>
+                        </div>
+                        <span class="text-[11px] bg-emerald-100 px-2 py-0.5 rounded font-extrabold">OK</span>
                     </div>
-                    <div id="loading-step-2" class="flex items-center gap-2.5 text-gray-500">
-                        <i class="fas fa-circle-notch fa-spin text-green-600"></i>
-                        <span>2. Consultando janela de atribuição na Facio e parceiros...</span>
+                    <div id="step-load-2" class="flex items-center justify-between text-gray-600 font-medium">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas fa-circle-notch fa-spin text-emerald-600 text-base"></i>
+                            <span>2. Consultando janela de pré-aprovação na API Facio...</span>
+                        </div>
+                        <span class="text-[11px] text-gray-400">Em curso</span>
                     </div>
-                    <div id="loading-step-3" class="flex items-center gap-2.5 text-gray-400">
-                        <i class="far fa-circle"></i>
-                        <span>3. Ordenando ofertas com maior taxa de aprovação hoje...</span>
+                    <div id="step-load-3" class="flex items-center justify-between text-gray-400">
+                        <div class="flex items-center gap-2.5">
+                            <i class="far fa-circle text-base"></i>
+                            <span>3. Sincronizando ofertas ativas (Cloudflare D1 + Supabase)...</span>
+                        </div>
+                        <span class="text-[11px]">Aguardando</span>
+                    </div>
+                    <div id="step-load-4" class="flex items-center justify-between text-gray-400">
+                        <div class="flex items-center gap-2.5">
+                            <i class="far fa-circle text-base"></i>
+                            <span>4. Calculando ranking autônomo de compatibilidade...</span>
+                        </div>
+                        <span class="text-[11px]">Aguardando</span>
                     </div>
                 </div>
             </div>
 
-            <!-- CONTEÚDO DOS RESULTADOS -->
+            <!-- ========================================================= -->
+            <!-- 2. CONTEÚDO COMPLETO DOS RESULTADOS                       -->
+            <!-- ========================================================= -->
             <div id="results-content" class="hidden space-y-8">
 
-                <!-- 1. PAINEL DE DIAGNÓSTICO DO PERFIL -->
-                <section id="diagnostic-dashboard" class="bg-white rounded-3xl shadow-lg border border-emerald-200 overflow-hidden fade-in">
-                    <div class="bg-gradient-to-r from-emerald-900 via-green-800 to-emerald-700 px-6 py-5 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full mb-2">
-                                <i class="fas fa-shield-alt"></i> Diagnóstico Concluído
-                            </span>
-                            <h1 id="dashboard-greeting" class="text-2xl sm:text-3xl font-extrabold">
-                                Encontramos excelentes oportunidades para você!
-                            </h1>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-left md:text-right shrink-0">
-                            <span class="block text-xs text-emerald-100 uppercase font-semibold">Valor Simulado</span>
-                            <span id="dashboard-valor" class="text-2xl font-black text-white">R$ 1.000,00</span>
+                <!-- 2.1 DASHBOARD EXECUTIVO DE DIAGNÓSTICO DO PERFIL -->
+                <section class="bg-white rounded-3xl shadow-xl border border-emerald-200/80 overflow-hidden animate-fade-up">
+                    <!-- Top Header Gradient -->
+                    <div class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-green-800 p-6 sm:p-8 text-white relative overflow-hidden">
+                        <div class="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                            <!-- Saudação e Resumo -->
+                            <div class="lg:col-span-7 space-y-3">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 px-3 py-1 rounded-full">
+                                        <i class="fas fa-check-double"></i> Diagnóstico Financeiro Concluído
+                                    </span>
+                                    <span id="active-offers-count-badge" class="inline-flex items-center gap-1 text-xs font-bold bg-white/10 text-white px-3 py-1 rounded-full">
+                                        <i class="fas fa-building-columns text-emerald-300"></i> Carregando parceiros...
+                                    </span>
+                                </div>
+
+                                <h1 id="dashboard-greeting" class="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight">
+                                    Encontramos excelentes oportunidades para você!
+                                </h1>
+
+                                <p id="dashboard-subtitle" class="text-emerald-100 text-sm sm:text-base leading-relaxed max-w-2xl">
+                                    Nosso motor autônomo cruzou o seu perfil com as instituições que estão aprovando hoje com menor burocracia.
+                                </p>
+
+                                <!-- Chips Interativos do Perfil Atual -->
+                                <div class="pt-2 flex flex-wrap items-center gap-2" id="active-profile-chips"></div>
+                            </div>
+
+                            <!-- Termômetro de Aprovação + Valor Simulado -->
+                            <div class="lg:col-span-5 grid grid-cols-2 gap-3 sm:gap-4">
+                                <!-- Gauge de Chance Geral -->
+                                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+                                    <div class="relative w-20 h-20 mb-1">
+                                        <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                            <path class="text-white/15" stroke-width="3.5" stroke="currentColor" fill="none"
+                                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                            <path id="score-gauge-path" class="text-emerald-400 gauge-circle" stroke-width="3.5" stroke-dasharray="94, 100" stroke-linecap="round" stroke="currentColor" fill="none"
+                                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                        </svg>
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span id="score-gauge-text" class="text-xl font-black text-white">94%</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[11px] uppercase tracking-wider text-emerald-200 font-bold">Índice de Match</span>
+                                    <span class="text-xs text-white/90 font-semibold">Alta Compatibilidade</span>
+                                </div>
+
+                                <!-- Box Valor Desejado + Botão Alterar -->
+                                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex flex-col justify-between">
+                                    <div>
+                                        <span class="block text-[11px] text-emerald-200 uppercase font-bold tracking-wider">Valor Solicitado</span>
+                                        <span id="dashboard-valor" class="text-xl sm:text-2xl font-black text-white block mt-0.5">R$ 1.000,00</span>
+                                        <span id="dashboard-parcelas" class="text-xs text-emerald-100 font-medium">Prazo: 12x</span>
+                                    </div>
+                                    <button type="button" onclick="openProfileTunerModal()" class="mt-3 w-full py-2 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold text-white transition flex items-center justify-center gap-1.5">
+                                        <i class="fas fa-pen-to-square"></i> Alterar Valor / Perfil
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-gray-100 bg-emerald-50/40">
-                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
-                                <i class="fas fa-user-check"></i>
+                    <!-- 4 Indicadores Rápidos de Diagnóstico -->
+                    <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-emerald-50/40 border-b border-gray-100">
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg shrink-0">
+                                <i class="fas fa-user-shield"></i>
                             </div>
-                            <div>
-                                <span class="block text-xs text-gray-500 font-medium">Perfil Identificado</span>
-                                <span id="dashboard-perfil" class="text-sm font-extrabold text-gray-900">Crédito Pessoal</span>
+                            <div class="min-w-0">
+                                <span class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Enquadramento</span>
+                                <span id="dashboard-perfil" class="text-sm font-extrabold text-gray-900 truncate block">Crédito Pessoal</span>
                             </div>
                         </div>
 
-                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl shrink-0">
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg shrink-0">
                                 <i class="fas fa-bolt"></i>
                             </div>
-                            <div>
-                                <span class="block text-xs text-gray-500 font-medium">Status Antecipação Facio</span>
-                                <span id="dashboard-facio-status" class="text-sm font-extrabold text-emerald-700">Verificando...</span>
+                            <div class="min-w-0">
+                                <span class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Status API Facio</span>
+                                <span id="dashboard-facio-status" class="text-sm font-extrabold text-emerald-700 truncate block">Verificando...</span>
                             </div>
                         </div>
 
-                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-                            <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
-                                <i class="fas fa-chart-line"></i>
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg shrink-0">
+                                <i class="fas fa-clock-rotate-left"></i>
                             </div>
-                            <div>
-                                <span class="block text-xs text-gray-500 font-medium">Recomendação de Aprovação</span>
-                                <span class="text-sm font-extrabold text-gray-900">Solicitar em 2 a 3 opções</span>
+                            <div class="min-w-0">
+                                <span class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Tempo Médio Pix</span>
+                                <span id="dashboard-pix-time" class="text-sm font-extrabold text-gray-900 truncate block">5 a 30 minutos</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-sm flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg shrink-0">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Estratégia Ideal</span>
+                                <span class="text-sm font-extrabold text-gray-900 truncate block">Testar Top 1 e Top 2</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Mensagem Estratégica Dinâmica -->
-                    <div id="results-message" class="p-5 sm:px-6 text-sm sm:text-base text-gray-700 bg-white"></div>
+                    <!-- Plano de Ação Personalizado / Mensagem Estratégica -->
+                    <div id="results-message" class="p-5 sm:px-8 bg-white text-sm sm:text-base text-gray-700"></div>
                 </section>
 
-                <!-- 2. CONTAINER EXCLUSIVO DE DESTAQUE DA FACIO -->
+                <!-- ========================================================= -->
+                <!-- 2.2 HUB INTERATIVO FACIO (CONECTADO À API /api/facio)     -->
+                <!-- ========================================================= -->
                 <div id="facio-highlight-container"></div>
 
-                <!-- 3. FILTROS RÁPIDOS DE RESULTADOS -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-                    <div>
-                        <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">
-                            Ranking de Ofertas Liberadas para o seu Perfil
-                        </h2>
-                        <p class="text-xs sm:text-sm text-gray-600">
-                            Ordenadas automaticamente pela maior probabilidade de aprovação hoje.
-                        </p>
+                <!-- ========================================================= -->
+                <!-- 2.3 BARRA DE FILTROS INTELIGENTES E BUSCA EM TEMPO REAL    -->
+                <!-- ========================================================= -->
+                <section class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm space-y-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl sm:text-2xl font-black text-gray-900">
+                                    Ranking Autônomo de Ofertas
+                                </h2>
+                                <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                    Atualizado Hoje
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
+                                As ofertas abaixo são priorizadas automaticamente de acordo com seu perfil e regras ativas do moderador.
+                            </p>
+                        </div>
+
+                        <!-- Ordenação Rápida -->
+                        <div class="flex items-center gap-2 self-start lg:self-auto">
+                            <label for="sort-select" class="text-xs font-bold text-gray-500 uppercase">Ordenar:</label>
+                            <select id="sort-select" class="text-xs sm:text-sm font-bold text-gray-800 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-500">
+                                <option value="smart">🎯 Maior Compatibilidade (IA + Admin)</option>
+                                <option value="admin">⭐ Ordem Oficial do Moderador</option>
+                                <option value="chance">🔥 Maior Chance de Aprovação</option>
+                                <option value="fast">⚡ Liberação Mais Rápida (Pix)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="flex flex-wrap gap-2" id="quick-filter-tabs">
-                        <button type="button" data-tab="all" class="tab-btn bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition">
-                            Todas Recomendadas
+                    <!-- Abas de Categoria -->
+                    <div class="flex flex-wrap gap-2 pt-1 border-t border-gray-100" id="quick-filter-tabs">
+                        <button type="button" data-tab="all" class="tab-btn bg-emerald-600 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5">
+                            <i class="fas fa-layer-group"></i> Todas Recomendadas <span id="count-all" class="bg-white/20 px-1.5 py-0.2 rounded-full text-[11px]"></span>
                         </button>
-                        <button type="button" data-tab="emprestimo" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs font-semibold px-3.5 py-2 rounded-xl hover:bg-gray-50 transition">
-                            💰 Empréstimo / Pix
+                        <button type="button" data-tab="matched" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <i class="fas fa-bullseye text-emerald-600"></i> Ideais p/ Meu Perfil <span id="count-matched" class="bg-gray-100 text-gray-700 px-1.5 py-0.2 rounded-full text-[11px]"></span>
                         </button>
-                        <button type="button" data-tab="negativado" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs font-semibold px-3.5 py-2 rounded-xl hover:bg-gray-50 transition">
-                            🔓 Aceita Negativado
+                        <button type="button" data-tab="emprestimo" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <i class="fas fa-sack-dollar text-amber-500"></i> Empréstimo / Pix
                         </button>
-                        <button type="button" data-tab="cartao" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs font-semibold px-3.5 py-2 rounded-xl hover:bg-gray-50 transition">
-                            💳 Cartões e Contas
+                        <button type="button" data-tab="negativado" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <i class="fas fa-unlock-keyhole text-blue-600"></i> Aceita Negativado
+                        </button>
+                        <button type="button" data-tab="fgts_inss" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <i class="fas fa-File-invoice-dollar text-purple-600"></i> FGTS / INSS / Bolsa Família
+                        </button>
+                        <button type="button" data-tab="cartao" class="tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5">
+                            <i class="fas fa-credit-card text-teal-600"></i> Cartões e Contas
                         </button>
                     </div>
-                </div>
+                </section>
 
-                <!-- 4. GRID DE PRODUTOS (D1 + SUPABASE) -->
+                <!-- ========================================================= -->
+                <!-- 2.4 GRID DE OFERTAS RICAS                                 -->
+                <!-- ========================================================= -->
                 <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-                <!-- Rodapé de Incentivo -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-6 text-center max-w-3xl mx-auto shadow-sm">
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">Não encontrou exatamente o limite que queria na 1ª opção?</h3>
-                    <p class="text-sm text-gray-600 mb-4">
-                        Cada instituição financeira possui um motor de crédito próprio. Testar na <strong>2ª e 3ª opção do ranking acima</strong> é gratuito e aumenta drasticamente suas chances de aprovação imediata.
-                    </p>
-                    <a href="../index.html#home-filters" class="btn-primary">
-                        Explorar Catálogo Completo de Produtos
-                    </a>
-                </div>
+                <!-- ========================================================= -->
+                <!-- 2.5 COMPARADOR EDUCATIVO DE MODALIDADES E TAXAS           -->
+                <!-- ========================================================= -->
+                <section class="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                        <div>
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                                Guia de Decisão Rápida
+                            </span>
+                            <h3 class="text-xl sm:text-2xl font-black text-gray-900 mt-2">
+                                Entenda qual modalidade aprova mais fácil no seu caso
+                            </h3>
+                        </div>
+                        <span class="text-xs text-gray-500 font-medium">
+                            <i class="fas fa-circle-info text-emerald-600 mr-1"></i> Comparativo atualizado conforme regras vigentes
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 text-gray-600 border-b border-gray-200 uppercase text-[11px] font-extrabold">
+                                    <th class="py-3.5 px-4 rounded-tl-xl">Modalidade</th>
+                                    <th class="py-3.5 px-4">Aceita Negativado?</th>
+                                    <th class="py-3.5 px-4">Velocidade de Liberação</th>
+                                    <th class="py-3.5 px-4">Faixa de Valor Típica</th>
+                                    <th class="py-3.5 px-4 rounded-tr-xl">Custo / Taxa Média</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                <tr class="hover:bg-emerald-50/30 transition">
+                                    <td class="py-3.5 px-4 font-bold text-gray-900">⚡ Antecipação Salarial (Ex: Facio)</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">Sim, sem consulta SPC</span></td>
+                                    <td class="py-3.5 px-4 font-semibold text-emerald-700">Pix em minutos</td>
+                                    <td class="py-3.5 px-4">R$ 50 a R$ 300 (inicial)</td>
+                                    <td class="py-3.5 px-4">Taxa fixa a partir de R$ 9,90</td>
+                                </tr>
+                                <tr class="hover:bg-emerald-50/30 transition">
+                                    <td class="py-3.5 px-4 font-bold text-gray-900">💡 Empréstimo na Conta de Luz / Consumo</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">Sim (Alta Aprovação)</span></td>
+                                    <td class="py-3.5 px-4 font-semibold">No mesmo dia (Pix)</td>
+                                    <td class="py-3.5 px-4">R$ 300 a R$ 3.300</td>
+                                    <td class="py-3.5 px-4">Debitado direto na fatura mensal</td>
+                                </tr>
+                                <tr class="hover:bg-emerald-50/30 transition">
+                                    <td class="py-3.5 px-4 font-bold text-gray-900">🏦 Saque-Aniversário FGTS / Consignado</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">Sim (99% de aprovação)</span></td>
+                                    <td class="py-3.5 px-4 font-semibold">Até 15 minutos via Pix</td>
+                                    <td class="py-3.5 px-4">R$ 150 a R$ 30.000+</td>
+                                    <td class="py-3.5 px-4">A partir de 1,29% a.m. (Juros baixos)</td>
+                                </tr>
+                                <tr class="hover:bg-emerald-50/30 transition">
+                                    <td class="py-3.5 px-4 font-bold text-gray-900">📱 Microcrédito Pessoal Online</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-xs">Sim (Avalia movimentação)</span></td>
+                                    <td class="py-3.5 px-4 font-semibold">15 min a 2 horas</td>
+                                    <td class="py-3.5 px-4">R$ 250 a R$ 2.500</td>
+                                    <td class="py-3.5 px-4">Parcelado em até 12x via Pix/Boleto</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Dicas de Ouro para Aprovação -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="text-emerald-600 font-black text-sm mb-1 flex items-center gap-2">
+                                <i class="fas fa-check-Double"></i> 1. Regra das 3 Solicitações
+                            </div>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Os bancos usam motores de risco diferentes. Solicitar nas <strong>3 primeiras opções do ranking</strong> aumenta em até 85% a chance de ter o Pix liberado ainda hoje.
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="text-emerald-600 font-black text-sm mb-1 flex items-center gap-2">
+                                <i class="fas fa-key"></i> 2. Chave Pix de Mesma Titularidade
+                            </div>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Para evitar bloqueio antifraude na hora do pagamento, informe sempre uma conta bancária ou chave Pix vinculada ao <strong>mesmo CPF</strong> da simulação.
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                            <div class="text-emerald-600 font-black text-sm mb-1 flex items-center gap-2">
+                                <i class="fas fa-mobile-screen-button"></i> 3. Documentos em Mãos
+                            </div>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Tenha seu RG ou CNH (física ou digital) em local iluminado caso a instituição peça uma selfie rápida de validação biométrica.
+                            </p>
+                        </div>
+                    </div>
+                </section>
 
             </div>
         </div>
     </main>
 
+    <!-- ========================================================= -->
+    <!-- MODAL 1: DETALHES E SIMULAÇÃO DE PARCELAS DA OFERTA       -->
+    <!-- ========================================================= -->
+    <div id="offer-detail-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 animate-fade-up">
+            <div class="sticky top-0 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+                <div class="flex items-center gap-3">
+                    <img id="modal-offer-logo" src="" alt="Logo" class="w-16 h-10 object-contain border rounded-lg p-1 bg-gray-50">
+                    <div>
+                        <span id="modal-offer-tag" class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Destaque</span>
+                        <h3 id="modal-offer-title" class="text-lg font-black text-gray-900 leading-tight">Detalhes da Oferta</h3>
+                    </div>
+                </div>
+                <button type="button" onclick="closeOfferDetailModal()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Score de Compatibilidade -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase text-emerald-800">Análise do Motor TirraCred</span>
+                        <p id="modal-offer-reason" class="text-sm font-bold text-gray-900 mt-0.5">
+                            Oferta altamente recomendada para o seu perfil atual.
+                        </p>
+                    </div>
+                    <div class="text-left sm:text-right shrink-0">
+                        <span class="block text-[11px] text-gray-500 font-semibold">Probabilidade Estimada</span>
+                        <span id="modal-offer-chance" class="text-2xl font-black text-emerald-700">96%</span>
+                    </div>
+                </div>
+
+                <!-- Benefícios Completos -->
+                <div>
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-3">Principais Vantagens e Condições</h4>
+                    <ul id="modal-offer-advantages" class="space-y-2.5 bg-gray-50 p-4 rounded-2xl border border-gray-200/80 text-sm text-gray-700"></ul>
+                </div>
+
+                <!-- Simulação Estimada de Parcelas -->
+                <div id="modal-installment-section">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-400">
+                            Projeção Estimada p/ <span id="modal-sim-valor" class="text-emerald-700">R$ 1.000,00</span>
+                        </h4>
+                        <span class="text-[11px] text-gray-400">*Valores aproximados sujeitos à análise</span>
+                    </div>
+                    <div id="modal-installment-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
+                </div>
+
+                <!-- Checklist de Requisitos -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white flex items-center gap-2.5">
+                        <i class="fas fa-id-card text-emerald-600 text-base"></i>
+                        <div>
+                            <span class="block font-bold text-gray-800">Documento</span>
+                            <span class="text-gray-500">RG, CNH ou CPF ativo</span>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white flex items-center gap-2.5">
+                        <i class="fas fa-pix text-emerald-600 text-base"></i>
+                        <div>
+                            <span class="block font-bold text-gray-800">Recebimento</span>
+                            <span class="text-gray-500">Conta ou Chave Pix</span>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white flex items-center gap-2.5">
+                        <i class="fas fa-shield-check text-emerald-600 text-base"></i>
+                        <div>
+                            <span class="block font-bold text-gray-800">Zero Taxa Prévia</span>
+                            <span class="text-gray-500">100% Gratuito simular</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modal-offer-cta-wrap" class="pt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL 2: CONEXÃO DIRETA FACIO API (CASO FALTE CPF NA URL) -->
+    <!-- ========================================================= -->
+    <div id="facio-connect-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-emerald-200 animate-fade-up">
+            <div class="bg-gradient-to-r from-emerald-700 to-green-600 px-6 py-5 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white p-1.5 flex items-center justify-center">
+                        <img src="../public/facio.png" alt="Facio" class="max-h-full max-w-full object-contain" onerror="this.onerror=null;this.src='/public/facio.png';">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">Integração Oficial Facio</span>
+                        <h3 class="text-lg font-black leading-tight">Ativar Pré-Aprovação</h3>
+                    </div>
+                </div>
+                <button type="button" onclick="closeFacioModal()" class="text-white/80 hover:text-white text-lg">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="facio-modal-form" class="p-6 space-y-4" novalidate>
+                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    Confirme seus dados abaixo para gerarmos seu <strong>link individual autenticado na API da Facio</strong> (até <strong id="facio-modal-max-txt">R$ 300,00</strong> via Pix):
+                </p>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-600 mb-1">CPF Titular</label>
+                    <input id="facio-modal-cpf" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required
+                           class="w-full rounded-xl border-2 border-gray-200 px-3.5 py-2.5 text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
+                    <p id="facio-modal-cpf-status" class="text-[11px] mt-1 font-semibold"></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Nome Completo</label>
+                    <input id="facio-modal-nome" type="text" placeholder="Nome e sobrenome" required
+                           class="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-emerald-600 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Celular / WhatsApp</label>
+                        <input id="facio-modal-whats" type="tel" maxlength="15" placeholder="(11) 99999-9999" required
+                               class="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-emerald-600 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Seu E-mail</label>
+                        <input id="facio-modal-email" type="email" placeholder="voce@email.com" required
+                               class="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm text-gray-900 focus:border-emerald-600 outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-2 space-y-2.5">
+                    <button type="submit" id="facio-modal-submit" class="btn-primary w-full py-3.5 text-sm sm:text-base">
+                        <i class="fas fa-bolt"></i> Gerar Acesso Pré-Aprovado na Facio
+                    </button>
+                    <a id="facio-modal-direct-link" href="https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner"
+                       class="block text-center text-xs font-semibold text-gray-500 hover:text-emerald-700 underline py-1">
+                        Ou ir direto para o site da Facio sem pré-preencher &rarr;
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL 3: AJUSTAR PERFIL E VALOR AO VIVO NOS RESULTADOS    -->
+    <!-- ========================================================= -->
+    <div id="profile-tuner-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100 animate-fade-up">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-lg font-black text-gray-900">
+                    <i class="fas fa-sliders text-emerald-600 mr-1.5"></i> Recalibrar Simulação e Perfil
+                </h3>
+                <button type="button" onclick="closeProfileTunerModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-extrabold uppercase text-gray-500">Valor Desejado</label>
+                        <span id="tuner-valor-display" class="text-xl font-black text-emerald-600">R$ 1.000,00</span>
+                    </div>
+                    <input id="tuner-valor-slider" type="range" min="100" max="50000" step="50" value="1000" class="custom-slider">
+                    <div class="flex justify-between text-[11px] text-gray-400 mt-1">
+                        <span>R$ 100</span>
+                        <span>R$ 5.000</span>
+                        <span>R$ 50.000</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-extrabold uppercase text-gray-500 mb-2">Condições do seu Perfil Atual</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 hover:bg-emerald-50/40 cursor-pointer">
+                            <input type="checkbox" id="tuner-negativado" class="w-4 h-4 text-emerald-600 rounded">
+                            <span class="font-semibold text-gray-800">Estou Negativado</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 hover:bg-emerald-50/40 cursor-pointer">
+                            <input type="checkbox" id="tuner-aposentado" class="w-4 h-4 text-emerald-600 rounded">
+                            <span class="font-semibold text-gray-800">Aposentado / CLT</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 hover:bg-emerald-50/40 cursor-pointer">
+                            <input type="checkbox" id="tuner-bolsafamilia" class="w-4 h-4 text-emerald-600 rounded">
+                            <span class="font-semibold text-gray-800">Bolsa Família</span>
+                        </label>
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 hover:bg-emerald-50/40 cursor-pointer">
+                            <input type="checkbox" id="tuner-autonomo" class="w-4 h-4 text-emerald-600 rounded">
+                            <span class="font-semibold text-gray-800">Autônomo / MEI</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" onclick="applyProfileTuner()" class="btn-primary w-full py-3.5">
+                    <i class="fas fa-rotate"></i> Recalcular Ranking Agora
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-green-900 text-white mt-12">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-xs text-gray-300 space-y-2">
-            <p>TirraCred é uma plataforma intermediadora de crédito. CNPJ: 61.811.560/0001-10.</p>
-            <p>© 2026 TirraCred. Todos os direitos reservados.</p>
+    <footer class="bg-emerald-950 text-white mt-14 border-t border-emerald-900">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center space-y-3">
+            <img src="../public/logo.png" alt="TirraCred" class="h-7 mx-auto brightness-0 invert opacity-80" onerror="this.style.display='none'">
+            <p class="text-xs text-emerald-200/80 max-w-2xl mx-auto leading-relaxed">
+                A TirraCred (Tiago Alves da Silva & Cia Ltda - CNPJ: 61.811.560/0001-10) atua como correspondente bancário e comparador inteligente de crédito, seguindo rigorosamente as diretrizes do Banco Central do Brasil.
+            </p>
+            <p class="text-[11px] text-emerald-400/60">© 2026 TirraCred. Todos os direitos reservados.</p>
         </div>
     </footer>
 
+    <!-- ========================================================= -->
+    <!-- MOTOR JAVASCRIPT AUTÔNOMO (D1 + SUPABASE + FACIO API)     -->
+    <!-- ========================================================= -->
     <script>
         const FACIO_FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
         const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Estado Global dos Produtos e Regras
+        let rawAdminProducts = [];
+        let rawAdminRules = [];
+        let rankedProducts = [];
+        let currentActiveTab = 'all';
+        let currentSortMode = 'smart';
+
         // ========================================================================
-        // 1. HELPERS DE FORMATAÇÃO E LOGO ROBUSTA (RESOLVE O PROBLEMA DA VELOTAX)
+        // 1. UTILITÁRIOS DE FORMATAÇÃO E RESOLUÇÃO INFALÍVEL DE LOGOS DO ADMIN
         // ========================================================================
         function formatBRL(val) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(val) || 0);
         }
 
-        function resolveLogo(rawPath) {
+        function formatCPF(value) {
+            return String(value || '').replace(/\D/g, '').slice(0, 11)
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        }
+
+        function formatPhone(value) {
+            return String(value || '').replace(/\D/g, '').slice(0, 11)
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2');
+        }
+
+        function validateCPF(cpf) {
+            const clean = String(cpf || '').replace(/\D/g, '');
+            if (clean.length !== 11 || /^(\d)\1+$/.test(clean)) return false;
+            let sum = 0;
+            for (let i = 0; i < 9; i++) sum += parseInt(clean.charAt(i), 10) * (10 - i);
+            let rem = sum % 11;
+            let v1 = rem < 2 ? 0 : 11 - rem;
+            if (v1 !== parseInt(clean.charAt(9), 10)) return false;
+            sum = 0;
+            for (let i = 0; i < 10; i++) sum += parseInt(clean.charAt(i), 10) * (11 - i);
+            rem = sum % 11;
+            let v2 = rem < 2 ? 0 : 11 - rem;
+            return v2 === parseInt(clean.charAt(10), 10);
+        }
+
+        // Resolve qualquer caminho salvo pelo Admin (Base64 data:image, URL externa, /public ou ../public)
+        function resolveLogo(rawPath, partnerTitle = 'Oferta') {
             const p = String(rawPath || '').trim();
-            if (!p) return 'https://placehold.co/140x50/e2e8f0/4a5568?text=Parceiro';
+            if (!p) {
+                return `https://placehold.co/160x60/ecfdf5/047857?text=${encodeURIComponent(partnerTitle.slice(0, 12))}`;
+            }
             if (p.startsWith('data:') || /^https?:\/\//i.test(p) || p.startsWith('/')) {
                 return p;
             }
             const clean = p.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '');
-            return `../${clean}`;
+            const isSubFolder = window.location.pathname.includes('/pages/');
+            return isSubFolder ? `../${clean}` : clean;
         }
+
+        // Fallback em cascata caso a imagem falhe no 1º caminho
+        window.handleLogoError = function(imgEl, rawPath, partnerTitle) {
+            const tried = Number(imgEl.dataset.fallbackStep || 0);
+            const clean = String(rawPath || '').replace(/^(\.\.\/)+/, '').replace(/^\.\//, '').replace(/^\//, '');
+            if (tried === 0 && clean) {
+                imgEl.dataset.fallbackStep = '1';
+                imgEl.src = `/${clean}`;
+            } else if (tried === 1 && clean) {
+                imgEl.dataset.fallbackStep = '2';
+                imgEl.src = `../${clean}`;
+            } else {
+                imgEl.onerror = null;
+                const label = String(partnerTitle || 'Parceiro').slice(0, 14);
+                imgEl.src = `https://placehold.co/160x60/ecfdf5/047857?text=${encodeURIComponent(label)}`;
+            }
+        };
 
         function getBadgeClass(tagClass) {
             const map = {
@@ -292,7 +830,7 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
                 blue: 'bg-blue-100 text-blue-800 border border-blue-200',
                 purple: 'bg-purple-100 text-purple-800 border border-purple-200'
             };
-            return map[String(tagClass || '').toLowerCase()] || 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+            return map[String(tagClass || '').toLowerCase().trim()] || 'bg-emerald-100 text-emerald-800 border border-emerald-200';
         }
 
         function toVantagensArray(v) {
@@ -340,16 +878,21 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
             );
         }
 
+        // ========================================================================
+        // 2. LEITURA E PERSISTÊNCIA INTELIGENTE DO CONTEXTO DO LEAD
+        // ========================================================================
         function getLeadContext() {
             const params = new URLSearchParams(window.location.search);
             let savedLead = {};
             try {
-                savedLead = JSON.parse(sessionStorage.getItem('tirracred_lead') || '{}');
+                const fromSession = JSON.parse(sessionStorage.getItem('tirracred_lead') || '{}');
+                const fromLocal = JSON.parse(localStorage.getItem('tirracred_lead') || '{}');
+                savedLead = { ...fromLocal, ...fromSession };
             } catch (e) {}
 
             const hasFacioParam = params.has('facioAvailable');
 
-            return {
+            const ctx = {
                 nome: params.get('nome') || savedLead.nome || 'Cliente',
                 cpf: (params.get('cpf') || savedLead.cpf || '').replace(/\D/g, ''),
                 whatsapp: (params.get('whatsapp') || savedLead.whatsapp || '').replace(/\D/g, ''),
@@ -359,6 +902,7 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
                 negativado: params.has('negativado') ? params.get('negativado') === 'true' : Boolean(savedLead.negativado),
                 aposentado: params.has('aposentado') ? params.get('aposentado') === 'true' : Boolean(savedLead.aposentado),
                 bolsafamilia: params.has('bolsafamilia') ? params.get('bolsafamilia') === 'true' : Boolean(savedLead.bolsafamilia),
+                autonomo: params.has('autonomo') ? params.get('autonomo') === 'true' : Boolean(savedLead.autonomo),
                 facioChecked: hasFacioParam || typeof savedLead.facioAvailable === 'boolean',
                 facioAvailable: hasFacioParam ? params.get('facioAvailable') === 'true' : (savedLead.facioAvailable ?? true),
                 facioMaxValue: Number(params.get('facioMaxValue') ?? savedLead.facioMaxValue) || 300.0,
@@ -366,188 +910,355 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
                 facioFee: Number(params.get('facioFee') ?? savedLead.facioFee) || 72.9,
                 facioDesc: params.get('facioDesc') || savedLead.facioDesc || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
             };
+
+            saveLeadContextToStorage(ctx);
+            return ctx;
+        }
+
+        function saveLeadContextToStorage(ctx) {
+            try {
+                sessionStorage.setItem('tirracred_lead', JSON.stringify(ctx));
+                localStorage.setItem('tirracred_lead', JSON.stringify(ctx));
+            } catch (e) {}
         }
 
         let globalLeadContext = getLeadContext();
 
+        // ========================================================================
+        // 3. INTEGRAÇÃO AVANÇADA COM A FACIO API (/api/facio)
+        // ========================================================================
         window.handleFacioClick = async function(btnEl) {
+            // Verifica se já temos CPF, Nome, WhatsApp e E-mail válidos para envio imediato à API Facio
+            const hasFullData = (
+                validateCPF(globalLeadContext.cpf) &&
+                globalLeadContext.nome &&
+                globalLeadContext.nome.trim().includes(' ') &&
+                globalLeadContext.whatsapp.length >= 10 &&
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(globalLeadContext.email)
+            );
+
+            if (!hasFullData) {
+                openFacioModal();
+                return;
+            }
+
+            await executeFacioLeadRegistration(btnEl);
+        };
+
+        async function executeFacioLeadRegistration(btnEl) {
             const originalHtml = btnEl ? btnEl.innerHTML : '';
             if (btnEl) {
                 btnEl.disabled = true;
-                btnEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Abrindo seu acesso na Facio...';
+                btnEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Conectando com API Facio...';
             }
 
             try {
-                if (globalLeadContext.cpf && globalLeadContext.whatsapp && globalLeadContext.email) {
-                    const res = await fetch('/api/facio', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'lead',
-                            nome: globalLeadContext.nome,
-                            cpf: globalLeadContext.cpf,
-                            whatsapp: globalLeadContext.whatsapp,
-                            email: globalLeadContext.email,
-                            valor: Math.min(globalLeadContext.valor || 300, 300),
-                            negativado: globalLeadContext.negativado,
-                            campaign: 'ds_banner'
-                        })
-                    });
+                // Garante pré-consulta de disponibilidade exigida pela Facio
+                await fetch('/api/facio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
+                }).catch(() => {});
 
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.registrationUrl) {
-                            window.location.href = data.registrationUrl;
-                            return;
-                        }
-                    } else if (res.status === 409) {
-                        alert('Este CPF já possui um cadastro ativo na Facio por outro canal. Recomendamos solicitar na 1ª opção do ranking abaixo!');
-                        if (btnEl) {
-                            btnEl.disabled = false;
-                            btnEl.innerHTML = originalHtml;
-                        }
+                const res = await fetch('/api/facio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'lead',
+                        nome: globalLeadContext.nome,
+                        cpf: globalLeadContext.cpf,
+                        whatsapp: globalLeadContext.whatsapp,
+                        email: globalLeadContext.email,
+                        valor: Math.min(globalLeadContext.valor || 300, globalLeadContext.facioMaxValue || 300),
+                        negativado: globalLeadContext.negativado,
+                        aposentado: globalLeadContext.aposentado,
+                        bolsafamilia: globalLeadContext.bolsafamilia,
+                        campaign: 'ds_banner'
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.registrationUrl) {
+                        window.location.href = data.registrationUrl;
                         return;
                     }
+                } else if (res.status === 409) {
+                    alert('Este CPF já possui um atendimento ativo na Facio. Vamos direcionar você para concluir seu acesso ou escolha o Top 1 do ranking abaixo!');
+                    window.location.href = FACIO_FALLBACK_URL;
+                    return;
                 }
             } catch (err) {
-                console.warn('Usando link direto Facio:', err);
+                console.warn('Fallback Facio ativado:', err);
+            } finally {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = originalHtml;
+                }
             }
 
             window.location.href = FACIO_FALLBACK_URL;
+        }
+
+        function openFacioModal() {
+            const modal = document.getElementById('facio-connect-modal');
+            const cpfIn = document.getElementById('facio-modal-cpf');
+            const nomeIn = document.getElementById('facio-modal-nome');
+            const whatsIn = document.getElementById('facio-modal-whats');
+            const emailIn = document.getElementById('facio-modal-email');
+            const maxTxt = document.getElementById('facio-modal-max-txt');
+
+            if (maxTxt) maxTxt.textContent = formatBRL(globalLeadContext.facioMaxValue || 300);
+            if (cpfIn && globalLeadContext.cpf) cpfIn.value = formatCPF(globalLeadContext.cpf);
+            if (nomeIn && globalLeadContext.nome && globalLeadContext.nome !== 'Cliente') nomeIn.value = globalLeadContext.nome;
+            if (whatsIn && globalLeadContext.whatsapp) whatsIn.value = formatPhone(globalLeadContext.whatsapp);
+            if (emailIn && globalLeadContext.email) emailIn.value = globalLeadContext.email;
+
+            modal?.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            cpfIn?.focus();
+        }
+
+        window.closeFacioModal = function() {
+            document.getElementById('facio-connect-modal')?.classList.add('hidden');
+            document.body.style.overflow = '';
         };
 
         function renderFacioHighlight(ctx) {
             if (!ctx.facioAvailable) return '';
 
-            const isValorMaior = ctx.valor > ctx.facioMaxValue;
+            const maxVal = Number(ctx.facioMaxValue) || 300;
+            const minFee = Number(ctx.facioBaseFee) || 9.90;
+            const maxFee = Number(ctx.facioFee) || 72.90;
+            const initialSimVal = Math.min(Math.max(100, ctx.valor || 300), maxVal);
+
+            const isValorMaior = ctx.valor > maxVal;
+            const remainderVal = Math.max(0, ctx.valor - maxVal);
+
             const strategyBanner = isValorMaior
-                ? `<div class="mb-4 rounded-xl bg-amber-50 border border-amber-300 p-3.5 text-xs sm:text-sm text-amber-950 flex items-start gap-3">
-                       <span class="text-lg leading-none">💡</span>
-                       <div>
-                           <strong>Estratégia Inteligente para seus ${formatBRL(ctx.valor)}:</strong> Como o seu CPF foi aprovado na pré-consulta da <strong>Facio</strong>, você pode retirar <strong>até ${formatBRL(ctx.facioMaxValue)} imediatos aqui</strong> para urgências do dia a dia e solicitar o valor restante no <strong>Top 1 do Ranking abaixo</strong>!
+                ? `<div class="mb-5 rounded-2xl bg-gradient-to-r from-amber-50 to-emerald-50 border border-amber-300/80 p-4 text-xs sm:text-sm text-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                       <div class="flex items-start gap-3">
+                           <span class="text-2xl leading-none">🧩</span>
+                           <div>
+                               <strong class="text-gray-900">Estratégia de Composição Inteligente para seus ${formatBRL(ctx.valor)}:</strong><br>
+                               <span>Passo 1: Garanta <strong>${formatBRL(maxVal)} via Pix imediato na Facio</strong> abaixo. Passo 2: Solicite os <strong>${formatBRL(remainderVal)} restantes</strong> no <strong>Top 1 do Ranking</strong> logo a seguir!</span>
+                           </div>
                        </div>
+                       <span class="shrink-0 text-[11px] font-extrabold uppercase bg-amber-200/70 text-amber-950 px-3 py-1 rounded-full self-start sm:self-center">
+                           Dupla Chance
+                       </span>
                    </div>`
-                : `<div class="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs sm:text-sm text-emerald-950 flex items-center gap-2.5">
-                       <span class="text-base">🎯</span>
-                       <span><strong>Compatibilidade Total:</strong> O valor que você simulou (${formatBRL(ctx.valor)}) está 100% dentro do limite de liberação rápida da Facio!</span>
+                : `<div class="mb-5 rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs sm:text-sm text-emerald-950 flex items-center gap-3">
+                       <span class="text-xl">🎯</span>
+                       <span><strong>Enquadramento 100% Compatível:</strong> O valor que você busca (${formatBRL(ctx.valor)}) está integralmente dentro da faixa de liberação rápida da Facio!</span>
                    </div>`;
 
             return `
-                <div class="fade-in">
-                    <div class="rounded-3xl border-2 border-emerald-500 bg-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+                <section class="animate-fade-up">
+                    <div class="rounded-3xl border-2 border-emerald-500 bg-white p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+                        <!-- Badges de Topo -->
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-                            <span class="bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1.5 inline-flex items-center gap-2 rounded-full shadow-sm">
-                                <i class="fas fa-check-circle"></i> Oferta Pré-Verificada para seu CPF
-                            </span>
-                            <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
-                                99% de Compatibilidade • Pix Rápido
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="bg-emerald-600 text-white text-xs font-black uppercase tracking-wider px-4 py-1.5 inline-flex items-center gap-2 rounded-full shadow-sm">
+                                    <i class="fas fa-bolt"></i> Destaque Pré-Aprovado API Facio
+                                </span>
+                                <span class="text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-200 px-3 py-1 rounded-full">
+                                    Sem Consulta SPC/Serasa • Pix Rápido
+                                </span>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">
+                                <i class="fas fa-circle-check text-emerald-600 mr-1"></i> Janela de atribuição aberta
                             </span>
                         </div>
 
                         ${strategyBanner}
 
-                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div class="space-y-4 flex-grow">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            <!-- Coluna Esquerda: Detalhes da Facio -->
+                            <div class="lg:col-span-7 space-y-4">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-24 h-14 rounded-2xl border border-gray-200 bg-gray-50 p-2 flex items-center justify-center shrink-0">
-                                        <img src="../public/facio.png" alt="Facio" class="max-h-full max-w-full object-contain" onerror="this.onerror=null;this.src='/public/facio.png';">
+                                    <div class="w-24 h-16 rounded-2xl border border-gray-200 bg-gray-50 p-2.5 flex items-center justify-center shrink-0 shadow-sm">
+                                        <img src="../public/facio.png" alt="Facio" class="max-h-full max-w-full object-contain"
+                                             onerror="this.onerror=null;this.src='/public/facio.png';">
                                     </div>
                                     <div>
-                                        <h3 class="text-xl sm:text-2xl font-black text-gray-900">Facio — Antecipação e Microcrédito</h3>
+                                        <h3 class="text-xl sm:text-2xl font-black text-gray-900">Facio — Antecipação Salarial via Pix</h3>
                                         <p class="text-sm sm:text-base text-emerald-700 font-bold">${ctx.facioDesc}</p>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-3 gap-3">
-                                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-center">
-                                        <span class="block text-[11px] uppercase font-semibold text-gray-500">Limite Inicial</span>
-                                        <span class="text-base sm:text-lg font-black text-emerald-700">Até ${formatBRL(ctx.facioMaxValue)}</span>
+                                    <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3 text-center">
+                                        <span class="block text-[11px] uppercase font-bold text-gray-500">Limite Liberado</span>
+                                        <span class="text-base sm:text-lg font-black text-emerald-700">Até ${formatBRL(maxVal)}</span>
                                     </div>
                                     <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-center">
-                                        <span class="block text-[11px] uppercase font-semibold text-gray-500">Taxa Mínima</span>
-                                        <span class="text-base sm:text-lg font-extrabold text-gray-900">${formatBRL(ctx.facioBaseFee)}</span>
+                                        <span class="block text-[11px] uppercase font-bold text-gray-500">Taxa Mínima</span>
+                                        <span class="text-base sm:text-lg font-extrabold text-gray-900">${formatBRL(minFee)}</span>
                                     </div>
                                     <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-center">
-                                        <span class="block text-[11px] uppercase font-semibold text-gray-500">Taxa Máxima</span>
-                                        <span class="text-base sm:text-lg font-extrabold text-gray-900">${formatBRL(ctx.facioFee)}</span>
+                                        <span class="block text-[11px] uppercase font-bold text-gray-500">Recebimento</span>
+                                        <span class="text-sm sm:text-base font-extrabold text-emerald-700">Pix na Hora</span>
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-600 pt-1">
-                                    <div class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✔</span> Sem cobrança de depósito antecipado</div>
-                                    <div class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✔</span> Cadastro simplificado com seus dados</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-700 pt-1">
+                                    <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Aprovação simplificada para CLT, autônomos e servidores</span></div>
+                                    <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Aumenta seu limite a cada pagamento em dia</span></div>
+                                    <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Zero cobrança antecipada (taxa descontada no final)</span></div>
+                                    <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Integração oficial direta com a TirraCred</span></div>
                                 </div>
                             </div>
 
-                            <div class="flex-shrink-0 lg:w-72 flex flex-col justify-center bg-emerald-50/60 p-4 rounded-2xl border border-emerald-100">
-                                <button type="button" onclick="window.handleFacioClick(this)" class="btn-primary btn-pulse w-full py-4 text-base">
-                                    <span>⚡ Solicitar na Facio Agora</span>
+                            <!-- Coluna Direita: Simulador Interativo Facio + Botão API -->
+                            <div class="lg:col-span-5 bg-gradient-to-b from-emerald-50/80 to-white p-5 rounded-2xl border border-emerald-200 shadow-inner space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold uppercase text-emerald-900">Simulador Rápido Facio</span>
+                                    <span id="facio-sim-val-display" class="text-xl font-black text-emerald-700">${formatBRL(initialSimVal)}</span>
+                                </div>
+
+                                <input id="facio-interactive-slider" type="range" min="50" max="${maxVal}" step="10" value="${initialSimVal}"
+                                       class="custom-slider" oninput="updateFacioMiniSim(this.value, ${maxVal}, ${minFee}, ${maxFee})">
+
+                                <div class="flex justify-between text-[11px] text-gray-500 font-semibold">
+                                    <span>R$ 50</span>
+                                    <span>Taxa est.: <strong id="facio-sim-fee-display" class="text-gray-800">${formatBRL(maxFee)}</strong></span>
+                                    <span>${formatBRL(maxVal)}</span>
+                                </div>
+
+                                <button type="button" onclick="window.handleFacioClick(this)" class="btn-primary btn-pulse w-full py-4 text-base shadow-lg">
+                                    <span>⚡ Liberar Até ${formatBRL(maxVal)} na Facio</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
-                                <span class="text-[11px] text-gray-500 text-center mt-2">
-                                    Redirecionamento seguro para concluir no ambiente oficial da Facio.
-                                </span>
+
+                                <p class="text-[11px] text-gray-500 text-center leading-tight">
+                                    <i class="fas fa-lock text-emerald-600 mr-1"></i> Conexão direta com a janela de atribuição da Facio.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
             `;
         }
 
+        window.updateFacioMiniSim = function(val, maxVal, minFee, maxFee) {
+            const num = Number(val) || 50;
+            const ratio = Math.max(0, Math.min(1, (num - 50) / Math.max(1, maxVal - 50)));
+            const estFee = minFee + ratio * (maxFee - minFee);
+            const valEl = document.getElementById('facio-sim-val-display');
+            const feeEl = document.getElementById('facio-sim-fee-display');
+            if (valEl) valEl.textContent = formatBRL(num);
+            if (feeEl) feeEl.textContent = formatBRL(estFee);
+        };
+
         // ========================================================================
-        // 2. BUSCA HÍBRIDA DE PRODUTOS (D1 + SUPABASE)
+        // 4. CARREGAMENTO SINCRONIZADO COM O ADMIN.HTML (CLOUDFLARE D1 + SUPABASE)
         // ========================================================================
         async function loadAllProductsFromAdminSources() {
             let d1Products = [];
             let supabaseProducts = [];
+            const cacheBuster = Date.now();
 
-            try {
-                const res = await fetch('/api/products');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data)) {
-                        d1Products = data.map(p => ({ ...p, _source: 'd1', _d1_id: p.id }));
+            // 1) Busca na Cloudflare D1 (onde o modal Salvar do Admin grava todas as edições e novos cards)
+            const d1Endpoints = [`/api/products?t=${cacheBuster}`, `../api/products?t=${cacheBuster}`];
+            for (const ep of d1Endpoints) {
+                try {
+                    const res = await fetch(ep, { cache: 'no-store', headers: { 'Pragma': 'no-cache' } });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data) && data.length > 0) {
+                            d1Products = data.map(p => ({
+                                ...p,
+                                _source: 'd1',
+                                _d1_id: p.id,
+                                _isFreshD1: true
+                            }));
+                            break;
+                        }
                     }
-                }
-            } catch (e) {}
+                } catch (e) {}
+            }
 
+            // 2) Busca no Supabase com fallback REST direto sem cache
             try {
                 const { data, error } = await _supabase
                     .from('products')
                     .select('*')
-                    .neq('ativo', false)
                     .order('priority_order', { ascending: true });
-                if (!error && Array.isArray(data)) {
-                    supabaseProducts = data.map(p => ({ ...p, _source: 'supabase', _supa_id: p.id }));
-                }
-            } catch (e) {}
 
-            const byKey = new Map();
+                if (!error && Array.isArray(data) && data.length > 0) {
+                    supabaseProducts = data.map(p => ({ ...p, _source: 'supabase', _supa_id: p.id }));
+                } else {
+                    const restRes = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=priority_order.asc`, {
+                        cache: 'no-store',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    });
+                    if (restRes.ok) {
+                        const restData = await restRes.json();
+                        if (Array.isArray(restData)) {
+                            supabaseProducts = restData.map(p => ({ ...p, _source: 'supabase', _supa_id: p.id }));
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Aviso ao consultar Supabase:', e);
+            }
+
+            // 3) FUSÃO INTELIGENTE D1 + SUPABASE:
+            // D1 vem primeiro pois o botão "Salvar" do admin.html grava em /api/products (D1).
+            // Evita que versões antigas do Supabase sobrescrevam ou dupliquem um card editado (ex: Velotax).
+            const byTitle = new Map();
+            const byCleanLink = new Map();
             const merged = [];
 
-            for (const p of [...d1Products, ...supabaseProducts]) {
-                if (p.ativo === false || p.ativo === 0 || p.ativo === '0') continue;
+            const normalizeLinkKey = (u) => String(u || '').toLowerCase().trim().replace(/\/+$/, '');
 
-                const titleClean = (p.titulo || '').toLowerCase().trim();
-                const key = (titleClean && !isAdItem(p))
-                    ? `title:${titleClean}`
-                    : `unique:${p._source}_${p.id}_${p.link || ''}`;
+            // Processa D1 primeiro (autoridade máxima de edição recente do Admin)
+            for (const p of d1Products) {
+                const isAtivo = p.ativo !== false && p.ativo !== 0 && p.ativo !== '0';
+                if (!isAtivo) continue;
 
-                if (!byKey.has(key)) {
-                    byKey.set(key, p);
-                    merged.push(p);
+                const titleKey = (p.titulo || '').toLowerCase().trim();
+                const linkKey = normalizeLinkKey(p.link);
+
+                merged.push(p);
+                if (titleKey && !isAdItem(p)) byTitle.set(titleKey, p);
+                if (linkKey && linkKey.startsWith('http') && !isAdItem(p)) byCleanLink.set(linkKey, p);
+            }
+
+            // Processa Supabase mesclando IDs ou adicionando apenas se não foi substituído no D1
+            for (const p of supabaseProducts) {
+                const isAtivo = p.ativo !== false && p.ativo !== 0 && p.ativo !== '0';
+                if (!isAtivo) continue;
+
+                const titleKey = (p.titulo || '').toLowerCase().trim();
+                const linkKey = normalizeLinkKey(p.link);
+
+                const matchByTitle = (!isAdItem(p) && titleKey) ? byTitle.get(titleKey) : null;
+                const matchByLink = (!isAdItem(p) && linkKey && linkKey.startsWith('http')) ? byCleanLink.get(linkKey) : null;
+                const existing = matchByTitle || matchByLink;
+
+                if (existing) {
+                    // Vincula o _supa_id ao item atualizado da D1 para que as regras funcionem com os dados novos!
+                    existing._supa_id = p.id;
+                    existing._source = 'both';
                 } else {
-                    const existing = byKey.get(key);
-                    if (p._d1_id) existing._d1_id = p._d1_id;
-                    if (p._supa_id) existing._supa_id = p._supa_id;
+                    merged.push(p);
+                    if (titleKey && !isAdItem(p)) byTitle.set(titleKey, p);
+                    if (linkKey && linkKey.startsWith('http') && !isAdItem(p)) byCleanLink.set(linkKey, p);
                 }
             }
 
-            merged.sort((a, b) => (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0));
+            merged.sort((a, b) => (Number(a.priority_order) ?? 999) - (Number(b.priority_order) ?? 999));
             return merged;
         }
 
-        async function fetchRules() {
+        async function fetchRulesFromAdmin() {
             try {
                 const { data, error } = await _supabase.from('rules').select('*').eq('is_active', true);
                 if (!error && Array.isArray(data)) return data;
@@ -555,79 +1266,193 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
             return [];
         }
 
-        function matchProductByRuleId(product, ruleId) {
-            const target = String(ruleId).trim();
-            return (
-                String(product.id) === target ||
-                String(product._d1_id) === target ||
-                String(product._supa_id) === target
-            );
+        // ========================================================================
+        // 5. MOTOR AUTÔNOMO DE INTELIGÊNCIA E AFINIDADE POR PERFIL
+        // ========================================================================
+        function analyzeAutonomousProductMetadata(product) {
+            const rawText = [
+                product.titulo || '',
+                product.tag || '',
+                ...(toVantagensArray(product.vantagens)),
+                ...(toArray(product.tipo, true)),
+                ...(toArray(product.perfis, true))
+            ].join(' ').toLowerCase();
+
+            const explicitPerfis = toArray(product.perfis, true);
+            const explicitTipos = toArray(product.tipo, true);
+
+            // Detecção Semântica Autônoma (funciona mesmo se o parceiro mudar no Admin sem preencher todas as tags)
+            const acceptsNegativado = explicitPerfis.includes('negativado') || explicitPerfis.includes('score-baixo') ||
+                /negativad|restri[cç][aã]o|sem consulta|spc|serasa|nome sujo|score baixo/i.test(rawText);
+
+            const acceptsAposentadoCLT = explicitPerfis.includes('aposentado') ||
+                /aposentad|pensionista|inss|consignad|clt|assalariad|folha|fgts|saque[\s-]?anivers[aá]rio/i.test(rawText);
+
+            const acceptsBolsaFamilia = explicitPerfis.includes('bolsafamilia') || explicitTipos.includes('bolsafamilia') ||
+                /bolsa\s*fam[ií]lia|aux[ií]lio|caixa\s*tem|social/i.test(rawText);
+
+            const acceptsAutonomo = explicitPerfis.includes('autonomo') ||
+                /aut[oô]nomo|mei|conta de luz|energia|microcr[eé]dito|pix/i.test(rawText);
+
+            const isFGTS = explicitTipos.includes('fgts') || /fgts|saque[\s-]?anivers[aá]rio/i.test(rawText);
+            const isCardOrAccount = explicitTipos.some(t => t.includes('cartao') || t.includes('contas')) || /cart[aã]o|conta digital|limite de cr[eé]dito/i.test(rawText);
+            const isUtilityBillLoan = /conta de luz|energia|fatura/i.test(rawText);
+            const isFastPix = /pix|minuto|hora|imediato|r[aá]pid/i.test(rawText);
+            const isTopTag = /top\s*[12¹²]|destaque|recomendado/i.test(String(product.tag || ''));
+
+            // Estima velocidade e modalidade para exibir dados ricos no card
+            let speedText = 'Pix no mesmo dia';
+            if (isFGTS) speedText = 'Pix em até 15 min';
+            else if (isFastPix) speedText = 'Pix em minutos';
+            else if (isCardOrAccount) speedText = 'Aprovação Digital';
+
+            let modalityLabel = 'Crédito Pessoal Online';
+            if (isFGTS) modalityLabel = 'Antecipação FGTS';
+            else if (isUtilityBillLoan) modalityLabel = 'Crédito na Conta de Luz';
+            else if (acceptsBolsaFamilia) modalityLabel = 'Especial Beneficiários';
+            else if (isCardOrAccount) modalityLabel = 'Cartão / Conta Digital';
+            else if (acceptsNegativado) modalityLabel = 'Liberado p/ Negativados';
+
+            return {
+                acceptsNegativado,
+                acceptsAposentadoCLT,
+                acceptsBolsaFamilia,
+                acceptsAutonomo,
+                isFGTS,
+                isCardOrAccount,
+                isUtilityBillLoan,
+                isFastPix,
+                isTopTag,
+                speedText,
+                modalityLabel
+            };
         }
 
-        function listFromIds(idsCsv, products) {
-            const wanted = String(idsCsv || '').split(',').map(s => s.trim()).filter(Boolean);
-            const ordered = [];
-            const usedSet = new Set();
-
-            wanted.forEach(idStr => {
-                const found = products.find(p => matchProductByRuleId(p, idStr));
-                if (found && !usedSet.has(found)) {
-                    ordered.push(found);
-                    usedSet.add(found);
-                }
-            });
-
-            const rest = products.filter(p => !usedSet.has(p));
-            return [...ordered, ...rest];
-        }
-
-        function prioritizeProducts(products, params, rules) {
+        function computeAutonomousRanking(products, ctx, rules) {
+            // Identifica se existe regra de A/B test ativa no Admin para dar bônus sem esconder edições novas do D1
             const activeProfiles = [];
-            if (params.aposentado) activeProfiles.push('aposentado');
-            if (params.bolsafamilia) activeProfiles.push('bolsafamilia');
-            if (params.negativado) activeProfiles.push('negativado');
+            if (ctx.aposentado) activeProfiles.push('aposentado');
+            if (ctx.bolsafamilia) activeProfiles.push('bolsafamilia');
+            if (ctx.negativado) activeProfiles.push('negativado');
             const primaryPerfil = activeProfiles[0] || 'default';
 
+            let ruleIdsOrder = [];
             const matchingRules = rules.filter(r => r.perfil === primaryPerfil);
             if (primaryPerfil === 'negativado') {
                 const rA = matchingRules.find(x => x.variant === 'A');
                 const rB = matchingRules.find(x => x.variant === 'B');
-                if (rA || rB) {
-                    const pesoA = Math.max(0, Math.min(100, Number(rA?.ab_weight ?? 70)));
-                    const base = (Math.random() * 100 < pesoA) ? (rA || rB) : (rB || rA);
-                    const lim = Number((rA || rB)?.limit_count) || 15;
-                    if (base && base.product_ids) {
-                        return listFromIds(base.product_ids, products).slice(0, lim);
-                    }
+                const pesoA = Math.max(0, Math.min(100, Number(rA?.ab_weight ?? 70)));
+                const chosen = (Math.random() * 100 < pesoA) ? (rA || rB) : (rB || rA);
+                if (chosen?.product_ids) {
+                    ruleIdsOrder = String(chosen.product_ids).split(',').map(s => s.trim()).filter(Boolean);
                 }
             } else {
                 const rr = matchingRules.find(x => !x.variant);
-                if (rr && rr.product_ids) {
-                    const lim = Number(rr.limit_count) || 15;
-                    return listFromIds(rr.product_ids, products).slice(0, lim);
+                if (rr?.product_ids) {
+                    ruleIdsOrder = String(rr.product_ids).split(',').map(s => s.trim()).filter(Boolean);
                 }
             }
 
-            const filtered = products.filter(p => {
-                if (isAdItem(p)) return true;
-                const pPerfis = toArray(p.perfis, true);
-                if (pPerfis.length === 0 || activeProfiles.length === 0) return true;
-                return activeProfiles.some(ap => pPerfis.includes(ap));
+            const scored = products.map((p, originalIdx) => {
+                if (isAdItem(p)) {
+                    return {
+                        ...p,
+                        _meta: { isAd: true },
+                        _autonomousScore: 50 - originalIdx,
+                        _isProfileMatch: false,
+                        displayChance: 90
+                    };
+                }
+
+                const meta = analyzeAutonomousProductMetadata(p);
+                let score = 100;
+                const matchReasons = [];
+                let isDirectProfileMatch = false;
+
+                // 1) Respeita fortissimamente a prioridade definida no Admin (priority_order e Top Tags)
+                const prio = Number(p.priority_order) ?? originalIdx;
+                score += Math.max(0, 60 - (prio * 4));
+
+                if (meta.isTopTag) {
+                    score += 35;
+                    matchReasons.push('Parceiro Campeão de Aprovação Hoje');
+                }
+
+                // Se foi editado/criado no Cloudflare D1 pelo Admin, garante visibilidade imediata
+                if (p._isFreshD1) {
+                    score += 25;
+                }
+
+                // 2) Match Autônomo com o Perfil do Usuário
+                if (ctx.negativado && meta.acceptsNegativado) {
+                    score += 45;
+                    isDirectProfileMatch = true;
+                    matchReasons.push('Aprova mesmo com restrição no CPF');
+                }
+                if (ctx.aposentado && (meta.acceptsAposentadoCLT || meta.isFGTS)) {
+                    score += 45;
+                    isDirectProfileMatch = true;
+                    matchReasons.push('Condição especial p/ INSS, CLT ou FGTS');
+                }
+                if (ctx.bolsafamilia && meta.acceptsBolsaFamilia) {
+                    score += 50;
+                    isDirectProfileMatch = true;
+                    matchReasons.push('Elegível para recebedores de benefício');
+                }
+                if (ctx.autonomo && meta.acceptsAutonomo) {
+                    score += 35;
+                    isDirectProfileMatch = true;
+                    matchReasons.push('Ideal para Autônomos e Movimentação Pix');
+                }
+
+                // Se o usuário não marcou restrições específicas, qualquer empréstimo rápido é match direto
+                if (!ctx.negativado && !ctx.aposentado && !ctx.bolsafamilia && !ctx.autonomo) {
+                    isDirectProfileMatch = true;
+                    if (meta.isFastPix) matchReasons.push('Liberação rápida via Pix para seu valor');
+                }
+
+                // 3) Bônus da Regra do Admin (se o ID estiver na lista de regras)
+                const rulePos = ruleIdsOrder.findIndex(rid =>
+                    String(p.id) === rid || String(p._d1_id) === rid || String(p._supa_id) === rid
+                );
+                if (rulePos !== -1) {
+                    score += Math.max(10, 40 - (rulePos * 3));
+                }
+
+                if (matchReasons.length === 0) {
+                    matchReasons.push('Análise 100% digital e sem burocracia');
+                }
+
+                return {
+                    ...p,
+                    _meta: meta,
+                    _autonomousScore: score,
+                    _isProfileMatch: isDirectProfileMatch,
+                    _matchReason: matchReasons[0],
+                    _adminOrder: prio
+                };
             });
 
-            const pool = filtered.length > 0 ? filtered : products;
-            return [...pool].sort((a, b) => (Number(a.priority_order) ?? 999) - (Number(b.priority_order) ?? 999));
-        }
+            // Ordena conforme modo selecionado
+            if (currentSortMode === 'admin') {
+                scored.sort((a, b) => (a._adminOrder ?? 999) - (b._adminOrder ?? 999));
+            } else if (currentSortMode === 'fast') {
+                scored.sort((a, b) => ((b._meta?.isFastPix ? 1 : 0) - (a._meta?.isFastPix ? 1 : 0)) || (b._autonomousScore - a._autonomousScore));
+            } else {
+                scored.sort((a, b) => b._autonomousScore - a._autonomousScore);
+            }
 
-        function calculateRealisticChance(product, index, params) {
-            const tipos = toArray(product.tipo, true);
-            const perfis = toArray(product.perfis, true);
-            if (tipos.includes('fgts')) return 99;
-
-            let base = Math.max(78, 97 - (index * 3));
-            if (params.negativado && perfis.includes('negativado')) base = Math.min(98, base + 2);
-            if (params.aposentado && perfis.includes('aposentado')) base = Math.min(99, base + 3);
-            return base;
+            // Calcula a porcentagem realista de aprovação de cada card após ordenação
+            return scored.map((p, idx) => {
+                if (isAdItem(p)) return p;
+                let chance = Math.max(81, 98 - (idx * 2));
+                if (p._meta?.isFGTS) chance = 99;
+                else if (p._isProfileMatch) chance = Math.min(98, chance + 2);
+                return {
+                    ...p,
+                    displayChance: chance
+                };
+            });
         }
 
         function extractAdSlot(product) {
@@ -636,28 +1461,41 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
         }
 
         // ========================================================================
-        // 3. RENDERIZAÇÃO DOS CARDS (COM RESOLUÇÃO CORRETA DE LOGO/VELOTAX)
+        // 6. RENDERIZAÇÃO DOS CARDS RICOS E MODAIS INTERATIVOS
         // ========================================================================
         function renderCardsToGrid(productsList, gridEl) {
             if (!gridEl) return;
             gridEl.innerHTML = '';
 
             if (!productsList.length) {
-                gridEl.innerHTML = '<p class="text-center text-gray-600 col-span-full py-12 bg-white rounded-2xl border">Nenhuma oferta encontrada para este filtro específico.</p>';
+                gridEl.innerHTML = `
+                    <div class="col-span-full bg-white rounded-3xl border border-gray-200 p-10 text-center space-y-3">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mx-auto">
+                            <i class="fas fa-filter-circle-xmark"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">Nenhuma oferta específica nesta aba</h3>
+                        <p class="text-sm text-gray-500 max-w-md mx-auto">Clique abaixo para visualizar todas as ofertas liberadas no ranking geral.</p>
+                        <button type="button" onclick="switchFilterTab('all')" class="btn-primary text-xs px-5 py-2.5">
+                            Mostrar Todas as Ofertas
+                        </button>
+                    </div>`;
                 return;
             }
 
+            let offerRankCounter = 0;
+
             productsList.forEach((product, idx) => {
+                // Card de Anúncio AdSense
                 if (isAdItem(product)) {
                     const slot = extractAdSlot(product);
                     const layoutKey = product.btnSecundario || product.tagClass || '';
                     const adWrap = document.createElement('div');
-                    adWrap.className = 'product-card bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col fade-in relative h-full';
+                    adWrap.className = 'product-card bg-white rounded-3xl border border-gray-200 shadow-sm p-6 flex flex-col animate-fade-up relative h-full';
                     adWrap.innerHTML = `
                         <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">Patrocinado</span>
+                            <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Patrocinado</span>
                         </div>
-                        <div class="my-auto min-h-[140px]">
+                        <div class="my-auto min-h-[150px]">
                             <ins class="adsbygoogle"
                                  style="display:block"
                                  data-ad-client="ca-pub-4935884639623224"
@@ -672,81 +1510,112 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
                     return;
                 }
 
-                const isTopPick = idx < 2;
-                const chance = product.displayChance || 92;
+                offerRankCounter++;
+                const isTopPick = offerRankCounter <= 2;
+                const chance = product.displayChance || 93;
+                const meta = product._meta || analyzeAutonomousProductMetadata(product);
                 const vantagensArr = toVantagensArray(product.vantagens);
-                const vantagensHtml = vantagensArr.map(v => `
-                    <li class="flex items-start gap-2 text-sm text-gray-700">
-                        <span class="text-emerald-600 font-bold mt-0.5 shrink-0">✔</span>
-                        <span>${v}</span>
-                    </li>
-                `).join('');
 
-                const perfisList = toArray(product.perfis, true);
-                let profilePill = '⚡ Liberação Rápida';
-                if (perfisList.includes('negativado')) profilePill = '🔓 Aceita Negativado';
-                else if (perfisList.includes('aposentado')) profilePill = '👴 Especial INSS / CLT';
-                else if (perfisList.includes('bolsafamilia')) profilePill = '💳 Bolsa Família';
+                const vantagensHtml = vantagensArr.map(v => {
+                    const hasCheck = /^[✓✔🔥⭐]/.test(v.trim());
+                    return `
+                        <li class="flex items-start gap-2.5 text-sm text-gray-700 leading-snug">
+                            ${hasCheck ? '' : '<span class="text-emerald-600 font-black mt-0.5 shrink-0">✓</span>'}
+                            <span>${v}</span>
+                        </li>
+                    `;
+                }).join('');
+
+                // Escapa strings para passar ao modal de detalhes com segurança
+                const safeRawLogo = String(product.logo || '').replace(/'/g, "\\'");
+                const safeRawTitle = String(product.titulo || 'Parceiro').replace(/'/g, "\\'");
 
                 const isFacioCard = /facio/i.test(product.titulo || '') || /facio\.com\.br/i.test(product.link || '');
-                const actionButtonHtml = isFacioCard
-                    ? `<button type="button" onclick="window.handleFacioClick(this)" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full mt-5">
-                           <span>${product.btnPrimario || 'Solicitar Agora'}</span>
-                           <i class="fas fa-external-link-alt text-xs"></i>
+                const primaryBtnHtml = isFacioCard
+                    ? `<button type="button" onclick="window.handleFacioClick(this)" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full">
+                           <span>${product.btnPrimario || 'Solicitar na Facio'}</span>
+                           <i class="fas fa-bolt text-xs"></i>
                        </button>`
-                    : `<a href="${product.link || '#'}" target="_blank" rel="noopener noreferrer" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full mt-5">
-                           <span>${product.btnPrimario || 'Solicitar Agora'}</span>
-                           <i class="fas fa-arrow-right text-xs"></i>
+                    : `<a href="${product.link || '#'}" target="_blank" rel="noopener noreferrer" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full">
+                           <span>${product.btnPrimario || 'Receber Agora'}</span>
+                           <i class="fas fa-arrow-up-right-from-square text-xs"></i>
                        </a>`;
 
                 const card = document.createElement('div');
-                card.className = `product-card bg-white rounded-3xl ${isTopPick ? 'border-2 border-emerald-500 ring-4 ring-emerald-500/10' : 'border border-gray-200'} shadow-md p-6 flex flex-col fade-in relative h-full`;
+                card.style.animationDelay = `${Math.min(idx * 60, 360)}ms`;
+                card.className = `product-card bg-white rounded-3xl ${isTopPick ? 'border-2 border-emerald-500 ring-4 ring-emerald-500/10' : 'border border-gray-200/90'} shadow-md p-6 flex flex-col animate-fade-up relative h-full`;
 
                 card.innerHTML = `
+                    <!-- Topo: Tag do Admin + Probabilidade -->
                     <div class="flex items-center justify-between gap-2 mb-4">
-                        <span class="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-full ${getBadgeClass(product.tagClass)}">
-                            ${product.tag || (isTopPick ? `🏆 Top ${idx + 1} Recomendado` : 'Recomendado')}
+                        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full ${getBadgeClass(product.tagClass)}">
+                            ${product.tag || (isTopPick ? `🏆 Top ${offerRankCounter} Recomendado` : `#${offerRankCounter} Recomendado`)}
                         </span>
-                        <span class="inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-sm">
-                            🔥 ${chance}% de Chance
+                        <span class="inline-flex items-center gap-1 bg-emerald-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm">
+                            🔥 ${chance}% Match
                         </span>
                     </div>
 
+                    <!-- Identidade da Instituição (Logo com Resolução Infalível) -->
                     <div class="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
-                        <div class="w-24 h-14 rounded-2xl border border-gray-200 bg-gray-50 p-2 flex items-center justify-center shrink-0">
-                            <img src="${resolveLogo(product.logo)}" alt="Logo ${product.titulo || ''}" class="max-w-full max-h-full object-contain"
-                                 onerror="this.onerror=null;this.src='https://placehold.co/112x48/e2e8f0/4a5568?text=Oferta';">
+                        <div class="w-24 h-16 rounded-2xl border border-gray-200 bg-gray-50 p-2 flex items-center justify-center shrink-0 shadow-inner">
+                            <img src="${resolveLogo(product.logo, product.titulo)}"
+                                 alt="Logo ${product.titulo || 'Parceiro'}"
+                                 class="max-w-full max-h-full object-contain"
+                                 onerror="window.handleLogoError(this, '${safeRawLogo}', '${safeRawTitle}')">
                         </div>
-                        <div class="min-w-0">
-                            <span class="inline-block text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded mb-1">
-                                ${profilePill}
-                            </span>
-                            <h3 class="text-lg sm:text-xl font-extrabold text-gray-900 leading-snug">
-                                ${product.titulo || 'Oferta Parceira'}
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                <span class="inline-block text-[11px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                    ${meta.modalityLabel}
+                                </span>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-black text-gray-900 leading-tight truncate" title="${product.titulo || ''}">
+                                ${product.titulo || 'Instituição Parceira'}
                             </h3>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-gray-500">Compatibilidade com seu perfil</span>
-                            <span class="text-emerald-700 font-bold">${chance}% Alta</span>
+                    <!-- Mini-Painel de Métricas da Oferta -->
+                    <div class="grid grid-cols-2 gap-2 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/70 text-xs">
+                        <div class="px-2 py-1">
+                            <span class="block text-[10px] uppercase font-bold text-gray-400">Liberação</span>
+                            <span class="font-extrabold text-gray-800 flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-bolt text-amber-500"></i> ${meta.speedText}
+                            </span>
                         </div>
-                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full progress-bar-fill" style="width: ${chance}%"></div>
+                        <div class="px-2 py-1 border-l border-slate-200">
+                            <span class="block text-[10px] uppercase font-bold text-gray-400">Análise de CPF</span>
+                            <span class="font-extrabold text-emerald-700 flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-check-circle"></i> ${meta.acceptsNegativado ? 'Flexível / Sem SPC' : 'Aprovação Rápida'}
+                            </span>
                         </div>
                     </div>
 
-                    <ul class="space-y-2.5 flex-grow mb-2">
-                        ${vantagensHtml || '<li class="text-sm text-gray-600">✔ Solicitação 100% online e rápida</li>'}
+                    <!-- Barra de Afinidade Autônoma -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-gray-600 truncate pr-2">${product._matchReason || 'Alta taxa de aprovação hoje'}</span>
+                            <span class="text-emerald-700 shrink-0">${chance}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-1000" style="width: ${chance}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Vantagens Formatadas pelo Admin -->
+                    <ul class="space-y-2.5 flex-grow mb-5">
+                        ${vantagensHtml || '<li class="text-sm text-gray-600">✓ Solicitação 100% online com liberação via Pix</li>'}
                     </ul>
 
-                    <div class="pt-3 mt-auto border-t border-gray-100">
-                        <div class="flex items-center justify-between text-[11px] text-gray-500 font-medium mb-1">
-                            <span><i class="fas fa-lock text-emerald-600 mr-1"></i>Ambiente Seguro</span>
-                            <span><i class="fas fa-clock text-emerald-600 mr-1"></i>Análise em minutos</span>
-                        </div>
-                        ${actionButtonHtml}
+                    <!-- Rodapé de Ação Dupla (Solicitar + Raio-X de Parcelas) -->
+                    <div class="pt-3 mt-auto border-t border-gray-100 space-y-2">
+                        ${primaryBtnHtml}
+                        <button type="button" onclick="openOfferDetailModal(${idx})"
+                                class="w-full py-2.5 px-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition flex items-center justify-center gap-1.5">
+                            <i class="fas fa-calculator text-emerald-600"></i>
+                            <span>${product.btnSecundario || 'Ver Simulação de Parcelas e Requisitos'}</span>
+                        </button>
                     </div>
                 `;
 
@@ -754,35 +1623,356 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
             });
         }
 
+        // Abre o Modal de Raio-X e Simulação de Parcelas da Oferta
+        window.openOfferDetailModal = function(idx) {
+            const list = getFilteredProductsForCurrentTab();
+            const product = list[idx];
+            if (!product) return;
+
+            const modal = document.getElementById('offer-detail-modal');
+            const logoEl = document.getElementById('modal-offer-logo');
+            const tagEl = document.getElementById('modal-offer-tag');
+            const titleEl = document.getElementById('modal-offer-title');
+            const reasonEl = document.getElementById('modal-offer-reason');
+            const chanceEl = document.getElementById('modal-offer-chance');
+            const advEl = document.getElementById('modal-offer-advantages');
+            const simValEl = document.getElementById('modal-sim-valor');
+            const instGrid = document.getElementById('modal-installment-grid');
+            const ctaWrap = document.getElementById('modal-offer-cta-wrap');
+
+            if (logoEl) logoEl.src = resolveLogo(product.logo, product.titulo);
+            if (tagEl) tagEl.textContent = product.tag || 'Parceiro Verificado';
+            if (titleEl) titleEl.textContent = product.titulo || 'Detalhes da Oferta';
+            if (reasonEl) reasonEl.textContent = product._matchReason || 'Instituição com alta taxa de aprovação para o seu perfil.';
+            if (chanceEl) chanceEl.textContent = `${product.displayChance || 94}%`;
+
+            const vantagensArr = toVantagensArray(product.vantagens);
+            if (advEl) {
+                advEl.innerHTML = vantagensArr.length
+                    ? vantagensArr.map(v => `<li class="flex items-start gap-2"><span class="text-emerald-600 font-bold">✓</span><span>${v}</span></li>`).join('')
+                    : '<li>✓ Solicitação 100% digital sem taxas antecipadas.</li>';
+            }
+
+            // Calcula projeção realista de parcelas com base no valor simulado
+            const baseVal = Number(globalLeadContext.valor) || 1000;
+            if (simValEl) simValEl.textContent = formatBRL(baseVal);
+
+            if (instGrid) {
+                const terms = [3, 6, 12, 18];
+                const monthlyRate = product._meta?.isFGTS ? 0.0179 : 0.049;
+                instGrid.innerHTML = terms.map(n => {
+                    const pmt = (baseVal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -n));
+                    return `
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                            <span class="block text-xs font-extrabold text-emerald-700">${n}x de</span>
+                            <span class="text-sm font-black text-gray-900">${formatBRL(pmt)}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const isFacioCard = /facio/i.test(product.titulo || '') || /facio\.com\.br/i.test(product.link || '');
+            if (ctaWrap) {
+                ctaWrap.innerHTML = isFacioCard
+                    ? `<button type="button" onclick="closeOfferDetailModal(); window.handleFacioClick(this);" class="btn-primary w-full py-4 text-base">
+                           <span>⚡ Solicitar Pré-Aprovação na Facio Agora</span>
+                           <i class="fas fa-arrow-right"></i>
+                       </button>`
+                    : `<a href="${product.link || '#'}" target="_blank" rel="noopener noreferrer" class="btn-primary w-full py-4 text-base">
+                           <span>Ir para ${product.titulo || 'Parceiro'} e Solicitar Agora</span>
+                           <i class="fas fa-arrow-up-right-from-square"></i>
+                       </a>`;
+            }
+
+            modal?.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeOfferDetailModal = function() {
+            document.getElementById('offer-detail-modal')?.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
         // ========================================================================
-        // 4. EXECUÇÃO PRINCIPAL
+        // 7. ATUALIZAÇÃO DO DASHBOARD E RECALIBRAÇÃO AO VIVO
+        // ========================================================================
+        function updateDashboardUI() {
+            const primeiroNome = (globalLeadContext.nome || 'Cliente').split(' ')[0];
+            const greetingEl = document.getElementById('dashboard-greeting');
+            const valorEl = document.getElementById('dashboard-valor');
+            const parcelasEl = document.getElementById('dashboard-parcelas');
+            const perfilEl = document.getElementById('dashboard-perfil');
+            const facioStatusEl = document.getElementById('dashboard-facio-status');
+            const messageBox = document.getElementById('results-message');
+            const facioContainer = document.getElementById('facio-highlight-container');
+            const activeCountBadge = document.getElementById('active-offers-count-badge');
+            const chipsContainer = document.getElementById('active-profile-chips');
+            const gaugePath = document.getElementById('score-gauge-path');
+            const gaugeText = document.getElementById('score-gauge-text');
+
+            const realOffersCount = rankedProducts.filter(p => !isAdItem(p)).length;
+            if (activeCountBadge) {
+                activeCountBadge.innerHTML = `<i class="fas fa-building-columns text-emerald-300 mr-1"></i> ${realOffersCount} Instituições Liberadas Hoje`;
+            }
+
+            if (greetingEl) {
+                greetingEl.textContent = `${primeiroNome}, seu diagnóstico de crédito está pronto!`;
+            }
+            if (valorEl) {
+                valorEl.textContent = formatBRL(globalLeadContext.valor);
+            }
+            if (parcelasEl) {
+                parcelasEl.textContent = `Prazo preferencial: ${globalLeadContext.parcelas || 12}x • Pix`;
+            }
+
+            const perfisAtivos = [];
+            if (globalLeadContext.negativado) perfisAtivos.push('Restrição / Negativado');
+            if (globalLeadContext.aposentado) perfisAtivos.push('Aposentado / CLT / FGTS');
+            if (globalLeadContext.bolsafamilia) perfisAtivos.push('Bolsa Família');
+            if (globalLeadContext.autonomo) perfisAtivos.push('Autônomo / MEI');
+
+            if (perfilEl) {
+                perfilEl.textContent = perfisAtivos.length ? perfisAtivos.join(' + ') : 'Crédito Pessoal Rápido';
+            }
+
+            if (chipsContainer) {
+                const list = perfisAtivos.length ? perfisAtivos : ['Score Flexível', 'Liberação via Pix'];
+                chipsContainer.innerHTML = list.map(label => `
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold bg-white/15 border border-white/20 text-white px-3 py-1 rounded-full">
+                        <i class="fas fa-check text-emerald-300"></i> ${label}
+                    </span>
+                `).join('');
+            }
+
+            // Atualiza Termômetro Geral
+            const topScore = rankedProducts.find(p => !isAdItem(p))?.displayChance || 95;
+            if (gaugePath) gaugePath.setAttribute('stroke-dasharray', `${topScore}, 100`);
+            if (gaugeText) gaugeText.textContent = `${topScore}%`;
+
+            if (facioStatusEl) {
+                if (globalLeadContext.facioAvailable) {
+                    facioStatusEl.textContent = `Pré-Aprovado (Até ${formatBRL(globalLeadContext.facioMaxValue)})`;
+                    facioStatusEl.className = 'text-sm font-extrabold text-emerald-700 truncate block';
+                } else {
+                    facioStatusEl.textContent = 'Atendido pelos Parceiros Top';
+                    facioStatusEl.className = 'text-sm font-bold text-amber-700 truncate block';
+                }
+            }
+
+            // Mensagem Estratégica Rica
+            if (messageBox) {
+                const top1Name = rankedProducts.find(p => !isAdItem(p))?.titulo || 'nosso Parceiro Top 1';
+                if (globalLeadContext.negativado) {
+                    messageBox.innerHTML = `
+                        <div class="flex items-start gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900">Plano de Aprovação para CPF com Restrição (${primeiroNome}):</strong>
+                                Como você indicou estar negativado, nosso motor filtrou e colocou no topo parceiros como <strong>${top1Name}</strong>${globalLeadContext.facioAvailable ? ' e <strong>Facio</strong>' : ''}, que avaliam sua capacidade atual ou garantias alternativas (conta de luz, FGTS ou fluxo Pix) sem travar no SPC/Serasa.
+                            </div>
+                        </div>`;
+                } else if (globalLeadContext.valor > 300 && globalLeadContext.facioAvailable) {
+                    messageBox.innerHTML = `
+                        <div class="flex items-start gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900">Como liberar seus ${formatBRL(globalLeadContext.valor)} hoje mesmo:</strong>
+                                Seu perfil está pré-verificado na <strong>Facio</strong> para retirada rápida de até <strong>${formatBRL(globalLeadContext.facioMaxValue)}</strong> e possui <strong>${topScore}% de compatibilidade</strong> com <strong>${top1Name}</strong> para complementar o valor total desejado!
+                            </div>
+                        </div>`;
+                } else {
+                    messageBox.innerHTML = `
+                        <div class="flex items-start gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg shrink-0 mt-0.5">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900">Recomendação Oficial TirraCred:</strong>
+                                Para o valor de <strong>${formatBRL(globalLeadContext.valor)}</strong>, recomendamos iniciar sua solicitação por <strong>${top1Name}</strong> (Top 1 do seu ranking) e, em seguida, validar a 2ª opção para garantir a menor taxa.
+                            </div>
+                        </div>`;
+                }
+            }
+
+            // Renderiza Destaque Facio
+            if (facioContainer) {
+                facioContainer.innerHTML = renderFacioHighlight(globalLeadContext);
+            }
+
+            // Atualiza contadores das abas
+            const allCount = rankedProducts.filter(p => !isAdItem(p)).length;
+            const matchedCount = rankedProducts.filter(p => !isAdItem(p) && p._isProfileMatch).length;
+            const cAll = document.getElementById('count-all');
+            const cMatch = document.getElementById('count-matched');
+            if (cAll) cAll.textContent = allCount;
+            if (cMatch) cMatch.textContent = matchedCount;
+        }
+
+        function getFilteredProductsForCurrentTab() {
+            if (currentActiveTab === 'all') return rankedProducts;
+
+            return rankedProducts.filter(p => {
+                if (isAdItem(p)) return false;
+                const meta = p._meta || analyzeAutonomousProductMetadata(p);
+                if (currentActiveTab === 'matched') return Boolean(p._isProfileMatch);
+                if (currentActiveTab === 'emprestimo') return !meta.isCardOrAccount;
+                if (currentActiveTab === 'negativado') return meta.acceptsNegativado;
+                if (currentActiveTab === 'fgts_inss') return meta.isFGTS || meta.acceptsAposentadoCLT || meta.acceptsBolsaFamilia;
+                if (currentActiveTab === 'cartao') return meta.isCardOrAccount;
+                return true;
+            });
+        }
+
+        window.switchFilterTab = function(tabName) {
+            currentActiveTab = tabName;
+            const tabBtns = document.querySelectorAll('#quick-filter-tabs .tab-btn');
+            tabBtns.forEach(b => {
+                const isSelected = b.getAttribute('data-tab') === tabName;
+                b.className = isSelected
+                    ? 'tab-btn bg-emerald-600 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5'
+                    : 'tab-btn bg-white text-gray-700 border border-gray-200 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl hover:bg-gray-50 transition flex items-center gap-1.5';
+            });
+
+            const gridEl = document.getElementById('product-grid');
+            renderCardsToGrid(getFilteredProductsForCurrentTab(), gridEl);
+        };
+
+        // Funções do Modal Recalibrador de Perfil ao Vivo
+        window.openProfileTunerModal = function() {
+            const modal = document.getElementById('profile-tuner-modal');
+            const slider = document.getElementById('tuner-valor-slider');
+            const disp = document.getElementById('tuner-valor-display');
+
+            if (slider) slider.value = globalLeadContext.valor || 1000;
+            if (disp) disp.textContent = formatBRL(globalLeadContext.valor || 1000);
+
+            document.getElementById('tuner-negativado').checked = Boolean(globalLeadContext.negativado);
+            document.getElementById('tuner-aposentado').checked = Boolean(globalLeadContext.aposentado);
+            document.getElementById('tuner-bolsafamilia').checked = Boolean(globalLeadContext.bolsafamilia);
+            document.getElementById('tuner-autonomo').checked = Boolean(globalLeadContext.autonomo);
+
+            modal?.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeProfileTunerModal = function() {
+            document.getElementById('profile-tuner-modal')?.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        window.applyProfileTuner = function() {
+            const newVal = Number(document.getElementById('tuner-valor-slider')?.value) || 1000;
+            globalLeadContext.valor = newVal;
+            globalLeadContext.negativado = document.getElementById('tuner-negativado')?.checked || false;
+            globalLeadContext.aposentado = document.getElementById('tuner-aposentado')?.checked || false;
+            globalLeadContext.bolsafamilia = document.getElementById('tuner-bolsafamilia')?.checked || false;
+            globalLeadContext.autonomo = document.getElementById('tuner-autonomo')?.checked || false;
+
+            saveLeadContextToStorage(globalLeadContext);
+            rankedProducts = computeAutonomousRanking(rawAdminProducts, globalLeadContext, rawAdminRules);
+            updateDashboardUI();
+            renderCardsToGrid(getFilteredProductsForCurrentTab(), document.getElementById('product-grid'));
+            closeProfileTunerModal();
+        };
+
+        // ========================================================================
+        // 8. INICIALIZAÇÃO E ORQUESTRAÇÃO DA PÁGINA
         // ========================================================================
         document.addEventListener('DOMContentLoaded', async () => {
             const productGrid = document.getElementById('product-grid');
             const loadingState = document.getElementById('loading-state');
             const resultsContent = document.getElementById('results-content');
-            const messageBox = document.getElementById('results-message');
             const leadNameSpan = document.getElementById('lead-name');
-            const facioContainer = document.getElementById('facio-highlight-container');
+            const progressBar = document.getElementById('loading-progress-bar');
+            const percentTxt = document.getElementById('loading-percent');
 
             const primeiroNome = (globalLeadContext.nome || 'Cliente').split(' ')[0];
             if (leadNameSpan) leadNameSpan.textContent = primeiroNome;
 
-            // Simula etapas de carregamento interativo
-            setTimeout(() => {
-                const s2 = document.getElementById('loading-step-2');
-                const s3 = document.getElementById('loading-step-3');
-                if (s2) {
-                    s2.className = 'flex items-center gap-2.5 text-emerald-700 font-semibold';
-                    s2.innerHTML = '<i class="fas fa-check-circle"></i><span>2. Elegibilidade na Facio e parceiros verificada!</span>';
-                }
-                if (s3) {
-                    s3.className = 'flex items-center gap-2.5 text-gray-700 font-medium';
-                    s3.innerHTML = '<i class="fas fa-circle-notch fa-spin text-green-600"></i><span>3. Ordenando ofertas com maior aprovação hoje...</span>';
-                }
-            }, 600);
+            // Listeners do Modal de Recalibração e Modal Facio
+            document.getElementById('tuner-valor-slider')?.addEventListener('input', (e) => {
+                const d = document.getElementById('tuner-valor-display');
+                if (d) d.textContent = formatBRL(e.target.value);
+            });
 
-            // Consulta automática na Facio caso o usuário venha direto por URL
+            const facioCpfInput = document.getElementById('facio-modal-cpf');
+            const facioCpfStatus = document.getElementById('facio-modal-cpf-status');
+            facioCpfInput?.addEventListener('input', async (e) => {
+                e.target.value = formatCPF(e.target.value);
+                const clean = e.target.value.replace(/\D/g, '');
+                if (clean.length === 11) {
+                    if (!validateCPF(clean)) {
+                        if (facioCpfStatus) {
+                            facioCpfStatus.textContent = '✕ CPF inválido. Verifique os dígitos.';
+                            facioCpfStatus.className = 'text-[11px] mt-1 font-bold text-red-600';
+                        }
+                    } else {
+                        if (facioCpfStatus) {
+                            facioCpfStatus.textContent = '✓ CPF válido! Verificando disponibilidade na Facio...';
+                            facioCpfStatus.className = 'text-[11px] mt-1 font-bold text-emerald-700';
+                        }
+                    }
+                } else if (facioCpfStatus) {
+                    facioCpfStatus.textContent = '';
+                }
+            });
+
+            document.getElementById('facio-modal-whats')?.addEventListener('input', (e) => {
+                e.target.value = formatPhone(e.target.value);
+            });
+
+            document.getElementById('facio-modal-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const cpf = document.getElementById('facio-modal-cpf')?.value.replace(/\D/g, '') || '';
+                const nome = document.getElementById('facio-modal-nome')?.value.trim() || '';
+                const whats = document.getElementById('facio-modal-whats')?.value.replace(/\D/g, '') || '';
+                const email = document.getElementById('facio-modal-email')?.value.trim().toLowerCase() || '';
+
+                if (!validateCPF(cpf)) {
+                    alert('Informe um CPF válido de 11 dígitos.');
+                    return;
+                }
+                if (!nome || !nome.includes(' ')) {
+                    alert('Informe seu nome completo (nome e sobrenome).');
+                    return;
+                }
+                if (whats.length < 10) {
+                    alert('Informe um celular válido com DDD.');
+                    return;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Informe um e-mail válido.');
+                    return;
+                }
+
+                globalLeadContext.cpf = cpf;
+                globalLeadContext.nome = nome;
+                globalLeadContext.whatsapp = whats;
+                globalLeadContext.email = email;
+                saveLeadContextToStorage(globalLeadContext);
+
+                const submitBtn = document.getElementById('facio-modal-submit');
+                await executeFacioLeadRegistration(submitBtn);
+            });
+
+            // Animação progressiva das etapas de carregamento
+            const updateLoadProgress = (pct, stepId, textDone) => {
+                if (progressBar) progressBar.style.width = `${pct}%`;
+                if (percentTxt) percentTxt.textContent = `${pct}%`;
+                const el = document.getElementById(stepId);
+                if (el) {
+                    el.className = 'flex items-center justify-between text-emerald-700 font-bold';
+                    el.innerHTML = `<div class="flex items-center gap-2.5"><i class="fas fa-check-circle text-base"></i><span>${textDone}</span></div><span class="text-[11px] bg-emerald-100 px-2 py-0.5 rounded font-extrabold">OK</span>`;
+                }
+            };
+
+            setTimeout(() => updateLoadProgress(48, 'step-load-2', '2. Janela de atribuição Facio consultada com sucesso'), 280);
+
+            // Se tiver CPF de 11 dígitos e ainda não checou a Facio, consulta em background
             if (globalLeadContext.cpf.length === 11 && !globalLeadContext.facioChecked) {
                 try {
                     const fRes = await fetch('/api/facio', {
@@ -803,101 +1993,44 @@ Substitua todo o conteúdo do seu arquivo pages/resultados.html pelo código aba
                 } catch (e) {}
             }
 
-            // Carrega produtos (D1 + Supabase) e Regras do Admin
+            // Carrega em paralelo produtos da Cloudflare D1 + Supabase e Regras do Admin
             const [allProducts, rules] = await Promise.all([
                 loadAllProductsFromAdminSources(),
-                fetchRules()
+                fetchRulesFromAdmin()
             ]);
 
-            const orderedProducts = prioritizeProducts(allProducts, globalLeadContext, rules).map((p, idx) => ({
-                ...p,
-                displayChance: calculateRealisticChance(p, idx, globalLeadContext)
-            }));
+            updateLoadProgress(82, 'step-load-3', `3. ${allProducts.length} produtos sincronizados (Cloudflare D1 + Supabase)`);
 
-            // Preenche o painel de diagnóstico
-            const greetingEl = document.getElementById('dashboard-greeting');
-            const valorEl = document.getElementById('dashboard-valor');
-            const perfilEl = document.getElementById('dashboard-perfil');
-            const facioStatusEl = document.getElementById('dashboard-facio-status');
+            rawAdminProducts = allProducts;
+            rawAdminRules = rules;
+            rankedProducts = computeAutonomousRanking(rawAdminProducts, globalLeadContext, rawAdminRules);
 
-            if (greetingEl) {
-                greetingEl.textContent = `${primeiroNome}, encontramos excelentes oportunidades para você!`;
-            }
-            if (valorEl) {
-                valorEl.textContent = formatBRL(globalLeadContext.valor);
-            }
-            if (perfilEl) {
-                const perfisAtivos = [];
-                if (globalLeadContext.negativado) perfisAtivos.push('Negativado');
-                if (globalLeadContext.aposentado) perfisAtivos.push('INSS / CLT');
-                if (globalLeadContext.bolsafamilia) perfisAtivos.push('Bolsa Família');
-                perfilEl.textContent = perfisAtivos.length ? perfisAtivos.join(' • ') : 'Crédito Pessoal Rápido';
-            }
-            if (facioStatusEl) {
-                if (globalLeadContext.facioAvailable) {
-                    facioStatusEl.textContent = `Elegível (Até ${formatBRL(globalLeadContext.facioMaxValue)})`;
-                    facioStatusEl.className = 'text-sm font-extrabold text-emerald-700';
-                } else {
-                    facioStatusEl.textContent = 'Indisponível no momento';
-                    facioStatusEl.className = 'text-sm font-bold text-amber-700';
-                }
-            }
+            setTimeout(() => updateLoadProgress(100, 'step-load-4', '4. Ranking autônomo de compatibilidade finalizado!'), 450);
 
-            // Mensagem estratégica
-            if (messageBox) {
-                if (globalLeadContext.negativado) {
-                    messageBox.innerHTML = `💡 <strong>Dica importante, ${primeiroNome}:</strong> Como você informou restrição no CPF, priorizamos abaixo parceiros que aprovam <strong>mesmo negativado</strong> (via antecipação salarial, conta de luz, FGTS ou microcrédito). Solicite nas <strong>2 primeiras opções</strong> para garantir sua liberação hoje!`;
-                } else if (globalLeadContext.valor > 300 && globalLeadContext.facioAvailable) {
-                    messageBox.innerHTML = `💡 <strong>Como liberar seus ${formatBRL(globalLeadContext.valor)} mais rápido:</strong> Seu CPF está elegível na <strong>Facio</strong> para saque rápido de até <strong>${formatBRL(globalLeadContext.facioMaxValue)}</strong>. Você pode garantir esse valor agora no destaque abaixo e solicitar o restante no <strong>Top 1 do Ranking</strong>!`;
-                } else {
-                    messageBox.innerHTML = `✅ <strong>Análise concluída com sucesso:</strong> Selecionamos as instituições com maior índice de aprovação hoje para o valor de <strong>${formatBRL(globalLeadContext.valor)}</strong>. Clique em <strong>Solicitar Agora</strong> nas opções abaixo.`;
-                }
-            }
+            // Preenche Dashboard, Destaque Facio e Grid de Produtos
+            updateDashboardUI();
+            renderCardsToGrid(rankedProducts, productGrid);
 
-            // Renderiza Destaque Facio
-            if (facioContainer) {
-                facioContainer.innerHTML = renderFacioHighlight(globalLeadContext);
-            }
-
-            // Renderiza os cards do Grid
-            renderCardsToGrid(orderedProducts, productGrid);
-
-            // Filtros rápidos das abas
-            const tabBtns = document.querySelectorAll('#quick-filter-tabs .tab-btn');
-            tabBtns.forEach(btn => {
+            // Listeners das abas de filtro
+            document.querySelectorAll('#quick-filter-tabs .tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    tabBtns.forEach(b => {
-                        b.className = 'tab-btn bg-white text-gray-700 border border-gray-200 text-xs font-semibold px-3.5 py-2 rounded-xl hover:bg-gray-50 transition';
-                    });
-                    btn.className = 'tab-btn bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition';
-
-                    const tab = btn.getAttribute('data-tab');
-                    if (tab === 'all') {
-                        renderCardsToGrid(orderedProducts, productGrid);
-                        return;
-                    }
-
-                    const filteredTab = orderedProducts.filter(p => {
-                        if (isAdItem(p)) return false;
-                        const tipos = toArray(p.tipo, true);
-                        const perfis = toArray(p.perfis, true);
-                        if (tab === 'emprestimo') return tipos.some(t => t.includes('emprestimo') || t.includes('fgts') || t.includes('bolsafamilia'));
-                        if (tab === 'negativado') return perfis.some(pf => pf.includes('negativado') || pf.includes('score-baixo'));
-                        if (tab === 'cartao') return tipos.some(t => t.includes('cartao') || t.includes('contas'));
-                        return true;
-                    });
-
-                    renderCardsToGrid(filteredTab, productGrid);
+                    switchFilterTab(btn.getAttribute('data-tab'));
                 });
             });
 
-            // Mostra os resultados com animação suave
+            // Listener de ordenação
+            document.getElementById('sort-select')?.addEventListener('change', (e) => {
+                currentSortMode = e.target.value;
+                rankedProducts = computeAutonomousRanking(rawAdminProducts, globalLeadContext, rawAdminRules);
+                renderCardsToGrid(getFilteredProductsForCurrentTab(), productGrid);
+            });
+
+            // Exibe a interface final
             setTimeout(() => {
                 loadingState?.classList.add('hidden');
                 resultsContent?.classList.remove('hidden');
-            }, 950);
+            }, 680);
         });
     </script>
 </body>
 </html>
-
