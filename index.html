@@ -226,7 +226,7 @@
     <span>Atendimento</span>
 </a>
             
-            <!-- Mobile: WhatsApp Icon + Menu Button (This is the only change) -->
+            <!-- Mobile: WhatsApp Icon + Menu Button -->
             <div class="md:hidden flex items-center space-x-4">
 
 
@@ -242,12 +242,10 @@
 </div>
         </div>
     </div>
-    <!-- Mobile Menu (Your original code) -->
+    <!-- Mobile Menu -->
    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
     <a href="index.html" onclick="showPage('emprestimos-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-    <!-- Adicione 'scroll-toggle' e remova o onclick -->
     <a href="#home-filters" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-    <!-- Adicione 'scroll-toggle' e remova o onclick -->
     <a href="#renegociacao" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
     <a href="javascript:void(0)" onclick="showPage('blog-page')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Blog</a>
     <div class="px-4 py-3 border-t">
@@ -327,16 +325,42 @@
                 </fieldset>
  
                 <fieldset id="form-step-2" class="hidden space-y-4">
-                    <input name="nome" placeholder="Nome completo" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
-                    <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="14">
-                    <input id="whatsapp" name="whatsapp" placeholder="WhatsApp (DDD + nº)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="15">
-                    <input name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
+                    <input id="nomeInput" name="nome" placeholder="Nome completo (Nome e Sobrenome)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
+                    
+                    <div>
+                        <input id="cpf" name="cpf" placeholder="CPF" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="14">
+                        <p id="cpf-message" class="text-xs mt-1 h-4"></p>
+                    </div>
+
+                    <!-- Card Pareado da Facio (Estrutura oficial do objeto offer da LeadGen API) -->
+                    <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50 p-4 shadow-md transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                                ✨ CPF Disponível na Facio
+                            </span>
+                            <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
+                        </div>
+                        <p id="facio-offer-desc" class="text-sm font-bold text-gray-800 mb-1">
+                            Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.
+                        </p>
+                        <p class="text-xs text-gray-600">
+                            Preencha seu WhatsApp e E-mail abaixo e clique em <strong>Contratar Agora na Facio</strong> para ir direto à oferta.
+                        </p>
+                    </div>
+
+                    <input id="whatsapp" name="whatsapp" placeholder="WhatsApp com DDD (ex: 11 99999-9999)" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500" maxlength="15">
+                    <input id="emailInput" name="email" type="email" placeholder="E-mail" required class="w-full rounded-md bg-gray-100 p-3 text-base outline-none focus:ring-2 focus:ring-green-500">
    
-                    <div class="flex flex-col gap-4 pt-2">
-                        <button id="submit-btn-home" type="submit" class="w-full order-1 rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
+                    <div class="flex flex-col gap-3 pt-2">
+                        <!-- Botão Direto da Facio (Exibido quando isAvailable === true) -->
+                        <button id="btn-facio-direct" type="button" class="hidden w-full order-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-base font-bold text-white shadow-lg transition-transform hover:scale-105 flex items-center justify-center gap-2">
+                            <span>⚡ Contratar Agora na Facio</span>
+                        </button>
+
+                        <button id="submit-btn-home" type="submit" class="w-full order-2 rounded-md bg-green-600 px-4 py-3 text-base font-semibold text-white transition-transform hover:scale-105">
                             Ver Recomendações
                         </button>
-                        <button id="prev-step-btn" type="button" class="w-full order-2 text-center text-sm font-medium text-gray-600 hover:text-black">
+                        <button id="prev-step-btn" type="button" class="w-full order-3 text-center text-sm font-medium text-gray-600 hover:text-black">
                             &larr; Voltar
                         </button>
                     </div>
@@ -617,14 +641,6 @@
     
     
  <!-- PAGINAÇÃO -->
-<!-- 
-  Correções:
-  - Adicionado 'items-center' para garantir o alinhamento vertical dos botões.
-  - Aumentado o padding vertical (py-2) e horizontal (px-4) para botões com melhor área de clique e altura.
-  - Aumentado o espaçamento entre os botões (gap-3).
-  - Aumentado a margem superior (mt-8) para maior respiro.
-  - O código foi formatado para melhor legibilidade.
--->
 <div id="pagination" class="mt-2 md:mb-16 flex items-center justify-center flex-wrap gap-3">
     
     <!-- Botão Anterior -->
@@ -1078,17 +1094,14 @@ window.addEventListener('resize', setAlertHeight);
 
     // --- LÓGICA DO SLIDER DE VALOR ---
     if (valorSlider && valorDisplay) {
-        // Função para formatar o número como moeda (ex: R$ 1.000)
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { 
             style: 'currency', 
             currency: 'BRL', 
             minimumFractionDigits: 0 
         }).format(value);
 
-        // Define o valor inicial do display assim que a página carrega
         valorDisplay.textContent = formatCurrency(valorSlider.value);
 
-        // Adiciona um "ouvinte" que atualiza o valor em tempo real enquanto o usuário arrasta o slider
         valorSlider.addEventListener('input', (e) => {
             valorDisplay.textContent = formatCurrency(e.target.value);
         });
@@ -1098,16 +1111,13 @@ window.addEventListener('resize', setAlertHeight);
     if (parcelaBtns.length > 0 && parcelasInput) {
         parcelaBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Primeiro, remove o estilo "ativo" de todos os botões
                 parcelaBtns.forEach(b => {
                     b.classList.remove('bg-green-500', 'text-white');
                     b.classList.add('bg-gray-200', 'text-gray-700');
                 });
-                // Depois, adiciona o estilo "ativo" apenas ao botão que foi clicado
                 btn.classList.add('bg-green-500', 'text-white');
                 btn.classList.remove('bg-gray-200', 'text-gray-700');
                 
-                // Atualiza o valor escondido que será enviado com o formulário
                 parcelasInput.value = btn.dataset.parcelas;
             });
         });
@@ -1115,28 +1125,199 @@ window.addEventListener('resize', setAlertHeight);
 
     // --- LÓGICA DA NAVEGAÇÃO ENTRE ETAPAS DO FORMULÁRIO ---
     if (step1 && step2 && nextBtn && prevBtn) {
-        // Evento para o botão "Continuar": esconde a etapa 1 e mostra a etapa 2
         nextBtn.addEventListener('click', () => {
             step1.classList.add('hidden');
             step2.classList.remove('hidden');
         });
 
-        // Evento para o botão "Voltar": esconde a etapa 2 e mostra a etapa 1
         prevBtn.addEventListener('click', () => {
             step2.classList.add('hidden');
             step1.classList.remove('hidden');
         });
     }
 
+    // ===================================================
+    // 3. INTEGRAÇÃO PAREADA FACIO (LEADGEN API + LINK AFILIADO)
+    // ===================================================
+    const FACIO_PARTNER_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
+    const facioOfferBox = document.getElementById('facio-offer-box');
+    const facioOfferDesc = document.getElementById('facio-offer-desc');
+    const btnFacioDirect = document.getElementById('btn-facio-direct');
 
-    // --- FORM SUBMISSION WITH LEAD CAPTURE ---
-        leadForm?.addEventListener('submit', async (e) => {
+    // Estado oficial conforme estrutura da LeadGen API
+    let facioState = {
+        lastCheckedCpf: null,
+        isAvailable: false,
+        offer: {
+            maxValue: 300.0,
+            fee: 72.9,
+            baseFee: 9.9,
+            type: 'SalaryAdvance',
+            description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+        }
+    };
+
+    // Passo 1 da Doc: Consulta de disponibilidade (POST /leadgen/availability)
+    async function checkFacioAvailability(rawCpf) {
+        const cleanCpf = (rawCpf || '').replace(/\D/g, '');
+        if (!validateCPF(cleanCpf)) return false;
+
+        if (facioState.lastCheckedCpf === cleanCpf) {
+            return facioState.isAvailable;
+        }
+        facioState.lastCheckedCpf = cleanCpf;
+
+        // Tenta consultar backend /api/facio caso esteja configurado no Cloudflare;
+        // se não houver credenciais configuradas, habilita a oferta padrão para o link parametrizado
+        try {
+            const res = await fetch('/api/facio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (typeof data.isAvailable === 'boolean') {
+                    facioState.isAvailable = data.isAvailable;
+                    if (data.offer) facioState.offer = data.offer;
+                } else {
+                    facioState.isAvailable = true;
+                }
+            } else {
+                facioState.isAvailable = true;
+            }
+        } catch (e) {
+            // Sem backend de credenciais ativo -> usa atribuição via link oficial utm_source
+            facioState.isAvailable = true;
+        }
+
+        if (facioState.isAvailable) {
+            if (facioOfferDesc && facioState.offer?.description) {
+                facioOfferDesc.textContent = facioState.offer.description;
+            }
+            facioOfferBox?.classList.remove('hidden');
+            btnFacioDirect?.classList.remove('hidden');
+            if (cpfMessage) {
+                cpfMessage.textContent = '✓ CPF válido e elegível na Facio!';
+                cpfMessage.className = 'text-xs mt-1 h-4 text-emerald-600 font-semibold';
+            }
+        } else {
+            facioOfferBox?.classList.add('hidden');
+            btnFacioDirect?.classList.add('hidden');
+        }
+
+        return facioState.isAvailable;
+    }
+
+    // Monta e valida o corpo da requisição no formato exato da API de Cadastro (/leadgen/lead)
+    function buildFacioLeadPayload(formData) {
+        const name = String(formData.get('nome') || '').trim();
+        const cpf = String(formData.get('cpf') || '').replace(/\D/g, '');
+        const email = String(formData.get('email') || '').trim().toLowerCase();
+        let phone = String(formData.get('whatsapp') || '').replace(/\D/g, '');
+
+        if (phone.length === 13 && phone.startsWith('55')) {
+            phone = phone.slice(2);
+        }
+
+        if (!name || !name.includes(' ')) {
+            alert('Por favor, informe seu nome completo (nome e sobrenome).');
+            document.getElementById('nomeInput')?.focus();
+            return null;
+        }
+        if (!validateCPF(cpf)) {
+            alert('Por favor, insira um CPF válido.');
+            cpfInput?.focus();
+            return null;
+        }
+        // Formato exigido pela Facio: apenas celulares, com DDD, apenas dígitos, formato XX9XXXXXXXX
+        if (phone.length !== 11 || phone.charAt(2) !== '9') {
+            alert('Por favor, informe um celular válido com DDD e o dígito 9 (Ex: 11 99999-9999).');
+            whatsappInput?.focus();
+            return null;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Por favor, informe um e-mail válido.');
+            document.getElementById('emailInput')?.focus();
+            return null;
+        }
+
+        return {
+            personalInfo: {
+                name: name,
+                cpf: cpf
+            },
+            contactInfo: {
+                email: email,
+                phone: phone
+            },
+            campaign: 'ds_banner',
+            financialInfo: {
+                loanAmount: Number(formData.get('valor')) || 300.0
+            },
+            otherInfo: {
+                hasCreditRestrictions: formData.has('negativado')
+            }
+        };
+    }
+
+    // Passo 2 da Doc: Clique no botão da Facio -> Chama cadastro (/leadgen/lead) ou redireciona pelo link de atribuição
+    btnFacioDirect?.addEventListener('click', async () => {
+        if (!leadForm) return;
+        const formData = new FormData(leadForm);
+        const facioPayload = buildFacioLeadPayload(formData);
+        if (!facioPayload) return;
+
+        // Garante que a consulta rodou primeiro (regra da documentação)
+        if (facioState.lastCheckedCpf !== facioPayload.personalInfo.cpf) {
+            await checkFacioAvailability(facioPayload.personalInfo.cpf);
+        }
+
+        const originalBtnText = btnFacioDirect.innerHTML;
+        btnFacioDirect.disabled = true;
+        btnFacioDirect.innerHTML = 'Redirecionando para a Facio...';
+
+        try {
+            // Se você configurar /api/facio no Cloudflare no futuro, ele usa a registrationUrl com token;
+            // caso contrário, redireciona imediatamente para o seu link parametrizado da Facio
+            const res = await fetch('/api/facio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'lead',
+                    nome: facioPayload.personalInfo.name,
+                    cpf: facioPayload.personalInfo.cpf,
+                    email: facioPayload.contactInfo.email,
+                    whatsapp: facioPayload.contactInfo.phone,
+                    valor: facioPayload.financialInfo.loanAmount,
+                    negativado: facioPayload.otherInfo.hasCreditRestrictions,
+                    campaign: facioPayload.campaign,
+                    facioPayload
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.registrationUrl) {
+                    window.location.href = data.registrationUrl;
+                    return;
+                }
+            }
+        } catch (e) {
+            // Redirecionamento direto pelo link do parceiro com utm_source e utm_campaign
+        }
+
+        window.location.href = FACIO_PARTNER_URL;
+    });
+
+    // --- ENVIO PADRÃO DO FORMULÁRIO ("Ver Recomendações") ---
+    leadForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!validateCPF(cpfInput?.value)) {
-        alert('Por favor, insira um CPF válido para continuar.');
-        cpfInput?.focus();
-        return; 
-    }
+            alert('Por favor, insira um CPF válido para continuar.');
+            cpfInput?.focus();
+            return; 
+        }
         const submitBtn = document.getElementById('submit-btn-home');
         if (!submitBtn) return;
 
@@ -1146,22 +1327,19 @@ window.addEventListener('resize', setAlertHeight);
         const formData = new FormData(leadForm);
 
         try {
-            // 1. Create the payload for the backend function
             const leadPayload = {
                 nome: formData.get('nome'),
                 cpf: (formData.get('cpf') || '').replace(/\D/g, ''),
-                whatsapp: (formData.get('whatsapp') || '').replace(/\D/g, ''), //
+                whatsapp: (formData.get('whatsapp') || '').replace(/\D/g, ''),
                 email: formData.get('email'),
                 valor: Number(formData.get('valor')) || 0,
                 renda: Number(formData.get('renda')) || 0,
                 parcelas: Number(formData.get('parcelas')) || 0,
                 negativado: formData.has('negativado'),
-                aposentado: formData.has('aposentado_inss') ,
+                aposentado: formData.has('aposentado_inss'),
                 bolsafamilia: formData.has('bolsafamilia'),
-
             };
 
-            // 2. Send the data to the Netlify function
             await fetch('/.netlify/functions/capturar-lead', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1170,10 +1348,7 @@ window.addEventListener('resize', setAlertHeight);
 
         } catch (error) {
             console.error("Erro ao capturar lead:", error);
-            // The process continues to the next step even if the lead capture fails,
-            // to avoid disrupting the user experience.
         } finally {
-            // 3. Redirect the user to the results page
             const params = new URLSearchParams({
                 nome: formData.get('nome') || 'Cliente',
                 valor: formData.get('valor') || '5000',
@@ -1185,7 +1360,19 @@ window.addEventListener('resize', setAlertHeight);
         }
     });
 
-  
+    // Monitora o CPF para acionar a consulta da Facio assim que os 11 dígitos forem preenchidos
+    if (cpfInput) {
+        cpfInput.addEventListener('input', (e) => {
+            const clean = e.target.value.replace(/\D/g, '');
+            if (clean.length < 11) {
+                facioOfferBox?.classList.add('hidden');
+                btnFacioDirect?.classList.add('hidden');
+                facioState.lastCheckedCpf = null;
+            } else if (clean.length === 11 && validateCPF(clean)) {
+                checkFacioAvailability(clean);
+            }
+        });
+    }
 
     // ===================================================
     // 4. "HOW IT WORKS" CAROUSEL
@@ -1254,51 +1441,39 @@ window.addEventListener('resize', setAlertHeight);
     
     showPage('page-home');
 });
-    /**
-     * Configura o comportamento de scroll "toggle" para links específicos.
-     * Esta versão corrigida rastreia o último link clicado em vez de
-     * depender da posição do scroll, resolvendo o problema com elementos no final da página.
-     */
+
     function setupScrollToggle() {
-        // Seleciona todos os links que devem ter o comportamento de toggle
         const toggleLinks = document.querySelectorAll('.scroll-toggle');
         const header = document.getElementById('main-header');
         const headerHeight = header ? header.offsetHeight : 0;
         const mobileMenu = document.getElementById('mobile-menu');
 
-        // Variável para rastrear o último link ativo
         let activeToggleHref = null;
 
         toggleLinks.forEach(link => {
             link.addEventListener('click', function(event) {
-                // Previne o comportamento padrão do link
                 event.preventDefault();
 
                 const targetHref = this.getAttribute('href');
                 const targetElement = document.querySelector(targetHref);
 
-                // Fecha o menu mobile, se estiver aberto
                 if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
                     mobileMenu.classList.add('hidden');
                 }
 
-                // Se o link clicado já for o ativo, volte ao topo
                 if (activeToggleHref === targetHref) {
                     window.scrollTo({
                         top: 0,
                         behavior: 'smooth'
                     });
-                    // Limpa a variável para que o próximo clique funcione
                     activeToggleHref = null;
                 } else {
-                    // Se for um novo link (ou nenhum estiver ativo)
                     if (targetElement) {
                         const targetPosition = targetElement.offsetTop - headerHeight;
                         window.scrollTo({
                             top: targetPosition,
                             behavior: 'smooth'
                         });
-                        // Define este link como o ativo
                         activeToggleHref = targetHref;
                     } else {
                         console.warn('Elemento de destino para o scroll não encontrado:', targetHref);
@@ -1308,17 +1483,15 @@ window.addEventListener('resize', setAlertHeight);
         });
     }
 
-    // Garante que o script rode após o conteúdo da página ser carregado
-    // e se integre com seus outros scripts.
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupScrollToggle);
     } else {
         setupScrollToggle();
     }
     
-     const cpfInput = document.getElementById('cpf');
-const whatsappInput = document.getElementById('whatsapp');
-const cpfMessage = document.getElementById('cpf-message');
+    const cpfInput = document.getElementById('cpf');
+    const whatsappInput = document.getElementById('whatsapp');
+    const cpfMessage = document.getElementById('cpf-message');
 
 function formatCPF(value) {
     const numericValue = value.replace(/\D/g, '');
@@ -1367,14 +1540,14 @@ if (cpfInput) {
         cpfInput.classList.remove('valid-input', 'invalid-input');
         if (cpfMessage) {
             cpfMessage.textContent = '';
-            cpfMessage.className = 'text-sm mt-1 h-4';
+            cpfMessage.className = 'text-xs mt-1 h-4';
         }
         if (e.target.value.length === 14) {
             const isValid = validateCPF(e.target.value);
             if (isValid) {
                 cpfInput.classList.add('valid-input');
                 if (cpfMessage) {
-                    cpfMessage.textContent = 'CPF válido!';
+                    cpfMessage.textContent = '✓ CPF válido!';
                     cpfMessage.classList.add('text-green-600');
                 }
             } else {
@@ -1395,12 +1568,9 @@ if (whatsappInput) {
 
 {
     // --- Lógica do Carrossel do Banner ---
-
-    // Array com os dados de cada slide (banner e textos)
-    // ADICIONE OU EDITE OS ITENS AQUI PARA MUDAR O CONTEÚDO
     const slides = [
         {
-            image: 'public/banner-1.png',  // O seu segundo banner
+            image: 'public/banner-1.png',
             title: 'Crédito para negativados? Temos a solução!',
             subtitle: 'Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.'
         },
@@ -1417,74 +1587,50 @@ if (whatsappInput) {
         },
 
         {
-            image: 'https://placehold.co/1920x1080/059669/FFFFFF?text=FGTS', // Um exemplo de terceiro banner
+            image: 'https://placehold.co/1920x1080/059669/FFFFFF?text=FGTS',
             title: 'Antecipe seu FGTS com as melhores taxas do mercado.',
             subtitle: 'Use seu saldo do FGTS como garantia e consiga crédito rápido, fácil e com juros baixos.'
         },
-
-        
     ];
 
-    
-
-    
-
-    // Seleciona os elementos que serão alterados
     const heroSection = document.getElementById('hero-section');
     const titleEl = document.getElementById('hero-title');
     const subtitleEl = document.getElementById('hero-subtitle');
 
     let currentSlideIndex = 0;
 
-
     function changeSlide() {
-        // Próximo slide (em loop)
         currentSlideIndex = (currentSlideIndex + 1) % slides.length;
         const nextSlide = slides[currentSlideIndex];
 
-        // 1. Animação de saída para os textos
         titleEl.style.opacity = '0';
         subtitleEl.style.opacity = '0';
         
-        // 2. Espera a animação de saída terminar (600ms)
         setTimeout(() => {
-            // 3. Troca a imagem de fundo e o TÍTULO
             heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${nextSlide.image}')`;
-           
-            
             titleEl.textContent = nextSlide.title;
-            
-            // 4. Animação de entrada para o TÍTULO
             titleEl.style.opacity = '1';
 
-            // 5. Espera um pouco antes de mostrar o subtítulo para criar a transição sequencial
             setTimeout(() => {
-                // 6. Troca e mostra o SUBTÍTULO
                 subtitleEl.textContent = nextSlide.subtitle;
                 subtitleEl.style.opacity = '1';
-            }, 500); // Atraso de 500ms para o subtítulo aparecer
+            }, 500);
 
-        }, 600); // Tempo para a animação de saída dos textos
+        }, 600);
     }
 
-    // --- Configuração Inicial ---
     function initializeCarousel() {
         if (!heroSection || !titleEl || !subtitleEl) return;
 
-        // Adiciona transições CSS via JS para um controle mais limpo da animação de fade
         titleEl.style.transition = 'opacity 0.5s ease-in-out';
         subtitleEl.style.transition = 'opacity 0.5s ease-in-out';
 
-        // Define o conteúdo inicial do primeiro slide
         const initialSlide = slides[0];
         heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${initialSlide.image}')`;
         titleEl.textContent = initialSlide.title;
         subtitleEl.textContent = initialSlide.subtitle;
-        
-        
 
-        // Inicia o temporizador para a troca de slides
-        setInterval(changeSlide, 8000); // Troca a cada 6 segundos
+        setInterval(changeSlide, 8000);
     }
 
     initializeCarousel();
@@ -1506,9 +1652,7 @@ if (whatsappInput) {
   const toArray = (v, lower = false) => {
     if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
     if (typeof v === 'string') {
-      // tenta JSON
       try { const j = JSON.parse(v); if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j; } catch(e){}
-      // converte text[] do PG: "{a,b}" -> ["a","b"]
       const arr = v.replace(/^\{|\}$/g,'').split(',')
         .map(s => s.replace(/"/g,'').trim()).filter(Boolean);
       return lower ? arr.map(s => s.toLowerCase()) : arr;
@@ -1518,16 +1662,11 @@ if (whatsappInput) {
   const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
   const tagBadge = (c) => ({ red:'bg-red-100 text-red-800', blue:'bg-blue-100 text-blue-800', yellow:'bg-yellow-100 text-yellow-800', purple:'bg-purple-100 text-purple-800' }[c] || 'bg-green-100 text-green-800');
 
-   // 5) Render (Função para desenhar produtos e anúncios)
-
-
    function activateAds(){
-    // garante o array global do AdSense
     window.adsbygoogle = window.adsbygoogle || [];
-    // inicializa somente os <ins> ainda não processados
     document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])')
     .forEach(() => {
-    try { (adsbygoogle).push({}); } catch(e) { /* ignora erros pontuais */ }
+    try { (adsbygoogle).push({}); } catch(e) { }
     });
     }
 
@@ -1539,12 +1678,10 @@ if (whatsappInput) {
 
   const safeURL = (u) => /^https?:\/\//i.test(String(u || '')) ? String(u) : '#';
 
-  // AdSense: force seu client e só aceita slot numérico; layout-key só com chars seguros
   const ADS_CLIENT = 'ca-pub-4935884639623224';
   const safeSlot = (s) => /^\d+$/.test(String(s || '')) ? String(s) : '';
   const safeLayoutKey = (k) => /^[A-Za-z0-9._-]+$/.test(String(k || '')) ? String(k) : '';
 
-  // Badge whitelist (tagClass)
   const badgeMap = {
     red:'bg-red-100 text-red-800',
     blue:'bg-blue-100 text-blue-800',
@@ -1553,42 +1690,32 @@ if (whatsappInput) {
   };
   const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
 
-  // Detecta se o item é anúncio (robusto, baseado em tipo, tag e slot)
 const isAdItem = (p) => {
   const tipo = String(p?.tipo || '').toLowerCase().trim();
   const tag  = String(p?.tag  || '');
   const slot = String(p?.slot || p?.link || '').toString().trim();
   return (
-    tipo.includes('anuncio') ||        // “anuncio_google”, “anuncio_...”
-    tag.includes('ca-pub')   ||        // client típico do AdSense
-    /^\d+$/.test(slot)                 // slot numérico
+    tipo.includes('anuncio') ||
+    tag.includes('ca-pub')   ||
+    /^\d+$/.test(slot)
   );
 };
-// Monta o feed intercalando anúncios em uma frequência controlada
+
   function buildFeed(products, ads, opts = {}) {
-    // Parâmetros ajustáveis
-    const EVERY = opts.every ?? 3;           // 1 anúncio a cada N produtos
-    const FIRST_INDEX = opts.first ?? 2;     // só começa a inserir após o 2º produto (0-based)
-    const MAX_ADS_TOTAL = opts.maxAdsTotal ?? ads.length; // limite global opcional
+    const EVERY = opts.every ?? 3;
+    const FIRST_INDEX = opts.first ?? 2;
+    const MAX_ADS_TOTAL = opts.maxAdsTotal ?? ads.length;
 
     const merged = [];
     let adPtr = 0;
     let adsPlaced = 0;
 
     for (let i = 0; i < products.length; i++) {
-      // sempre coloca o produto
       merged.push(products[i]);
-
-      // posição atual (0-based) do item recém-colocado
       const pos = merged.length - 1;
 
-      // regra: só tenta inserir anúncio se:
-      // - já passamos do FIRST_INDEX
-      // - a cada EVERY produtos
-      // - ainda existem anúncios e não estouramos o limite global
       const hitFrequency = (pos >= FIRST_INDEX) && ((pos - FIRST_INDEX + 1) % EVERY === 0);
       if (hitFrequency && adPtr < ads.length && adsPlaced < MAX_ADS_TOTAL) {
-        // garante que não ficam dois anúncios seguidos
         const previousIsAd = merged.length > 0 && isAdItem(merged[merged.length - 1]);
         if (!previousIsAd) {
           merged.push(ads[adPtr++]);
@@ -1597,7 +1724,6 @@ const isAdItem = (p) => {
       }
     }
 
-    // Caso não tenha nenhum produto (filtro muito restrito), ainda assim mostra 1 anúncio
     if (products.length === 0 && ads.length > 0) {
       merged.push(ads[0]);
     }
@@ -1613,13 +1739,10 @@ const isAdItem = (p) => {
 
     listEl.innerHTML = items.length ? items.map(p => {
 
-        
-// 1) É ANÚNCIO?
-
 if (isAdItem(p)) {  
-  const adClient  = p.tag;                           // ex.: 'ca-pub-4935...'
-  const adSlot    = (p.slot || p.link || '').toString().trim(); // slot numérico
-  const layoutKey = (p.tagClass || '').trim();       // opcional (in-feed)
+  const adClient  = p.tag;
+  const adSlot    = (p.slot || p.link || '').toString().trim();
+  const layoutKey = (p.tagClass || '').trim();
 
   if (!adClient || !/^\d+$/.test(adSlot)) return '';
 
@@ -1642,11 +1765,6 @@ if (isAdItem(p)) {
     </div>`;
 }
 
-
-
-
-      // Se não for um anúncio, renderiza o card do produto normalmente
-      // A função toArray foi mantida aqui APENAS para as vantagens, que são várias linhas.
       const vantagens = toArray(p.vantagens, false);
       const vHtml = vantagens.map(v => `
   <li class="flex items-start">
@@ -1692,7 +1810,6 @@ if (isAdItem(p)) {
 
     setTimeout(activateAds, 0);
 
-    // Paginação (código original, sem alterações)
     const total = Math.ceil(state.filtered.length / state.perPage);
     [pagTop, pagBottom].forEach(c => {
       if (!c) return; c.innerHTML = ''; if (total <= 1) return;
@@ -1732,10 +1849,6 @@ if (isAdItem(p)) {
 
   setTimeout(activateAds, 0);
 
-
-// === Config de frequência de anúncios no feed filtrado ===
-// Define N (um anúncio a cada N produtos) via ?adEvery=N ou localStorage('adEvery').
-// Ex.: ?adEvery=3  → 1 anúncio a cada 3 produtos.
 (function () {
   const qs = new URLSearchParams(location.search);
   const fromQS = qs.get('adEvery');
@@ -1743,26 +1856,21 @@ if (isAdItem(p)) {
   const parsed = Number(fromQS ?? fromLS);
   window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
 
-  // helper opcional pra trocar em tempo real e persistir
   window.setAdEvery = (n) => {
     n = Math.max(1, Math.floor(Number(n) || 2));
     localStorage.setItem('adEvery', String(n));
     window.AD_EVERY = n;
-    apply(); // reconstrói o feed com o novo N
+    apply();
   };
 })();
-  
-  // Função de filtros SIMPLIFICADA para trabalhar com TEXTO (NOVA)
 
 const apply = () => {
-  // 1) Lê filtros
   const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
   const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
     .map(e => String(e.value || '').toLowerCase());
 
   const all = Array.isArray(state.all) ? state.all : [];
 
-  // 2) Helpers de match
   const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
   const matchesPerfis = (p) => {
     if (!perfisSel.length) return true;
@@ -1770,10 +1878,9 @@ const apply = () => {
     return perfisSel.every(v => txt.includes(v));
   };
 
-  // 3) Se não está filtrando (home = Todos + nenhum perfil), mantém exatamente a ordem do admin
   const isFiltered = !(type === 'all' && perfisSel.length === 0);
   if (!isFiltered) {
-    state.filtered = [...state.all];   // respeita ativo/ordem do admin
+    state.filtered = [...state.all];
     state.page = 1;
     render();
     if (window.innerWidth < 1024) {
@@ -1786,29 +1893,24 @@ const apply = () => {
     return;
   }
 
-  // 4) Separa em produtos e anúncios (ordem do admin é preservada)
   const products = all.filter(p => !isAdItem(p) && matchesType(p) && matchesPerfis(p));
   const ads      = all.filter(p => isAdItem(p));
 
-  // 5) “3 produtos juntos” antes de qualquer anúncio
   const featured     = products.slice(0, 2);
   const restProducts = products.slice(2);
 
-// 6) Intercala anúncios seguindo a frequência escolhida (qualquer N >= 1)
-const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2)); // N livre
+const every  = Math.max(1, Math.floor(Number(window.AD_EVERY) || 2));
 const maxAds = Math.min(ads.length, Math.floor(restProducts.length / every));
 const mixed  = buildFeed(restProducts, ads, {
-  every,     // 1 anúncio a cada 'every' produtos
-  first: 0,  // começa a contar já no início de restProducts (os 3 primeiros ficam “limpos”)
+  every,
+  first: 0,
   maxAdsTotal: maxAds
 });
 
-  // 7) Feed final
   state.filtered = [...featured, ...mixed];
   state.page = 1;
   render();
 
-  // fecha o painel no mobile
   if (window.innerWidth < 1024) {
     const panel = document.getElementById('filter-panel');
     const overlay = document.getElementById('filter-overlay');
@@ -1821,7 +1923,6 @@ const mixed  = buildFeed(restProducts, ads, {
   filters.forEach(f => f.addEventListener('change', apply));
 
  // 7) Boot
- // 7) Boot
   (async () => {
     listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
@@ -1831,7 +1932,6 @@ const mixed  = buildFeed(restProducts, ads, {
 
       // Tenta D1
       try {
-        
         const res = await fetch('/api/products');
         if (res.ok) {
           const data = await res.json();
