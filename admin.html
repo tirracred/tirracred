@@ -86,9 +86,27 @@
       <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="hidden" id="uid">
         <div><label class="text-sm">Título</label><input id="titulo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Tag</label><input id="tag" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Tag Class (red|blue|yellow|purple)</label><input id="tagClass" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+       <div>
+  <label class="text-sm font-semibold">Tag de Destaque</label>
+  <select id="tagPreset" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white mb-2">
+    <option value="">Personalizada (Digitar abaixo)</option>
+    <option value="Top¹ - Empréstimo">Top¹ - Empréstimo</option>
+    <option value="Top² - Empréstimo">Top² - Empréstimo</option>
+    <option value="Destaque 🔥">Destaque 🔥</option>
+    <option value="Recomendado ⭐">Recomendado ⭐</option>
+  </select>
+  <input id="tag" placeholder="Ex: Top¹ - Empréstimo" class="w-full px-3 py-2 border rounded-lg text-sm">
+</div>
 
+<div>
+  <label class="text-sm font-semibold">Cor da Tag</label>
+  <select id="tagClass" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white">
+    <option value="yellow">Amarelo (Padrão Top)</option>
+    <option value="red">Vermelho (Destaque forte)</option>
+    <option value="blue">Azul (Informativo)</option>
+    <option value="purple">Roxo (Especial)</option>
+  </select>
+</div>
         <!-- Campo de Logo / Imagem da Oferta com botão de Upload individual -->
         <div>
           <label class="text-sm">Logo / Imagem da Oferta</label>
@@ -102,13 +120,21 @@
           </div>
         </div>
 
-        <div class="md:col-span-2"><label class="text-sm">Link</label><input id="link" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Botão Primário</label><input id="btnPrimario" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-        <div><label class="text-sm">Botão Secundário</label><input id="btnSecundario" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
+        
         <div class="md:col-span-2">
-          <label class="text-sm">Vantagens (uma por linha)</label>
-          <textarea id="vantagens" rows="4" class="w-full mt-1 px-3 py-2 border rounded-lg"></textarea>
-        </div>
+  <label class="text-sm font-semibold flex justify-between items-center">
+    <span>Vantagens (uma por linha)</span>
+    <!-- Barra de ferramentas visual rápida -->
+    <span class="text-xs text-gray-500 flex gap-1">
+      <button type="button" onclick="formatVantagem('<b>', '</b>')" class="px-2 py-0.5 bg-gray-100 border rounded hover:bg-gray-200 font-bold">Negrito</button>
+      <button type="button" onclick="formatVantagem('<span class=\'text-green-700\'>', '</span>')" class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 font-semibold">Texto Verde</button>
+      <button type="button" onclick="formatVantagem('🔥 ', '')" class="px-2 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">🔥 Fogo</button>
+      <button type="button" onclick="formatVantagem('✓ ', '')" class="px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">✓ Check</button>
+    </span>
+  </label>
+  <textarea id="vantagens" rows="4" placeholder="Digite cada vantagem em uma linha. Use os botões acima para formatar facilmente." class="w-full mt-1 px-3 py-2 border rounded-lg text-sm"></textarea>
+  <p class="text-xs text-gray-500 mt-1">Dica: Cada linha gerará um item com ícone de confirmação no site.</p>
+</div>
         <div>
           <label class="text-sm">Tipo (ex: emprestimo,cartao,contas,fgts,...)</label>
           <input id="tipo" class="w-full mt-1 px-3 py-2 border rounded-lg">
@@ -708,65 +734,67 @@
 
     // 2. Salvar Produto no Modal (Cria ou Edita em D1 e/ou Supabase)
     $('save').onclick = async () => {
-      const btn = $('save');
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = 'Wait...';
+  const btn = $('save');
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = 'Salvando na Cloudflare...';
 
-      const payload = {
-        titulo: $('titulo').value.trim(),
-        tag: $('tag').value.trim(),
-        tagClass: $('tagClass').value.trim() || null,
-        logo: $('logo').value.trim(),
-        link: $('link').value.trim(),
-        btnPrimario: $('btnPrimario').value.trim() || 'Acessar',
-        btnSecundario: $('btnSecundario').value.trim() || 'Detalhes',
-        vantagens: normLines($('vantagens').value),
-        tipo: normCsv($('tipo').value),
-        perfis: normCsv($('perfis').value || ''),
-        ativo: $('ativo').checked,
-        priority_order: Number($('priority_order').value) || 0
-      };
+  const payload = {
+    titulo: $('titulo').value.trim(),
+    tag: $('tag').value.trim(),
+    tagClass: $('tagClass').value.trim() || 'yellow',
+    logo: $('logo').value.trim(),
+    link: $('link').value.trim(),
+    btnPrimario: $('btnPrimario').value.trim() || 'Receber Agora',
+    btnSecundario: $('btnSecundario').value.trim() || 'Mais Info',
+    vantagens: normLines($('vantagens').value),
+    tipo: normCsv($('tipo').value),
+    perfis: normCsv(
+      ($('perfis') && $('perfis').value) ||
+      Array.from(document.querySelectorAll('[data-chip="perfil"]:checked'))
+        .map(cb => cb.value).join(',')
+    ),
+    ativo: $('ativo').checked,
+    priority_order: Number($('priority_order').value) || 0
+  };
 
-      const uid = $('uid').value;
-      try {
-        if (uid) {
-          const existing = items.find(x => x._uid === uid);
-          if (!existing) throw new Error('Oferta não encontrada na lista.');
-          await updateOfferEverywhere(existing, payload);
-        } else {
-          // Novo produto: salva no Supabase e na Cloudflare D1
-          let savedSomewhere = false;
-          try {
-            const { error } = await _supabase.from('products').insert(payload).select();
-            if (!error) savedSomewhere = true;
-          } catch (e) {}
+  const uid = $('uid').value;
+  const existing = items.find(x => x._uid === uid);
 
-          try {
-            const res = await fetch('/api/products', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) savedSomewhere = true;
-          } catch (e) {}
+  try {
+    let endpoint = '/api/products';
+    let method = 'POST';
 
-          if (!savedSomewhere) throw new Error('Não foi possível salvar no Supabase nem no D1.');
-        }
+    // Se já existe e tem ID na Cloudflare (D1), atualiza lá. Se não, cria na Cloudflare.
+    if (uid && existing && existing._d1_id) {
+      endpoint = `/api/products/${existing._d1_id}`;
+      method = 'PUT';
+    } else if (uid && existing && existing._supa_id) {
+      // Caso estivesse apenas no Supabase, criamos na Cloudflare para migrar para lá
+      method = 'POST';
+    }
 
-        btn.innerHTML = 'Salvo!';
-        setTimeout(() => {
-          btn.innerHTML = original;
-          btn.disabled = false;
-          closeModal();
-          load();
-        }, 500);
-      } catch (err) {
-        alert('Erro: ' + (err?.message || err));
-        btn.innerHTML = original;
-        btn.disabled = false;
-      }
-    };
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    btn.innerHTML = 'Salvo na Cloudflare!';
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.disabled = false;
+      closeModal();
+      load();
+    }, 600);
+  } catch (err) {
+    alert('Erro ao salvar na Cloudflare: ' + err.message);
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+};
 
     // 3. Salvar Ordem (Atualiza no Supabase e no D1)
     $('saveOrder').onclick = async () => {
@@ -1090,6 +1118,29 @@
       const p = productById(id);
       return `#${id} — ${p ? p.titulo : 'não encontrado'}`;
     }
+
+    function formatVantagem(openTag, closeTag) {
+  const textarea = document.getElementById('vantagens');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end);
+  const before = textarea.value.substring(0, start);
+  const after = textarea.value.substring(end);
+
+  textarea.value = before + openTag + selected + closeTag + after;
+
+  const newPos = start + openTag.length + selected.length + closeTag.length;
+  textarea.focus();
+  textarea.setSelectionRange(newPos, newPos);
+}
+
+// Sincroniza o select de preset com o campo de tag
+document.getElementById('tagPreset').addEventListener('change', function() {
+  const tagInput = document.getElementById('tag');
+  if (this.value) {
+    tagInput.value = this.value;
+  }
+});
   </script>
 </body>
 

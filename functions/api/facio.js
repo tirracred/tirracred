@@ -99,7 +99,7 @@ export async function onRequestPost(context) {
       const cleanCpf = String(body.cpf || '').replace(/\D/g, '');
       let cleanPhone = String(body.whatsapp || '').replace(/\D/g, '');
 
-      // Remddddove o DDI 55 se o cliente tiver preenchido
+      // Remove o DDI 55 se o cliente tiver preenchido
       if (cleanPhone.length === 13 && cleanPhone.startsWith('55')) {
         cleanPhone = cleanPhone.slice(2);
       }
@@ -162,3 +162,4 @@ export async function onRequestPost(context) {
     }), { status: 200, headers: jsonHeaders });
   }
 }
+
