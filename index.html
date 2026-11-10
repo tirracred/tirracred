@@ -1283,33 +1283,46 @@
             // ===================================================
             // 5. SUBMISSÃO DO FORMULÁRIO -> EXIBE PÁGINA DE RESULTADOS COM DADOS DA FACIO
             // ===================================================
-            leadForm?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const validData = validateAndExtractLeadData(true);
-                if (!validData) return;
+           leadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const validData = validateAndExtractLeadData(true);
+    if (!validData) return;
 
-                const submitBtn = document.getElementById('submit-btn-home');
-                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Recomendações e Ofertas';
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando suas ofertas...';
-                }
+    const submitBtn = document.getElementById('submit-btn-home');
+    const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Recomendações e Ofertas';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando suas ofertas...';
+    }
 
-                try {
-                    // Garante que a consulta na Facio foi realizada para esse CPF
-                    if (facioState.lastCheckedCpf !== validData.cpf) {
-                        await checkFacioAvailability(validData.cpf);
-                    }
+    try {
+        // Garante que a consulta na Facio foi feita
+        if (facioState.lastCheckedCpf !== validData.cpf) {
+            await checkFacioAvailability(validData.cpf);
+        }
 
-                    renderSimulationResultsPage(validData);
-                    showPage('resultados-page');
-                } finally {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalSubmitText;
-                    }
-                }
-            });
+        // Monta os parâmetros incluindo dados da Facio
+        const params = new URLSearchParams({
+            nome: validData.nome,
+            valor: validData.valor,
+            negativado: validData.negativado,
+            aposentado: validData.aposentado,
+            bolsafamilia: validData.bolsafamilia,
+            facioAvailable: facioState.isAvailable,
+            facioMaxValue: facioState.offer?.maxValue ?? 300,
+            facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+            facioFee: facioState.offer?.fee ?? 72.9,
+            facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+        });
+
+        window.location.href = `./pages/resultados.html?${params.toString()}`;
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalSubmitText;
+        }
+    }
+});
 
             // Renderiza a área #resultados-page destacando os dados reais da Facio + produtos recomendados
             function renderSimulationResultsPage(leadData) {
