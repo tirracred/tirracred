@@ -4,225 +4,562 @@
   <meta charset="utf-8" />
   <title>Admin - TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link id="pageFavicon" rel="icon" type="image/png" href="/api/favicon" />
+  <link id="pageFavicon" rel="icon" type="image/png" href="/api/favicon" onerror="this.href='public/favincon.png'" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <style>
     body { font-family: 'Inter', sans-serif; background: #f0fdf4; }
-    .sortable-ghost { opacity: .4; background: #c7d2fe; }
+    .sortable-ghost { opacity: .4; background: #d1fae5; border: 2px dashed #10b981; }
     .sortable-chosen { cursor: grabbing; }
-    .modal-bg { background: rgba(0,0,0,.5); }
+    .modal-bg { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
 
+    /* Editor Visual WYSIWYG Minimalista */
+    #visualEditor {
+      min-height: 120px;
+      max-height: 220px;
+      overflow-y: auto;
+      outline: none;
+      line-height: 1.6;
+    }
+    #visualEditor > div, #visualEditor > p {
+      padding: 3px 6px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+    }
+    #visualEditor > div:focus-within, #visualEditor:focus {
+      border-color: #10b981;
+      background: #ffffff;
+    }
+    #visualEditor:empty:before {
+      content: attr(data-placeholder);
+      color: #94a3b8;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* Badges das Regras */
     .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 9999px; font-size: 12px; margin: 4px 6px 0 0; background: #f9fafb; }
     .badge .x { cursor: pointer; font-weight: 700; }
     .badge-miss { border-color: #fecaca; background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 
-<body class="text-gray-800">
+<body class="text-gray-800 min-h-screen flex flex-col">
 
-  <!-- Login -->
+  <!-- ========================================================= -->
+  <!-- TELA DE LOGIN                                             -->
+  <!-- ========================================================= -->
   <div id="login" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-      <img src="public/logo.png" class="w-40 mx-auto mb-4" alt="TirraCred"
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 w-full max-w-md">
+      <img src="public/logo.png" class="w-36 mx-auto mb-4 object-contain" alt="TirraCred"
            onerror="this.onerror=null;this.src='https://placehold.co/160x50/fff/000?text=TirraCred';">
-      <h2 class="text-2xl font-bold text-center mb-6">Acesso Restrito</h2>
+      <h2 class="text-2xl font-extrabold text-center text-gray-900 mb-1">Painel Administrativo</h2>
+      <p class="text-xs text-center text-gray-500 mb-6">Gerencie ofertas, tags e regras do Index e Resultados</p>
       <form id="loginForm" class="space-y-4">
         <div>
-          <label class="text-sm">Email</label>
-          <input id="email" type="email" required class="w-full mt-1 px-4 py-2 border rounded-lg">
+          <label class="text-xs font-bold uppercase text-gray-600">E-mail</label>
+          <input id="email" type="email" required class="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-emerald-600 outline-none">
         </div>
         <div>
-          <label class="text-sm">Senha</label>
-          <input id="password" type="password" required class="w-full mt-1 px-4 py-2 border rounded-lg">
+          <label class="text-xs font-bold uppercase text-gray-600">Senha</label>
+          <input id="password" type="password" required class="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-emerald-600 outline-none">
         </div>
-        <button class="w-full py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">Entrar</button>
-        <p id="loginError" class="text-center text-sm text-red-600 mt-2"></p>
+        <button class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-md">
+          Entrar no Painel
+        </button>
+        <p id="loginError" class="text-center text-sm text-red-600 mt-2 font-medium"></p>
       </form>
     </div>
   </div>
 
-  <!-- Painel -->
-  <div id="app" class="hidden">
-    <header class="bg-white shadow-md sticky top-0 z-40">
-      <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-        <img src="public/logo.png" alt="logo" class="h-8"
-             onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
+  <!-- ========================================================= -->
+  <!-- PAINEL PRINCIPAL                                          -->
+  <!-- ========================================================= -->
+  <div id="app" class="hidden flex-1 flex flex-col">
+    <header class="bg-white/95 backdrop-blur shadow-sm sticky top-0 z-40 border-b border-gray-200">
+      <div class="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <img src="public/logo.png" alt="logo" class="h-8 object-contain"
+               onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
+          <span class="hidden sm:inline-block text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+            Admin Studio
+          </span>
+        </div>
+
         <div class="flex items-center gap-2">
-          <a href="index.html" class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100">Início</a>
-          <a href="chat.html" class="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100">Atendimento</a>
-          <button id="logout" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sair</button>
+          <a href="index.html" target="_blank" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
+            <i class="fas fa-home text-emerald-600"></i> <span>Ver Index</span>
+          </a>
+          <a href="pages/resultados.html" target="_blank" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
+            <i class="fas fa-chart-pie text-emerald-600"></i> <span class="hidden sm:inline">Ver Resultados</span>
+          </a>
+          <button id="logout" class="px-3.5 py-2 bg-red-600 text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-red-700 transition">
+            Sair
+          </button>
         </div>
       </div>
     </header>
 
-    <main class="container mx-auto px-4 py-6">
-      <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
-        <h1 class="text-2xl font-bold">Gerenciar Produtos (Cloudflare + Supabase)</h1>
-        <div class="flex flex-wrap gap-2">
-          <button id="add" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Novo</button>
-          <button id="saveOrder" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">Salvar Ordem</button>
-          <button id="openRules" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Resultados</button>
-          <button id="uploadFavicon" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition" title="Trocar ícone da aba do site">Favicon do Site</button>
-          <!-- Inputs ocultos para upload -->
-          <input type="file" id="faviconInput" accept="image/*" class="hidden">
-          <input type="file" id="cardLogoInput" accept="image/*" class="hidden">
+    <main class="container mx-auto px-4 py-6 max-w-7xl flex-1">
+      <!-- Barra de Ações e Filtros Rápidos do Admin -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm mb-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900">Gerenciar Produtos e Anúncios</h1>
+            <p id="status" class="text-xs sm:text-sm text-gray-500 mt-0.5">Sincronizado com Cloudflare D1 + Supabase</p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button id="addOfferBtn" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> Nova Oferta
+            </button>
+            <button id="addAdBtn" class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-rectangle-ad"></i> Novo Anúncio
+            </button>
+            <button id="saveOrder" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fas fa-sort"></i> Salvar Ordem
+            </button>
+            <button id="openRules" class="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fas fa-sliders"></i> Regras de Perfis
+            </button>
+            <button id="uploadFavicon" class="px-3.5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-1.5" title="Trocar ícone da aba do site">
+              <i class="fas fa-icons"></i> Favicon
+            </button>
+            <input type="file" id="faviconInput" accept="image/*" class="hidden">
+            <input type="file" id="cardLogoInput" accept="image/*" class="hidden">
+          </div>
+        </div>
+
+        <!-- Busca e Filtro por Categoria/Tag dentro do Admin -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-3 border-t border-gray-100 items-stretch sm:items-center justify-between">
+          <div class="relative flex-1 max-w-md">
+            <i class="fas fa-search absolute left-3.5 top-3 text-gray-400 text-sm"></i>
+            <input id="adminSearch" type="text" placeholder="Buscar por nome, tag, categoria ou perfil..."
+                   class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-emerald-500 outline-none">
+          </div>
+          <div class="flex flex-wrap gap-1.5" id="adminQuickFilterBar">
+            <button type="button" data-admin-filter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">Todos</button>
+            <button type="button" data-admin-filter="offers" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Só Ofertas</button>
+            <button type="button" data-admin-filter="ads" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Só Anúncios (AdSense)</button>
+            <button type="button" data-admin-filter="inactive" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Inativos</button>
+          </div>
         </div>
       </div>
 
-      <div id="list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- cards via JS -->
-      </div>
-      <p id="status" class="text-sm text-gray-500 mt-4"></p>
+      <!-- Grid de Cards (Arrastáveis) -->
+      <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </main>
   </div>
 
-  <!-- Modal Produto -->
-  <div id="modal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
-      <h3 class="text-xl font-semibold mb-4" id="modalTitle">Editar Produto</h3>
-      <form id="form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="hidden" id="uid">
-        <div><label class="text-sm">Título</label><input id="titulo" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-       <div>
-  <label class="text-sm font-semibold">Tag de Destaque</label>
-  <select id="tagPreset" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white mb-2">
-    <option value="">Personalizada (Digitar abaixo)</option>
-    <option value="Top¹ - Empréstimo">Top¹ - Empréstimo</option>
-    <option value="Top² - Empréstimo">Top² - Empréstimo</option>
-    <option value="Destaque 🔥">Destaque 🔥</option>
-    <option value="Recomendado ⭐">Recomendado ⭐</option>
-  </select>
-  <input id="tag" placeholder="Ex: Top¹ - Empréstimo" class="w-full px-3 py-2 border rounded-lg text-sm">
-</div>
-
-<div>
-  <label class="text-sm font-semibold">Cor da Tag</label>
-  <select id="tagClass" class="w-full mt-1 px-3 py-2 border rounded-lg text-sm bg-white">
-    <option value="yellow">Amarelo (Padrão Top)</option>
-    <option value="red">Vermelho (Destaque forte)</option>
-    <option value="blue">Azul (Informativo)</option>
-    <option value="purple">Roxo (Especial)</option>
-  </select>
-</div>
-        <!-- Campo de Logo / Imagem da Oferta com botão de Upload individual -->
-        <div>
-          <label class="text-sm">Logo / Imagem da Oferta</label>
-          <div class="flex gap-2 mt-1 items-center">
-            <img id="modalLogoPreview" src="https://placehold.co/64x40/e2e8f0/4a5568?text=Logo" class="w-12 h-10 object-contain border rounded p-0.5 bg-gray-50 shrink-0" alt="Preview">
-            <input id="logo" placeholder="public/... ou envie ao lado" class="w-full px-3 py-2 border rounded-lg text-sm">
-            <button type="button" id="modalUploadLogoBtn" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm shrink-0">
-              📷 Enviar
+  <!-- ========================================================= -->
+  <!-- MODAL DE EDIÇÃO / CRIAÇÃO (GUI INTUITIVA + PREVIEW VIVO)  -->
+  <!-- ========================================================= -->
+  <div id="modal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-gray-100">
+      
+      <!-- Cabeçalho do Modal -->
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <h3 class="text-lg sm:text-xl font-extrabold" id="modalTitle">Editar Produto</h3>
+          <!-- Chaveador Oferta vs Anúncio -->
+          <div class="inline-flex rounded-xl bg-slate-800 p-1 border border-slate-700 text-xs font-bold">
+            <button type="button" id="modeOfferBtn" onclick="setModalItemMode('offer')" class="px-3 py-1 rounded-lg bg-emerald-600 text-white transition">
+              💰 Oferta Financeira
             </button>
-            <input type="file" id="modalLogoFile" accept="image/*" class="hidden">
+            <button type="button" id="modeAdBtn" onclick="setModalItemMode('ad')" class="px-3 py-1 rounded-lg text-slate-300 hover:text-white transition">
+              📢 Anúncio AdSense
+            </button>
           </div>
         </div>
+        <button id="closeTop" type="button" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
+      <!-- Corpo Rolável do Modal (2 Colunas: Editor à esquerda + Preview/Tags à direita) -->
+      <div class="p-5 sm:p-6 overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="md:col-span-2">
-  <label class="text-sm font-semibold flex justify-between items-center">
-    <span>Vantagens (uma por linha)</span>
-    <!-- Barra de ferramentas visual rápida -->
-    <span class="text-xs text-gray-500 flex gap-1">
-      <button type="button" onclick="formatVantagem('<b>', '</b>')" class="px-2 py-0.5 bg-gray-100 border rounded hover:bg-gray-200 font-bold">Negrito</button>
-      <button type="button" onclick="formatVantagem('<span class=\'text-green-700\'>', '</span>')" class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 font-semibold">Texto Verde</button>
-      <button type="button" onclick="formatVantagem('🔥 ', '')" class="px-2 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">🔥 Fogo</button>
-      <button type="button" onclick="formatVantagem('✓ ', '')" class="px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100">✓ Check</button>
-    </span>
-  </label>
-  <textarea id="vantagens" rows="4" placeholder="Digite cada vantagem em uma linha. Use os botões acima para formatar facilmente." class="w-full mt-1 px-3 py-2 border rounded-lg text-sm"></textarea>
-  <p class="text-xs text-gray-500 mt-1">Dica: Cada linha gerará um item com ícone de confirmação no site.</p>
-</div>
-        <div>
-          <label class="text-sm">Tipo (ex: emprestimo,cartao,contas,fgts,...)</label>
-          <input id="tipo" class="w-full mt-1 px-3 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="text-sm">Perfis (ex: negativado,score-baixo,aposentado,bolsafamilia)</label>
-          <input id="perfis" class="w-full mt-1 px-3 py-2 border rounded-lg">
-        </div>
+        <!-- COLUNA ESQUERDA (7 cols): DADOS, IMAGEM (ANTES/DEPOIS) E EDITOR VISUAL -->
+        <div class="lg:col-span-7 space-y-5">
+          <input type="hidden" id="uid">
 
-        <!-- Perfis rápidos -->
-        <div class="md:col-span-2" id="perfis-chips">
-          <label class="text-sm mb-2 block">Perfis rápidos</label>
-          <div class="flex flex-wrap gap-3 text-sm">
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="negativado" class="h-4 w-4"> Negativado
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="score-baixo" class="h-4 w-4"> Score baixo
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="score-regular" class="h-4 w-4"> Score regular
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="aposentado" class="h-4 w-4"> Aposentado
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="bolsafamilia" class="h-4 w-4"> Bolsa Família
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="checkbox" data-chip="perfil" value="autonomo" class="h-4 w-4"> Autônomo
-            </label>
+          <!-- SEÇÃO EXCLUSIVA PARA ANÚNCIO ADSENSE -->
+          <div id="adFieldsBox" class="hidden bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center gap-2 text-amber-900 font-extrabold text-sm">
+              <i class="fas fa-rectangle-ad text-base"></i>
+              <span>Configuração do Bloco Google AdSense</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-bold uppercase text-amber-900">ID do Cliente (ca-pub)</label>
+                <input id="adClientInput" placeholder="ca-pub-4935884639623224" value="ca-pub-4935884639623224" class="w-full mt-1 px-3 py-2 border border-amber-300 rounded-xl text-sm bg-white">
+              </div>
+              <div>
+                <label class="text-xs font-bold uppercase text-amber-900">ID do Bloco (data-ad-slot)</label>
+                <input id="adSlotInput" placeholder="Ex: 1234567890" class="w-full mt-1 px-3 py-2 border border-amber-300 rounded-xl text-sm bg-white font-mono">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-xs font-bold uppercase text-amber-900">Layout Key (Opcional - para In-Feed Ads)</label>
+                <input id="adLayoutInput" placeholder="Ex: -fb+5w+4e-db+86 (deixe vazio para responsivo automático)" class="w-full mt-1 px-3 py-2 border border-amber-300 rounded-xl text-sm bg-white font-mono">
+              </div>
+            </div>
           </div>
-          <p class="text-xs text-gray-500 mt-2">Marque/desmarque e eu preencho o campo acima (CSV) pra você.</p>
+
+          <!-- 1. TÍTULO E TAG DE MARKETING -->
+          <div id="offerMainFields" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-7">
+                <label class="text-xs font-bold uppercase text-gray-500">Nome da Instituição / Oferta</label>
+                <input id="titulo" placeholder="Ex: Velotax — Empréstimo Pix" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
+              </div>
+              <div class="sm:col-span-5">
+                <label class="text-xs font-bold uppercase text-gray-500">Prioridade (Ordem)</label>
+                <input id="priority_order" type="number" placeholder="0" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
+              </div>
+            </div>
+
+            <!-- SELETOR VISUAL DE SELO / TAG DE MARKETING -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-extrabold uppercase text-gray-600">Selo de Marketing (Topo do Card)</label>
+                <span class="text-[11px] text-gray-400">Clique em um modelo ou digite</span>
+              </div>
+
+              <!-- Presets rápidos clicáveis -->
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" onclick="setMarketingTag('Top¹ - Empréstimo', 'yellow')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 hover:scale-105 transition">🏆 Top¹ - Empréstimo</button>
+                <button type="button" onclick="setMarketingTag('Top² - Empréstimo', 'yellow')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 hover:scale-105 transition">🥈 Top² - Empréstimo</button>
+                <button type="button" onclick="setMarketingTag('Destaque 🔥', 'red')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-800 border border-red-200 hover:scale-105 transition">🔥 Destaque</button>
+                <button type="button" onclick="setMarketingTag('Aprovação Rápida ⚡', 'green')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hover:scale-105 transition">⚡ Aprovação Rápida</button>
+                <button type="button" onclick="setMarketingTag('Sem Consulta SPC', 'blue')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 hover:scale-105 transition">🛡️ Sem Consulta SPC</button>
+                <button type="button" onclick="setMarketingTag('Especial FGTS / INSS', 'purple')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200 hover:scale-105 transition">🏦 Especial FGTS/INSS</button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1">
+                <div class="sm:col-span-7">
+                  <input id="tag" placeholder="Texto do selo (Ex: Top¹ - Empréstimo)" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:border-emerald-600 outline-none">
+                </div>
+                <div class="sm:col-span-5 flex items-center gap-1.5">
+                  <input type="hidden" id="tagClass" value="yellow">
+                  <span class="text-xs font-bold text-gray-500 mr-1">Cor:</span>
+                  <button type="button" data-tag-color="yellow" onclick="selectTagColor('yellow')" class="tag-color-btn w-7 h-7 rounded-full bg-amber-400 border-2 border-gray-900 shadow-sm" title="Amarelo"></button>
+                  <button type="button" data-tag-color="green" onclick="selectTagColor('green')" class="tag-color-btn w-7 h-7 rounded-full bg-emerald-500 border-2 border-transparent" title="Verde"></button>
+                  <button type="button" data-tag-color="red" onclick="selectTagColor('red')" class="tag-color-btn w-7 h-7 rounded-full bg-red-500 border-2 border-transparent" title="Vermelho"></button>
+                  <button type="button" data-tag-color="blue" onclick="selectTagColor('blue')" class="tag-color-btn w-7 h-7 rounded-full bg-blue-500 border-2 border-transparent" title="Azul"></button>
+                  <button type="button" data-tag-color="purple" onclick="selectTagColor('purple')" class="tag-color-btn w-7 h-7 rounded-full bg-purple-500 border-2 border-transparent" title="Roxo"></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. GERENCIADOR DE THUMBNAIL COM COMPARADOR (ANTIGA PRESTES A SER DELETADA vs NOVA) -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-extrabold uppercase text-gray-600">Logo / Thumbnail da Oferta</label>
+                <button type="button" id="modalUploadLogoBtn" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                  <i class="fas fa-upload"></i> Enviar Nova Imagem
+                </button>
+                <input type="file" id="modalLogoFile" accept="image/*" class="hidden">
+              </div>
+
+              <input id="logo" placeholder="Caminho (ex: public/velotax.png) ou envie uma imagem" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white font-mono">
+
+              <!-- Box Comparativo: Aparece a Thumb Atual e, ao trocar, mostra a Antiga prestes a ser deletada -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <!-- Thumb Antiga (Prestes a ser substituída/deletada) -->
+                <div id="oldThumbBox" class="hidden rounded-xl border-2 border-red-300 bg-red-50/70 p-2.5 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="relative shrink-0">
+                      <img id="oldLogoPreview" src="" class="w-16 h-11 object-contain border border-red-200 rounded-lg p-1 bg-white opacity-75" alt="Antiga">
+                      <span class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full">ANTIGA</span>
+                    </div>
+                    <div class="min-w-0">
+                      <span class="block text-[11px] font-extrabold text-red-800 leading-tight">Prestes a ser deletada</span>
+                      <span class="block text-[10px] text-red-600 truncate">Será substituída ao salvar</span>
+                    </div>
+                  </div>
+                  <button type="button" id="restoreOldThumbBtn" class="px-2 py-1 rounded-lg bg-white border border-red-300 text-[11px] font-bold text-red-700 hover:bg-red-100 shrink-0" title="Cancelar troca e manter a imagem antiga">
+                    ↺ Manter
+                  </button>
+                </div>
+
+                <!-- Thumb Atual / Nova -->
+                <div id="currentThumbBox" class="sm:col-span-2 rounded-xl border border-emerald-300 bg-emerald-50/50 p-2.5 flex items-center gap-3">
+                  <img id="modalLogoPreview" src="https://placehold.co/96x48/e2e8f0/4a5568?text=Logo" class="w-20 h-12 object-contain border border-emerald-200 rounded-lg p-1 bg-white shrink-0" alt="Preview Atual">
+                  <div>
+                    <span id="currentThumbBadge" class="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white">Thumb Ativa</span>
+                    <p class="text-xs text-gray-600 mt-0.5">Esta é a imagem que aparecerá no Index e nos Resultados.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. EDITOR VISUAL DE VANTAGENS (SEM HTML CRU) -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label class="text-xs font-extrabold uppercase text-gray-600">
+                  Vantagens da Oferta <span class="text-gray-400 font-normal">(1 vantagem por linha)</span>
+                </label>
+                <button type="button" id="toggleHtmlSourceBtn" class="text-[11px] font-semibold text-gray-500 hover:text-gray-800 underline">
+                  Ver código HTML
+                </button>
+              </div>
+
+              <!-- Barra de Ferramentas Visual (B, I, U, Cores, Ícones, Limpar) -->
+              <div class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-xl border border-gray-200 shadow-sm">
+                <button type="button" onmousedown="event.preventDefault(); execVisualCmd('bold')" class="w-8 h-8 rounded-lg hover:bg-gray-100 font-black text-gray-800 border border-gray-200 text-sm" title="Negrito">B</button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualCmd('italic')" class="w-8 h-8 rounded-lg hover:bg-gray-100 italic font-serif font-bold text-gray-800 border border-gray-200 text-sm" title="Itálico">I</button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualCmd('underline')" class="w-8 h-8 rounded-lg hover:bg-gray-100 underline font-bold text-gray-800 border border-gray-200 text-sm" title="Sublinhado">U</button>
+
+                <span class="h-5 w-px bg-gray-200 mx-0.5"></span>
+
+                <!-- Seletor de Cores Visual -->
+                <span class="text-[11px] font-bold text-gray-400 mr-0.5">Cor:</span>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#047857')" class="w-6 h-6 rounded-full bg-emerald-700 hover:scale-110 transition border border-white shadow" title="Verde Destaque"></button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#dc2626')" class="w-6 h-6 rounded-full bg-red-600 hover:scale-110 transition border border-white shadow" title="Vermelho Urgência"></button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#2563eb')" class="w-6 h-6 rounded-full bg-blue-600 hover:scale-110 transition border border-white shadow" title="Azul Confiança"></button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#d97706')" class="w-6 h-6 rounded-full bg-amber-600 hover:scale-110 transition border border-white shadow" title="Dourado / Alerta"></button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#7c3aed')" class="w-6 h-6 rounded-full bg-purple-600 hover:scale-110 transition border border-white shadow" title="Roxo"></button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualColor('#1f2937')" class="w-6 h-6 rounded-full bg-gray-800 hover:scale-110 transition border border-white shadow" title="Preto Padrão"></button>
+
+                <span class="h-5 w-px bg-gray-200 mx-0.5"></span>
+
+                <!-- Emojis Rápidos -->
+                <button type="button" onmousedown="event.preventDefault(); insertVisualText('🔥 ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Fogo">🔥</button>
+                <button type="button" onmousedown="event.preventDefault(); insertVisualText('⚡ ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Raio">⚡</button>
+                <button type="button" onmousedown="event.preventDefault(); insertVisualText('💰 ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Dinheiro">💰</button>
+                <button type="button" onmousedown="event.preventDefault(); execVisualCmd('removeFormat')" class="px-2 py-1 rounded-lg hover:bg-red-50 text-red-600 text-[11px] font-bold border border-red-200 ml-auto" title="Limpar formatação do texto selecionado">
+                  <i class="fas fa-eraser"></i> Limpar
+                </button>
+              </div>
+
+              <!-- Área Editável Visual (Onde o usuário edita vendo negrito e cores reais) -->
+              <div id="visualEditor" contenteditable="true"
+                   data-placeholder="Digite cada vantagem e aperte Enter para criar uma nova linha. Selecione qualquer palavra e clique nos botões acima para colorir ou deixar em negrito..."
+                   class="w-full p-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-800"></div>
+
+              <!-- Textarea HTML oculto (Sincronizado automaticamente) -->
+              <textarea id="vantagens" rows="4" class="hidden w-full p-3 bg-slate-900 text-emerald-300 font-mono text-xs rounded-xl border border-slate-700"></textarea>
+            </div>
+
+            <!-- 4. LINKS E BOTÕES DE AÇÃO (CAMPOS QUE FALTAVAM NO FORMULÁRIO) -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-12">
+                <label class="text-xs font-bold uppercase text-gray-500">Link de Afiliado / Destino (URL)</label>
+                <input id="link" type="url" placeholder="https://..." class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm text-blue-700 font-medium focus:border-emerald-600 outline-none">
+              </div>
+              <div class="sm:col-span-6">
+                <label class="text-xs font-bold uppercase text-gray-500">Texto do Botão Principal</label>
+                <input id="btnPrimario" placeholder="Ex: Receber Agora" value="Receber Agora" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm">
+              </div>
+              <div class="sm:col-span-6">
+                <label class="text-xs font-bold uppercase text-gray-500">Texto do Botão Secundário</label>
+                <input id="btnSecundario" placeholder="Ex: Simular Parcelas" value="Detalhes" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm">
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="md:col-span-2">
-          <label class="inline-flex items-center gap-2 text-sm">
-            <input id="ativo" type="checkbox" class="h-4 w-4">
-            Ativo (exibir no site)
-          </label>
+        <!-- COLUNA DIREITA (5 cols): PREVIEW AO VIVO + CATEGORIAS E TAGS DE PERFIL -->
+        <div class="lg:col-span-5 space-y-5">
+
+          <!-- 1. PREVIEW AO VIVO DO CARD -->
+          <div class="bg-emerald-950/5 p-4 rounded-2xl border border-emerald-200/80">
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+                <i class="fas fa-eye text-emerald-600"></i> Preview ao Vivo no Site
+              </span>
+              <label class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer bg-white px-2.5 py-1 rounded-full border border-gray-200">
+                <input id="ativo" type="checkbox" checked class="h-4 w-4 accent-emerald-600 rounded">
+                <span>Visível no Site</span>
+              </label>
+            </div>
+
+            <!-- Card Simulado -->
+            <div id="liveCardPreview" class="bg-white rounded-2xl border-2 border-emerald-500 p-4 shadow-md space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span id="prevTag" class="text-xs font-extrabold px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                  Top¹ - Empréstimo
+                </span>
+                <span class="text-[11px] font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">🔥 96% Match</span>
+              </div>
+              <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+                <div class="w-20 h-12 rounded-xl border border-gray-200 bg-gray-50 p-1.5 flex items-center justify-center shrink-0">
+                  <img id="prevLogo" src="https://placehold.co/96x48/e2e8f0/4a5568?text=Logo" class="max-w-full max-h-full object-contain" alt="Logo">
+                </div>
+                <div class="min-w-0">
+                  <div id="prevCategoriesPills" class="flex flex-wrap gap-1 mb-1"></div>
+                  <h4 id="prevTitle" class="font-black text-gray-900 text-base truncate">Nome da Instituição</h4>
+                </div>
+              </div>
+              <ul id="prevVantagens" class="space-y-1.5 text-xs text-gray-700"></ul>
+              <div class="pt-2">
+                <span id="prevBtnPrimario" class="block w-full py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs text-center shadow-sm">
+                  Receber Agora
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. TAGS DE CATEGORIA (TIPO DE PRODUTO) -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div>
+              <label class="text-xs font-extrabold uppercase text-gray-700 block">
+                1. Categorias do Produto (Filtro Principal)
+              </label>
+              <p class="text-[11px] text-gray-500">Clique para ativar/desativar na oferta ou no `×` para remover uma tag.</p>
+            </div>
+
+            <!-- Chips de Categorias -->
+            <div id="categoryChipsContainer" class="flex flex-wrap gap-1.5"></div>
+
+            <!-- Adicionar Nova Categoria -->
+            <div class="flex gap-2 pt-1">
+              <input id="newCategoryInput" type="text" placeholder="Nova categoria (ex: consorcio, veiculos)..."
+                     class="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded-xl bg-white outline-none focus:border-emerald-600">
+              <button type="button" id="addCategoryBtn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shrink-0">
+                + Categoria
+              </button>
+            </div>
+            <input type="hidden" id="tipo">
+          </div>
+
+          <!-- 3. TAGS DE PERFIL / GÊNERO (SINCRONIZADAS COM INDEX E RESULTADOS) -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div>
+              <label class="text-xs font-extrabold uppercase text-gray-700 block">
+                2. Tags de Perfil / Gênero (Ex: Aposentado, Negativado)
+              </label>
+              <p class="text-[11px] text-gray-500">Adicione ou remova tags. Qualquer tag nova criada aqui aparecerá nos filtros.</p>
+            </div>
+
+            <!-- Chips de Perfis -->
+            <div id="profileChipsContainer" class="flex flex-wrap gap-1.5"></div>
+
+            <!-- Adicionar Novo Perfil/Gênero -->
+            <div class="flex gap-2 pt-1">
+              <input id="newProfileInput" type="text" placeholder="Novo perfil (ex: aposentados, clt, mei)..."
+                     class="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded-xl bg-white outline-none focus:border-emerald-600">
+              <button type="button" id="addProfileBtn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shrink-0">
+                + Tag Perfil
+              </button>
+            </div>
+            <input type="hidden" id="perfis">
+          </div>
+
         </div>
-        <div><label class="text-sm">Prioridade</label><input id="priority_order" type="number" class="w-full mt-1 px-3 py-2 border rounded-lg"></div>
-      </form>
-      <div class="flex justify-end gap-2 mt-4">
-        <button id="close" class="px-4 py-2 bg-gray-200 rounded-lg">Cancelar</button>
-        <button id="save" class="px-4 py-2 bg-green-600 text-white rounded-lg">Salvar</button>
+      </div>
+
+      <!-- Rodapé do Modal -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between shrink-0">
+        <span id="modalSyncHint" class="text-xs text-gray-500 font-medium">
+          <i class="fas fa-database text-emerald-600 mr-1"></i> Salva simultaneamente na Cloudflare D1 e no Supabase
+        </span>
+        <div class="flex gap-2.5">
+          <button id="close" type="button" class="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-xs sm:text-sm font-bold rounded-xl hover:bg-gray-100">
+            Cancelar
+          </button>
+          <button id="save" type="button" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition">
+            <i class="fas fa-check mr-1"></i> Salvar Alterações
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Regras de Resultados -->
+  <!-- ========================================================= -->
+  <!-- MODAL DE CONFIRMAÇÃO DE TROCA DE THUMB RÁPIDA (NO CARD)   -->
+  <!-- ========================================================= -->
+  <div id="quickThumbModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-5 border border-gray-100">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-lg font-extrabold text-gray-900">Substituir Thumbnail da Oferta</h3>
+        <button type="button" onclick="closeQuickThumbModal()" class="text-gray-400 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <p id="quickThumbTitle" class="text-xs text-gray-600 font-medium"></p>
+
+      <div class="grid grid-cols-2 gap-3 items-center text-center">
+        <!-- Antiga -->
+        <div class="p-3 rounded-2xl border-2 border-red-200 bg-red-50/60 space-y-2">
+          <span class="inline-block text-[10px] font-black uppercase bg-red-600 text-white px-2.5 py-0.5 rounded-full">
+            Thumb Antiga (Deletar)
+          </span>
+          <div class="h-16 flex items-center justify-center bg-white rounded-xl border border-red-100 p-2">
+            <img id="quickOldThumbImg" src="" class="max-h-full max-w-full object-contain opacity-70" alt="Antiga">
+          </div>
+        </div>
+
+        <!-- Nova -->
+        <div class="p-3 rounded-2xl border-2 border-emerald-400 bg-emerald-50/60 space-y-2">
+          <span class="inline-block text-[10px] font-black uppercase bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">
+            Nova Thumb
+          </span>
+          <div class="h-16 flex items-center justify-center bg-white rounded-xl border border-emerald-100 p-2">
+            <img id="quickNewThumbImg" src="" class="max-h-full max-w-full object-contain" alt="Nova">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeQuickThumbModal()" class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-50">
+          Cancelar e Manter Antiga
+        </button>
+        <button type="button" id="confirmQuickThumbBtn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-extrabold text-white shadow">
+          Confirmar e Substituir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL REGRAS DE RESULTADOS                                -->
+  <!-- ========================================================= -->
   <div id="rulesModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
-      <h3 class="text-xl font-semibold mb-4">Configurar Resultados por Perfil</h3>
+    <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full sm:w-[95%] max-h-[85vh] overflow-y-auto p-6">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <h3 class="text-xl font-extrabold text-gray-900">Configurar Ordem de Resultados por Perfil</h3>
+        <button id="rulesCloseTop" type="button" class="text-gray-400 hover:text-gray-700"><i class="fas fa-times"></i></button>
+      </div>
 
       <div class="grid gap-4">
         <div>
-          <label class="text-sm">Perfil</label>
-          <select id="rulesPerfil" class="w-full mt-1 px-3 py-2 border rounded-lg">
-            <option value="negativado">Negativado (A/B Test)</option>
+          <label class="text-xs font-bold uppercase text-gray-500">Selecione o Perfil</label>
+          <select id="rulesPerfil" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl font-semibold">
+            <option value="negativado">Negativado (Teste A/B)</option>
             <option value="bolsafamilia">Bolsa Família</option>
             <option value="aposentado">Aposentado</option>
-            <option value="default">Padrão</option>
+            <option value="default">Padrão (Geral)</option>
           </select>
         </div>
 
         <!-- NEGATIVADO -->
         <div id="rulesNegativado" class="grid md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm">IDs da Lista A (CSV)</label>
-            <input id="idsA" placeholder="ex.: 18,1,2,4,5,7" class="w-full mt-1 px-3 py-2 border rounded-lg">
-            <p class="text-xs text-gray-500 mt-1">Ordem = priorização. Somente IDs válidos de <b>products</b>.</p>
+            <label class="text-xs font-bold uppercase text-gray-500">IDs da Lista A (CSV)</label>
+            <input id="idsA" placeholder="ex.: 18,1,2,4,5,7" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div>
-            <label class="text-sm">IDs da Lista B (CSV)</label>
-            <input id="idsB" placeholder="ex.: 2,1,4,5,7,10" class="w-full mt-1 px-3 py-2 border rounded-lg">
+            <label class="text-xs font-bold uppercase text-gray-500">IDs da Lista B (CSV)</label>
+            <input id="idsB" placeholder="ex.: 2,1,4,5,7,10" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div>
-            <label class="text-sm">Peso da Lista A (%)</label>
-            <input id="pesoA" type="number" min="0" max="100" value="70" class="w-full mt-1 px-3 py-2 border rounded-lg">
-            <p class="text-xs text-gray-500 mt-1">Ex.: 70 → mostra A 70% das vezes e B 30%.</p>
+            <label class="text-xs font-bold uppercase text-gray-500">Peso da Lista A (%)</label>
+            <input id="pesoA" type="number" min="0" max="100" value="70" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div>
-            <label class="text-sm">Limite (quantos produtos exibir)</label>
-            <input id="limiteNeg" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
+            <label class="text-xs font-bold uppercase text-gray-500">Limite de Produtos</label>
+            <input id="limiteNeg" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div class="md:col-span-2">
-            <label class="text-sm">Pré-visualização</label>
+            <label class="text-xs font-bold uppercase text-gray-500">Pré-visualização</label>
             <div class="grid md:grid-cols-2 gap-4 mt-1">
               <div>
                 <div class="text-xs text-gray-500 mb-1">Lista A</div>
@@ -239,42 +576,45 @@
         <!-- OUTROS PERFIS -->
         <div id="rulesOutros" class="grid md:grid-cols-2 gap-4">
           <div class="md:col-span-2">
-            <label class="text-sm">IDs (CSV)</label>
-            <input id="idsOutros" placeholder="ex.: 15,20,1,2,5" class="w-full mt-1 px-3 py-2 border rounded-lg">
+            <label class="text-xs font-bold uppercase text-gray-500">IDs (CSV)</label>
+            <input id="idsOutros" placeholder="ex.: 15,20,1,2,5" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div>
-            <label class="text-sm">Limite (quantos produtos exibir)</label>
-            <input id="limiteOutros" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-lg">
+            <label class="text-xs font-bold uppercase text-gray-500">Limite de Produtos</label>
+            <input id="limiteOutros" type="number" min="1" value="12" class="w-full mt-1 px-3 py-2 border rounded-xl text-sm">
           </div>
           <div class="md:col-span-2">
-            <label class="text-sm">Pré-visualização</label>
+            <label class="text-xs font-bold uppercase text-gray-500">Pré-visualização</label>
             <div id="previewOutros" class="flex flex-wrap mt-1"></div>
           </div>
         </div>
 
         <!-- Adicionar ID rápido -->
-        <div class="md:col-span-2">
-          <label class="text-sm">Adicionar ID rápido</label>
-          <div class="flex gap-2 mt-1 items-center">
-            <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-lg"></select>
-            <select id="addTarget" class="px-3 py-2 border rounded-lg hidden">
+        <div class="md:col-span-2 bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
+          <label class="text-xs font-bold uppercase text-gray-500">Adicionar Produto Rápido à Regra</label>
+          <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-1.5 items-center">
+            <select id="pickerProduto" class="flex-1 px-3 py-2 border rounded-xl text-sm bg-white"></select>
+            <select id="addTarget" class="px-3 py-2 border rounded-xl text-sm bg-white hidden">
               <option value="A">Lista A</option>
               <option value="B">Lista B</option>
             </select>
-            <button id="addIdBtn" class="px-3 py-2 border rounded-lg hover:bg-gray-50">Adicionar</button>
+            <button id="addIdBtn" type="button" class="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-900">
+              + Adicionar
+            </button>
           </div>
-          <p class="text-xs text-gray-500 mt-1">O ID é o número que aparece no card (ou na tabela <b>products</b>).</p>
         </div>
 
-        <!-- Ações -->
-        <div class="flex justify-end gap-2 mt-6 md:col-span-2">
-          <button id="rulesClose" class="px-4 py-2 bg-gray-200 rounded-lg">Fechar</button>
-          <button id="rulesSave" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Salvar Regras</button>
+        <div class="flex justify-end gap-2 mt-4 md:col-span-2">
+          <button id="rulesClose" type="button" class="px-4 py-2 bg-gray-200 font-bold text-xs rounded-xl">Fechar</button>
+          <button id="rulesSave" type="button" class="px-5 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl">Salvar Regras</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ========================================================= -->
+  <!-- SCRIPTS DO PAINEL ADMIN                                   -->
+  <!-- ========================================================= -->
   <script>
     const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -286,13 +626,366 @@
 
     let items = [];
     let sortableInstance = null;
-    let currentCardForLogo = null; // Guarda qual oferta está trocando a imagem pelo card
+    let currentModalMode = 'offer'; // 'offer' | 'ad'
+    let originalModalLogo = '';     // Guarda a thumb antiga para mostrar a comparação antes de deletar
+    let currentAdminFilter = 'all';
+    let currentCardForLogo = null;
+    let pendingQuickNewLogo = '';
 
-    // Helpers de formatação
+    // =========================================================================
+    // CATÁLOGO DINÂMICO DE TAGS DE CATEGORIA (TIPO) E GÊNERO/PERFIL (PERFIS)
+    // =========================================================================
+    const DEFAULT_CATEGORIES = [
+      { slug: 'emprestimo', label: '💰 Empréstimos' },
+      { slug: 'emprestimocomgarantia', label: '🏠 Empréstimo c/ Garantia' },
+      { slug: 'cartao', label: '💳 Cartões de Crédito' },
+      { slug: 'contas', label: '🏦 Contas Digitais' },
+      { slug: 'fgts', label: '⚡ FGTS' },
+      { slug: 'bolsafamilia', label: '👨‍👩‍👧 Bolsa Família' },
+      { slug: 'seguro', label: '🛡️ Seguros' },
+      { slug: 'renegociar', label: '🧹 Renegociação de Dívidas' }
+    ];
+
+    const DEFAULT_PROFILES = [
+      { slug: 'negativado', label: '🚫 Negativado' },
+      { slug: 'aposentado', label: '👴 Aposentado / INSS' },
+      { slug: 'bolsafamilia', label: '🤝 Bolsa Família' },
+      { slug: 'autonomo', label: '💼 Autônomo / MEI' },
+      { slug: 'score-baixo', label: '📉 Score Baixo' },
+      { slug: 'score-regular', label: '📊 Score Regular' },
+      { slug: 'clt', label: '🪪 Assalariado / CLT' }
+    ];
+
+    function getCustomTaxonomy(storageKey, defaults) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch (e) {}
+      return [...defaults];
+    }
+
+    function saveCustomTaxonomy(storageKey, list) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    let availableCategories = getCustomTaxonomy('tirracred_Taxonomy_Categories', DEFAULT_CATEGORIES);
+    let availableProfiles = getCustomTaxonomy('tirracred_Taxonomy_Profiles', DEFAULT_PROFILES);
+
+    let selectedCategoriesSet = new Set();
+    let selectedProfilesSet = new Set();
+
+    // Sincroniza tags existentes nos produtos carregados com o catálogo de chips
+    function absorbExistingTagsFromProducts(productsList) {
+      productsList.forEach(p => {
+        if (isAdItem(p)) return;
+        csvToArr(editCsv(p.tipo)).forEach(slug => {
+          const clean = slug.toLowerCase().trim();
+          if (clean && clean !== 'anuncio' && !availableCategories.some(c => c.slug === clean)) {
+            availableCategories.push({ slug: clean, label: `🏷️ ${clean}` });
+          }
+        });
+        csvToArr(editCsv(p.perfis)).forEach(slug => {
+          const clean = slug.toLowerCase().trim();
+          if (clean && !availableProfiles.some(pr => pr.slug === clean)) {
+            availableProfiles.push({ slug: clean, label: `👤 ${clean}` });
+          }
+        });
+      });
+      saveCustomTaxonomy('tirracred_Taxonomy_Categories', availableCategories);
+      saveCustomTaxonomy('tirracred_Taxonomy_Profiles', availableProfiles);
+    }
+
+    function renderTaxonomyChipsUI() {
+      // 1) Categorias (tipo)
+      const catWrap = $('categoryChipsContainer');
+      if (catWrap) {
+        catWrap.innerHTML = availableCategories.map(cat => {
+          const active = selectedCategoriesSet.has(cat.slug);
+          return `
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition select-none border ${
+              active
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+            }" onclick="toggleCategoryChip('${cat.slug}')">
+              <span>${active ? '✓ ' : ''}${cat.label}</span>
+              <button type="button" onclick="event.stopPropagation(); deleteCategoryTag('${cat.slug}')"
+                      class="ml-1 text-[11px] opacity-60 hover:opacity-100" title="Excluir categoria da lista">×</button>
+            </span>
+          `;
+        }).join('');
+      }
+      $('tipo').value = Array.from(selectedCategoriesSet).join(',');
+
+      // 2) Perfis / Gêneros (perfis)
+      const profWrap = $('profileChipsContainer');
+      if (profWrap) {
+        profWrap.innerHTML = availableProfiles.map(prof => {
+          const active = selectedProfilesSet.has(prof.slug);
+          return `
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition select-none border ${
+              active
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+            }" onclick="toggleProfileChip('${prof.slug}')">
+              <span>${active ? '✓ ' : ''}${prof.label}</span>
+              <button type="button" onclick="event.stopPropagation(); deleteProfileTag('${prof.slug}')"
+                      class="ml-1 text-[11px] opacity-60 hover:opacity-100" title="Excluir tag de perfil">×</button>
+            </span>
+          `;
+        }).join('');
+      }
+      $('perfis').value = Array.from(selectedProfilesSet).join(',');
+      updateLivePreview();
+    }
+
+    window.toggleCategoryChip = (slug) => {
+      if (selectedCategoriesSet.has(slug)) selectedCategoriesSet.delete(slug);
+      else selectedCategoriesSet.add(slug);
+      renderTaxonomyChipsUI();
+    };
+
+    window.toggleProfileChip = (slug) => {
+      if (selectedProfilesSet.has(slug)) selectedProfilesSet.delete(slug);
+      else selectedProfilesSet.add(slug);
+      renderTaxonomyChipsUI();
+    };
+
+    window.deleteCategoryTag = (slug) => {
+      selectedCategoriesSet.delete(slug);
+      availableCategories = availableCategories.filter(c => c.slug !== slug);
+      saveCustomTaxonomy('tirracred_Taxonomy_Categories', availableCategories);
+      renderTaxonomyChipsUI();
+    };
+
+    window.deleteProfileTag = (slug) => {
+      selectedProfilesSet.delete(slug);
+      availableProfiles = availableProfiles.filter(p => p.slug !== slug);
+      saveCustomTaxonomy('tirracred_Taxonomy_Profiles', availableProfiles);
+      renderTaxonomyChipsUI();
+    };
+
+    $('addCategoryBtn').onclick = () => {
+      const raw = $('newCategoryInput').value.trim();
+      if (!raw) return;
+      const slug = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]/g, '');
+      if (!slug) return;
+      if (!availableCategories.some(c => c.slug === slug)) {
+        availableCategories.push({ slug, label: `🏷️ ${raw}` });
+        saveCustomTaxonomy('tirracred_Taxonomy_Categories', availableCategories);
+      }
+      selectedCategoriesSet.add(slug);
+      $('newCategoryInput').value = '';
+      renderTaxonomyChipsUI();
+    };
+
+    $('addProfileBtn').onclick = () => {
+      const raw = $('newProfileInput').value.trim();
+      if (!raw) return;
+      const slug = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]/g, '');
+      if (!slug) return;
+      if (!availableProfiles.some(p => p.slug === slug)) {
+        availableProfiles.push({ slug, label: `👤 ${raw}` });
+        saveCustomTaxonomy('tirracred_Taxonomy_Profiles', availableProfiles);
+      }
+      selectedProfilesSet.add(slug);
+      $('newProfileInput').value = '';
+      renderTaxonomyChipsUI();
+    };
+
+    // =========================================================================
+    // EDITOR VISUAL WYSIWYG MINIMALISTA (SEM TAGS HTML CRUAS)
+    // =========================================================================
+    const visualEditor = $('visualEditor');
+    const htmlTextarea = $('vantagens');
+    let showingRawHtml = false;
+
+    // Limpa e fecha automaticamente qualquer tag quebrada como <span><b>texto<span>
+    function sanitizeAndNormalizeLines(rawHtmlText) {
+      const rawLines = String(rawHtmlText || '').split('\n').map(s => s.trim()).filter(Boolean);
+      return rawLines.map(line => {
+        const temp = document.createElement('div');
+        temp.innerHTML = line;
+        return temp.innerHTML.trim();
+      }).filter(Boolean);
+    }
+
+    function setVisualEditorFromLines(vantagensData) {
+      const lines = toArrayLines(vantagensData);
+      const cleanLines = sanitizeAndNormalizeLines(lines.join('\n'));
+      htmlTextarea.value = cleanLines.join('\n');
+
+      if (!cleanLines.length) {
+        visualEditor.innerHTML = '';
+        return;
+      }
+      visualEditor.innerHTML = cleanLines.map(line => `<div>${line}</div>`).join('');
+    }
+
+    function syncVisualEditorToTextarea() {
+      if (showingRawHtml) return;
+      const lines = [];
+      const children = Array.from(visualEditor.childNodes);
+
+      if (children.length === 0) {
+        htmlTextarea.value = '';
+        return;
+      }
+
+      children.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const txt = node.textContent.trim();
+          if (txt) lines.push(txt);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const html = node.innerHTML.replace(/<br\s*\/?>/gi, '').trim();
+          if (html) lines.push(html);
+        }
+      });
+
+      htmlTextarea.value = sanitizeAndNormalizeLines(lines.join('\n')).join('\n');
+      updateLivePreview();
+    }
+
+    visualEditor.addEventListener('input', syncVisualEditorToTextarea);
+    visualEditor.addEventListener('blur', syncVisualEditorToTextarea);
+
+    htmlTextarea.addEventListener('input', () => {
+      if (showingRawHtml) {
+        const clean = sanitizeAndNormalizeLines(htmlTextarea.value);
+        visualEditor.innerHTML = clean.map(l => `<div>${l}</div>`).join('');
+        updateLivePreview();
+      }
+    });
+
+    $('toggleHtmlSourceBtn').onclick = () => {
+      showingRawHtml = !showingRawHtml;
+      if (showingRawHtml) {
+        syncVisualEditorToTextarea();
+        visualEditor.classList.add('hidden');
+        htmlTextarea.classList.remove('hidden');
+        $('toggleHtmlSourceBtn').textContent = 'Voltar para Editor Visual';
+      } else {
+        setVisualEditorFromLines(htmlTextarea.value);
+        htmlTextarea.classList.add('hidden');
+        visualEditor.classList.remove('hidden');
+        $('toggleHtmlSourceBtn').textContent = 'Ver código HTML';
+      }
+    };
+
+    window.execVisualCmd = (cmd) => {
+      visualEditor.focus();
+      document.execCommand(cmd, false, null);
+      syncVisualEditorToTextarea();
+    };
+
+    window.execVisualColor = (hexColor) => {
+      visualEditor.focus();
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand('foreColor', false, hexColor);
+      syncVisualEditorToTextarea();
+    };
+
+    window.insertVisualText = (txt) => {
+      visualEditor.focus();
+      document.execCommand('insertText', false, txt);
+      syncVisualEditorToTextarea();
+    };
+
+    // =========================================================================
+    // SELO DE MARKETING E PREVIEW AO VIVO
+    // =========================================================================
+    const badgeColorMap = {
+      yellow: 'bg-amber-100 text-amber-900 border border-amber-300',
+      green: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+      red: 'bg-red-100 text-red-800 border border-red-200',
+      blue: 'bg-blue-100 text-blue-800 border border-blue-200',
+      purple: 'bg-purple-100 text-purple-800 border border-purple-200'
+    };
+
+    window.setMarketingTag = (text, color) => {
+      $('tag').value = text;
+      selectTagColor(color);
+      updateLivePreview();
+    };
+
+    window.selectTagColor = (color) => {
+      $('tagClass').value = color || 'yellow';
+      document.querySelectorAll('.tag-color-btn').forEach(btn => {
+        const isMatch = btn.getAttribute('data-tag-color') === color;
+        btn.classList.toggle('border-gray-900', isMatch);
+        btn.classList.toggle('scale-110', isMatch);
+        btn.classList.toggle('border-transparent', !isMatch);
+      });
+      updateLivePreview();
+    };
+
+    function updateThumbComparisonUI(newLogoVal) {
+      const cleanNew = fixLogo(newLogoVal || '');
+      const cleanOld = fixLogo(originalModalLogo || '');
+
+      $('modalLogoPreview').src = cleanNew || 'https://placehold.co/96x48/e2e8f0/4a5568?text=Logo';
+
+      const hasChanged = Boolean(cleanOld && cleanNew && cleanOld !== cleanNew);
+      if (hasChanged) {
+        $('oldLogoPreview').src = cleanOld;
+        $('oldThumbBox').classList.remove('hidden');
+        $('currentThumbBox').classList.remove('sm:col-span-2');
+        $('currentThumbBadge').textContent = 'Nova Thumb (Substituirá a Antiga)';
+      } else {
+        $('oldThumbBox').classList.add('hidden');
+        $('currentThumbBox').classList.add('sm:col-span-2');
+        $('currentThumbBadge').textContent = 'Thumb Ativa';
+      }
+      updateLivePreview();
+    }
+
+    $('restoreOldThumbBtn').onclick = () => {
+      $('logo').value = originalModalLogo;
+      updateThumbComparisonUI(originalModalLogo);
+    };
+
+    function updateLivePreview() {
+      const title = $('titulo').value.trim() || 'Nome da Instituição';
+      const tag = $('tag').value.trim() || 'Recomendado';
+      const color = $('tagClass').value || 'yellow';
+      const logoSrc = $('logo').value.trim() ? fixLogo($('logo').value.trim()) : 'https://placehold.co/96x48/e2e8f0/4a5568?text=Logo';
+      const btnP = $('btnPrimario').value.trim() || 'Receber Agora';
+
+      $('prevTitle').textContent = title;
+      $('prevTag').textContent = tag;
+      $('prevTag').className = `text-xs font-extrabold px-3 py-0.5 rounded-full ${badgeColorMap[color] || badgeColorMap.yellow}`;
+      $('prevLogo').src = logoSrc;
+      $('prevBtnPrimario').textContent = btnP;
+
+      const pillsWrap = $('prevCategoriesPills');
+      if (pillsWrap) {
+        const allPills = [
+          ...Array.from(selectedCategoriesSet).map(s => `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">${s}</span>`),
+          ...Array.from(selectedProfilesSet).map(s => `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">${s}</span>`)
+        ];
+        pillsWrap.innerHTML = allPills.slice(0, 4).join('');
+      }
+
+      const lines = sanitizeAndNormalizeLines(htmlTextarea.value);
+      $('prevVantagens').innerHTML = (lines.length ? lines : ['Solicitação 100% online com liberação rápida']).map(l => `
+        <li class="flex items-start gap-2">
+          <span class="text-emerald-600 font-black">✓</span>
+          <span>${l}</span>
+        </li>
+      `).join('');
+    }
+
+    ['titulo', 'tag', 'link', 'btnPrimario', 'btnSecundario'].forEach(id => {
+      $(id)?.addEventListener('input', updateLivePreview);
+    });
+
+    // =========================================================================
+    // HELPERS GERAIS E UPLOAD DE IMAGEM
+    // =========================================================================
     const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
     const normCsv = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean).join(',');
     const csvToArr = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean);
-    const arrToCsv = (arr = []) => arr.filter(Boolean).join(',');
     const normLines = (txt = '') => String(txt).split('\n').map(s => s.trim()).filter(Boolean).join('\n');
 
     const toArrayLines = (v) => {
@@ -307,7 +1000,6 @@
       return [];
     };
 
-    const displayCsv = (v) => Array.isArray(v) ? v.join(', ') : (v || '');
     const editCsv = (v) => Array.isArray(v) ? v.join(',') : (v || '');
     const displayLines = (v) => Array.isArray(v) ? v.join('\n') : toArrayLines(v).join('\n');
 
@@ -315,26 +1007,24 @@
       const tipo = String(p?.tipo || '').toLowerCase().trim();
       const tag  = String(p?.tag  || '');
       const slot = String(p?.slot || p?.link || '').toString().trim();
-      return tipo.includes('anuncio') || tag.includes('ca-pub') || /^\d+$/.test(slot);
+      return tipo.includes('anuncio') || tag.includes('ca-pub') || /^\d{5,}$/.test(slot);
     };
 
     const normalizeProduct = (p, source) => ({
       ...p,
       ativo: p.ativo !== false && p.ativo !== 0 && p.ativo !== '0',
       priority_order: Number(p.priority_order) || 0,
-      _source: source, // 'd1' | 'supabase' | 'both'
+      _source: source,
       _d1_id: source === 'd1' ? p.id : null,
       _supa_id: source === 'supabase' ? p.id : null,
       _uid: `${source}_${p.id}`
     });
 
-    // Converte e otimiza o arquivo de imagem para caber perfeitamente na oferta (PNG/WebP leve)
     function fileToOptimizedDataUrl(file, maxW = 280, maxH = 140) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
         reader.onload = (ev) => {
-          // Se for SVG, retorna direto
           if (file.type === 'image/svg+xml') {
             resolve(ev.target.result);
             return;
@@ -342,8 +1032,7 @@
           const img = new Image();
           img.onerror = () => resolve(ev.target.result);
           img.onload = () => {
-            let w = img.width;
-            let h = img.height;
+            let w = img.width, h = img.height;
             if (w > maxW || h > maxH) {
               const ratio = Math.min(maxW / w, maxH / h);
               w = Math.round(w * ratio);
@@ -363,74 +1052,60 @@
       });
     }
 
-    function renderPerfisChips(perfisCsv = '') {
-      const set = new Set(csvToArr(String(perfisCsv).toLowerCase()));
-      document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
-        cb.checked = set.has(cb.value);
-      });
-    }
-
-    function syncPerfisFromChips() {
-      const selected = Array.from(document.querySelectorAll('[data-chip="perfil"]:checked')).map(cb => cb.value);
-      $('perfis').value = arrToCsv(selected);
-    }
-
-    // Badge indicando se o produto está no D1, Supabase ou Ambos
-    function sourceBadgeHTML(p) {
-      if (p._source === 'both') return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">D1 + Supa</span>`;
-      if (p._source === 'd1') return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 font-medium">Cloudflare</span>`;
-      return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">Supabase</span>`;
-    }
-
-    const cardHTML = (p) => {
-      const isAd = isAdItem(p);
-      const displayId = p._supa_id ?? p._d1_id ?? p.id;
-      return `
-      <div class="bg-white border rounded-xl shadow-sm p-4 flex gap-3 items-start ${!p.ativo ? 'opacity-60' : ''}" data-uid="${p._uid}">
-        <div class="cursor-move select-none px-2 py-1 bg-gray-100 rounded" title="Arrastar">⇅</div>
-
-        <!-- Clicar na imagem também abre o seletor para trocar a imagem desta oferta -->
-        <div class="change-logo cursor-pointer group relative shrink-0" title="Clique para trocar a imagem desta oferta">
-          <img src="${fixLogo(p.logo)}" class="w-16 h-12 object-contain border rounded p-1 bg-gray-50 group-hover:opacity-75 transition"
-               onerror="this.onerror=null;this.src='https://placehold.co/64x40/e2e8f0/4a5568?text=${isAd ? 'AdSense' : 'Logo'}';">
-          <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold bg-black/50 text-white opacity-0 group-hover:opacity-100 rounded transition">Trocar</span>
-        </div>
-
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between gap-2">
-            <h4 class="font-semibold truncate">${p.titulo || (isAd ? 'Bloco AdSense' : 'Sem título')}</h4>
-            <div class="flex items-center gap-1 shrink-0">
-              ${sourceBadgeHTML(p)}
-              ${isAd ? `<span class="text-[11px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">Anúncio</span>` : ''}
-              <span class="text-[11px] px-2 py-0.5 rounded-full ${!p.ativo ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}">
-                ${!p.ativo ? 'Inativo' : 'Ativo'}
-              </span>
-            </div>
-          </div>
-          <p class="text-xs text-gray-500 mt-0.5">ID #${displayId} • ordem ${p.priority_order} • ${displayCsv(p.tipo)}</p>
-          <div class="mt-2 flex flex-wrap gap-1.5">
-            <a target="_blank" href="${p.link}" class="text-green-700 underline text-sm mr-1 self-center">Abrir</a>
-            <button class="change-logo text-xs px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded hover:bg-purple-100 font-medium" title="Trocar a imagem/favicon desta oferta">📷 Imagem</button>
-            <button class="edit text-xs px-2 py-1 border rounded hover:bg-gray-50">Editar</button>
-            <button class="duplicate text-xs px-2 py-1 border rounded hover:bg-gray-50">Copiar</button>
-            <button class="toggle-active text-xs px-2 py-1 border rounded hover:bg-gray-50">${!p.ativo ? 'Ativar' : 'Desativar'}</button>
-            <button class="delete text-xs px-2 py-1 border rounded text-red-600 hover:bg-red-50">Excluir</button>
-          </div>
-        </div>
-      </div>`;
+    // =========================================================================
+    // ABERTURA DO MODAL (OFERTA OU ANÚNCIO ADSENSE)
+    // =========================================================================
+    window.setModalItemMode = (mode) => {
+      currentModalMode = mode;
+      const isAd = mode === 'ad';
+      $('adFieldsBox').classList.toggle('hidden', !isAd);
+      $('modeOfferBtn').className = !isAd
+        ? 'px-3 py-1 rounded-lg bg-emerald-600 text-white transition'
+        : 'px-3 py-1 rounded-lg text-slate-300 hover:text-white transition';
+      $('modeAdBtn').className = isAd
+        ? 'px-3 py-1 rounded-lg bg-amber-500 text-white transition'
+        : 'px-3 py-1 rounded-lg text-slate-300 hover:text-white transition';
     };
 
-    const openModal = (p = {}) => {
-      $('modalTitle').textContent = p._uid ? 'Editar Produto' : 'Novo Produto';
+    const openModal = (p = {}, forceMode = null) => {
+      const isAd = forceMode ? (forceMode === 'ad') : isAdItem(p);
+      setModalItemMode(isAd ? 'ad' : 'offer');
+
+      $('modalTitle').textContent = p._uid
+        ? (isAd ? 'Editar Bloco AdSense' : `Editar: ${p.titulo || 'Oferta'}`)
+        : (isAd ? 'Novo Bloco AdSense' : 'Nova Oferta Financeira');
+
       $('uid').value = p._uid || '';
-      ['titulo', 'tag', 'tagClass', 'logo', 'link', 'btnPrimario', 'btnSecundario', 'priority_order']
-        .forEach(k => $(k).value = p[k] ?? '');
-      $('modalLogoPreview').src = p.logo ? fixLogo(p.logo) : 'https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';
-      $('tipo').value = editCsv(p.tipo);
-      $('perfis').value = editCsv(p.perfis);
-      renderPerfisChips($('perfis').value);
-      $('vantagens').value = displayLines(p.vantagens);
+      $('titulo').value = p.titulo ?? (isAd ? 'Anúncio Patrocinado' : '');
+      $('tag').value = p.tag ?? (isAd ? 'ca-pub-4935884639623224' : 'Top¹ - Empréstimo');
+      selectTagColor(p.tagClass || 'yellow');
+
+      originalModalLogo = p.logo || '';
+      $('logo').value = p.logo ?? '';
+      updateThumbComparisonUI(p.logo || '');
+
+      $('link').value = p.link ?? '';
+      $('btnPrimario').value = p.btnPrimario ?? 'Receber Agora';
+      $('btnSecundario').value = p.btnSecundario ?? 'Simular Parcelas';
+      $('priority_order').value = p.priority_order ?? items.length;
       $('ativo').checked = p._uid ? Boolean(p.ativo) : true;
+
+      if (isAd) {
+        $('adClientInput').value = (p.tag && p.tag.includes('ca-pub')) ? p.tag : 'ca-pub-4935884639623224';
+        $('adSlotInput').value = p.slot || p.link || '';
+        $('adLayoutInput').value = p.tagClass || '';
+      }
+
+      selectedCategoriesSet = new Set(csvToArr(editCsv(p.tipo)).map(s => s.toLowerCase()).filter(s => s !== 'anuncio'));
+      if (!p._uid && !isAd && selectedCategoriesSet.size === 0) {
+        selectedCategoriesSet.add('emprestimo');
+      }
+
+      selectedProfilesSet = new Set(csvToArr(editCsv(p.perfis)).map(s => s.toLowerCase()));
+
+      setVisualEditorFromLines(p.vantagens);
+      renderTaxonomyChipsUI();
+
       document.body.style.overflow = 'hidden';
       modal.classList.remove('hidden');
     };
@@ -441,13 +1116,14 @@
     };
 
     $('close').onclick = closeModal;
-    $('add').onclick = () => openModal({});
+    $('closeTop').onclick = closeModal;
+    $('addOfferBtn').onclick = () => openModal({}, 'offer');
+    $('addAdBtn').onclick = () => openModal({}, 'ad');
 
     $('logo').addEventListener('input', (e) => {
-      $('modalLogoPreview').src = e.target.value ? fixLogo(e.target.value) : 'https://placehold.co/64x40/e2e8f0/4a5568?text=Logo';
+      updateThumbComparisonUI(e.target.value);
     });
 
-    // Upload de imagem dentro do Modal
     $('modalUploadLogoBtn').onclick = () => $('modalLogoFile').click();
     $('modalLogoFile').onchange = async (e) => {
       const file = e.target.files[0];
@@ -455,7 +1131,7 @@
       try {
         const dataUrl = await fileToOptimizedDataUrl(file);
         $('logo').value = dataUrl;
-        $('modalLogoPreview').src = dataUrl;
+        updateThumbComparisonUI(dataUrl);
       } catch (err) {
         alert('Erro ao carregar imagem: ' + err.message);
       } finally {
@@ -463,83 +1139,273 @@
       }
     };
 
-    document.querySelectorAll('[data-chip="perfil"]').forEach(cb => {
-      cb.addEventListener('change', syncPerfisFromChips);
-    });
+    // =========================================================================
+    // RENDERIZAÇÃO DOS CARDS NO PAINEL ADMIN
+    // =========================================================================
+    function sourceBadgeHTML(p) {
+      if (p._source === 'both') return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">D1 + Supabase</span>`;
+      if (p._source === 'd1') return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">Cloudflare D1</span>`;
+      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Supabase</span>`;
+    }
 
-    $('perfis').addEventListener('input', (e) => renderPerfisChips(e.target.value));
+    const cardHTML = (p) => {
+      const isAd = isAdItem(p);
+      const displayId = p._supa_id ?? p._d1_id ?? p.id;
+      const cats = csvToArr(editCsv(p.tipo)).filter(c => c !== 'anuncio');
+      const profs = csvToArr(editCsv(p.perfis));
 
-    // Função auxiliar que atualiza uma oferta onde ela existir (D1, Supabase ou ambos)
-    async function updateOfferEverywhere(item, updatedFields) {
-      const payload = {
-        titulo: updatedFields.titulo ?? item.titulo ?? '',
-        tag: updatedFields.tag ?? item.tag ?? '',
-        tagClass: updatedFields.tagClass !== undefined ? updatedFields.tagClass : (item.tagClass || null),
-        logo: updatedFields.logo ?? item.logo ?? '',
-        link: updatedFields.link ?? item.link ?? '',
-        btnPrimario: updatedFields.btnPrimario ?? item.btnPrimario ?? 'Acessar',
-        btnSecundario: updatedFields.btnSecundario ?? item.btnSecundario ?? 'Detalhes',
-        vantagens: updatedFields.vantagens !== undefined ? updatedFields.vantagens : displayLines(item.vantagens),
-        tipo: updatedFields.tipo !== undefined ? updatedFields.tipo : editCsv(item.tipo),
-        perfis: updatedFields.perfis !== undefined ? updatedFields.perfis : editCsv(item.perfis),
-        ativo: updatedFields.ativo !== undefined ? updatedFields.ativo : item.ativo,
-        priority_order: updatedFields.priority_order !== undefined ? Number(updatedFields.priority_order) : Number(item.priority_order) || 0
-      };
+      const catBadges = cats.map(c => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">${c}</span>`).join('');
+      const profBadges = profs.map(pr => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">${pr}</span>`).join('');
 
+      return `
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between gap-3 ${!p.ativo ? 'opacity-60 bg-gray-50' : ''}" data-uid="${p._uid}">
+        <div class="flex gap-3 items-start">
+          <div class="cursor-move select-none px-2 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-lg text-xs font-bold" title="Arraste para mudar a ordem">⇅</div>
+
+          <!-- Thumbnail clicável -->
+          <div class="change-logo cursor-pointer group relative shrink-0" title="Clique para substituir a imagem desta oferta">
+            <img src="${fixLogo(p.logo)}" class="w-16 h-12 object-contain border border-gray-200 rounded-xl p-1 bg-gray-50 group-hover:opacity-75 transition"
+                 onerror="this.onerror=null;this.src='https://placehold.co/64x40/e2e8f0/4a5568?text=${isAd ? 'AdSense' : 'Logo'}';">
+            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold bg-black/60 text-white opacity-0 group-hover:opacity-100 rounded-xl transition">Trocar</span>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1 flex-wrap mb-1">
+              <span class="text-[10px] font-bold text-gray-400">ID #${displayId} • Pos #${p.priority_order}</span>
+              <div class="flex items-center gap-1">
+                ${sourceBadgeHTML(p)}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${!p.ativo ? 'bg-gray-200 text-gray-600' : 'bg-emerald-100 text-emerald-800'}">
+                  ${!p.ativo ? 'Oculto' : 'Ativo'}
+                </span>
+              </div>
+            </div>
+
+            <h4 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">${p.titulo || (isAd ? 'Bloco Google AdSense' : 'Sem título')}</h4>
+
+            ${isAd
+              ? `<p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded mt-1 inline-block font-mono">Slot: ${p.slot || p.link || 'Auto'}</p>`
+              : `<div class="flex flex-wrap gap-1 mt-1.5">${catBadges}${profBadges}</div>`
+            }
+          </div>
+        </div>
+
+        <!-- Botões de Ação do Card -->
+        <div class="pt-2.5 border-t border-gray-100 flex flex-wrap items-center justify-between gap-1.5">
+          <div class="flex flex-wrap gap-1.5">
+            <button class="edit text-xs font-bold px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition">
+              <i class="fas fa-pen mr-1"></i> Editar
+            </button>
+            <button class="change-logo text-xs font-semibold px-2.5 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition" title="Substituir imagem vendo a antiga antes">
+              📷 Thumb
+            </button>
+            <button class="duplicate text-xs font-semibold px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">
+              Copiar
+            </button>
+            <button class="toggle-active text-xs font-semibold px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">
+              ${!p.ativo ? 'Ativar' : 'Ocultar'}
+            </button>
+          </div>
+          <button class="delete text-xs font-bold px-2.5 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>`;
+    };
+
+    // =========================================================================
+    // SINCRONIZAÇÃO TOTAL (CLOUDFLARE D1 + SUPABASE)
+    // =========================================================================
+    async function saveOrUpdateEverywhere(existingItem, payload) {
+      let d1Saved = false;
+      let supaSaved = false;
       const errors = [];
 
-      // Se existe no D1, atualiza no D1
-      if (item._d1_id) {
-        try {
-          const res = await fetch(`/api/products/${item._d1_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) errors.push('D1: ' + (await res.text()));
-        } catch (err) {
-          errors.push('D1: ' + err.message);
-        }
+      // 1) Atualiza ou cria no Cloudflare D1 (/api/products)
+      try {
+        const d1Id = existingItem?._d1_id;
+        const endpoint = d1Id ? `/api/products/${d1Id}` : '/api/products';
+        const method = d1Id ? 'PUT' : 'POST';
+
+        const res = await fetch(endpoint, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) d1Saved = true;
+        else errors.push('D1: ' + (await res.text()));
+      } catch (err) {
+        errors.push('D1: ' + err.message);
       }
 
-      // Se existe no Supabase, atualiza no Supabase
-      if (item._supa_id) {
-        try {
+      // 2) Atualiza ou cria no Supabase (para que páginas que leem Supabase também recebam na hora)
+      try {
+        if (existingItem?._supa_id) {
           const { error } = await _supabase
             .from('products')
             .update(payload)
-            .eq('id', item._supa_id);
-          if (error) errors.push('Supabase: ' + error.message);
-        } catch (err) {
-          errors.push('Supabase: ' + err.message);
+            .eq('id', existingItem._supa_id);
+          if (!error) supaSaved = true;
+          else errors.push('Supabase: ' + error.message);
+        } else {
+          const { error } = await _supabase
+            .from('products')
+            .insert(payload);
+          if (!error) supaSaved = true;
         }
+      } catch (err) {
+        errors.push('Supabase: ' + err.message);
       }
 
-      if (errors.length && (!item._d1_id || !item._supa_id || errors.length === 2)) {
-        throw new Error(errors.join(' | '));
+      if (!d1Saved && !supaSaved) {
+        throw new Error(errors.join(' | ') || 'Falha ao salvar nas bases de dados');
       }
     }
 
     // =========================================================================
-    // 1. LOAD HÍBRIDO (D1 + SUPABASE) EXATAMENTE COMO SOLICITADO
+    // CARREGAMENTO HÍBRIDO E FILTRAGEM NO ADMIN
     // =========================================================================
+    function renderFilteredAdminCards() {
+      const query = ($('adminSearch')?.value || '').toLowerCase().trim();
+
+      const filtered = items.filter(p => {
+        const isAd = isAdItem(p);
+        if (currentAdminFilter === 'offers' && isAd) return false;
+        if (currentAdminFilter === 'ads' && !isAd) return false;
+        if (currentAdminFilter === 'inactive' && p.ativo) return false;
+
+        if (!query) return true;
+        const hay = `${p.titulo || ''} ${p.tag || ''} ${editCsv(p.tipo)} ${editCsv(p.perfis)}`.toLowerCase();
+        return hay.includes(query);
+      });
+
+      listEl.innerHTML = filtered.map(cardHTML).join('');
+      bindCardEvents();
+    }
+
+    function bindCardEvents() {
+      // Trocar Thumb com Modal Comparativo (Antiga vs Nova)
+      listEl.querySelectorAll('.change-logo').forEach(btn => {
+        btn.onclick = (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (!p) return;
+          currentCardForLogo = p;
+          $('cardLogoInput').click();
+        };
+      });
+
+      // Editar
+      listEl.querySelectorAll('.edit').forEach(btn => {
+        btn.onclick = (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (p) openModal(p);
+        };
+      });
+
+      // Ativar / Ocultar
+      listEl.querySelectorAll('.toggle-active').forEach(btn => {
+        btn.onclick = async (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (!p) return;
+
+          try {
+            statusEl.textContent = `Alterando visibilidade de "${p.titulo}"...`;
+            await saveOrUpdateEverywhere(p, {
+              titulo: p.titulo || '',
+              tag: p.tag || '',
+              tagClass: p.tagClass || 'yellow',
+              logo: p.logo || '',
+              link: p.link || '',
+              btnPrimario: p.btnPrimario || 'Receber Agora',
+              btnSecundario: p.btnSecundario || 'Detalhes',
+              vantagens: displayLines(p.vantagens),
+              tipo: editCsv(p.tipo),
+              perfis: editCsv(p.perfis),
+              ativo: !p.ativo,
+              priority_order: Number(p.priority_order) || 0
+            });
+            await load();
+          } catch (err) {
+            alert('Erro ao alterar status: ' + err.message);
+          }
+        };
+      });
+
+      // Excluir
+      listEl.querySelectorAll('.delete').forEach(btn => {
+        btn.onclick = async (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const p = items.find(x => x._uid === uid);
+          if (!p || !confirm(`Excluir permanentemente "${p.titulo || 'este item'}"?`)) return;
+
+          try {
+            statusEl.textContent = `Excluindo "${p.titulo}"...`;
+            if (p._d1_id) {
+              await fetch(`/api/products/${p._d1_id}`, { method: 'DELETE' }).catch(() => {});
+            }
+            if (p._supa_id) {
+              await _supabase.from('products').delete().eq('id', p._supa_id);
+            }
+            await load();
+          } catch (err) {
+            alert('Erro ao excluir: ' + err.message);
+          }
+        };
+      });
+
+      // Duplicar
+      listEl.querySelectorAll('.duplicate').forEach(btn => {
+        btn.onclick = async (e) => {
+          const uid = e.target.closest('[data-uid]').dataset.uid;
+          const src = items.find(x => x._uid === uid);
+          if (!src) return;
+
+          const nextPriority = items.reduce((m, p) => Math.max(m, Number(p.priority_order) || 0), -1) + 1;
+          const payload = {
+            titulo: (src.titulo || 'Sem título') + ' (Cópia)',
+            tag: src.tag || '',
+            tagClass: src.tagClass || 'yellow',
+            logo: src.logo || '',
+            link: src.link || '',
+            btnPrimario: src.btnPrimario || 'Receber Agora',
+            btnSecundario: src.btnSecundario || 'Detalhes',
+            vantagens: displayLines(src.vantagens),
+            tipo: editCsv(src.tipo),
+            perfis: editCsv(src.perfis),
+            ativo: src.ativo,
+            priority_order: nextPriority
+          };
+
+          statusEl.textContent = 'Duplicando produto...';
+          try {
+            await saveOrUpdateEverywhere(null, payload);
+            await load();
+          } catch (err) {
+            alert('Erro ao duplicar: ' + err.message);
+          }
+        };
+      });
+    }
+
     const load = async () => {
-      statusEl.textContent = 'Carregando produtos da Cloudflare (D1) e Supabase...';
+      statusEl.textContent = 'Sincronizando ofertas da Cloudflare (D1) e Supabase...';
       let d1Products = [];
       let supabaseProducts = [];
 
-      // 1) Busca no D1 (Cloudflare)
+      // 1) Cloudflare D1
       try {
-        const res = await fetch('/api/products?all=true');
+        const res = await fetch(`/api/products?all=true&t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) d1Products = data.map(p => normalizeProduct(p, 'd1'));
         }
       } catch (e) {
-        console.warn('D1 falhou:', e);
+        console.warn('D1 indisponível:', e);
       }
 
-      // 2) Busca no Supabase (com fallback direto caso a sessão bloqueie RLS)
+      // 2) Supabase
       try {
         const { data, error } = await _supabase
           .from('products')
@@ -549,7 +1415,6 @@
         if (!error && Array.isArray(data) && data.length > 0) {
           supabaseProducts = data.map(p => normalizeProduct(p, 'supabase'));
         } else {
-          // Fallback REST direto usando a chave pública (igual ao index.html)
           const restRes = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=priority_order.asc`, {
             headers: {
               'apikey': SUPABASE_ANON_KEY,
@@ -564,16 +1429,15 @@
           }
         }
       } catch (e) {
-        console.warn('Supabase falhou:', e);
+        console.warn('Supabase indisponível:', e);
       }
 
-      // 3) Junta os dois (D1 + Supabase) sem perder anúncios nem duplicar ofertas iguais
+      // 3) Mescla priorizando dados recentes da D1 e vinculando _supa_id
       const byKey = new Map();
       items = [];
 
       for (const p of [...d1Products, ...supabaseProducts]) {
         const titleClean = (p.titulo || '').toLowerCase().trim();
-        // Se for bloco AdSense ou sem título, usa uma chave única para não descartar
         const key = (titleClean && !isAdItem(p))
           ? `title:${titleClean}`
           : `unique:${p._source}_${p.id}_${p.link || ''}`;
@@ -582,7 +1446,6 @@
           byKey.set(key, p);
           items.push(p);
         } else {
-          // Já existe com o mesmo título na outra base: vincula os IDs das duas bases!
           const existing = byKey.get(key);
           existing._source = 'both';
           if (p._d1_id) existing._d1_id = p._d1_id;
@@ -590,115 +1453,11 @@
         }
       }
 
-      // Ordena respeitando priority_order
       items.sort((a, b) => (Number(a.priority_order) || 0) - (Number(b.priority_order) || 0));
 
-      listEl.innerHTML = items.map(cardHTML).join('');
-      statusEl.textContent = `Total: ${items.length} produtos (${d1Products.length} na Cloudflare D1 • ${supabaseProducts.length} no Supabase)`;
-
-      // Listener: Trocar Imagem/Favicon individual direto no card
-      listEl.querySelectorAll('.change-logo').forEach(btn => {
-        btn.onclick = (e) => {
-          const uid = e.target.closest('[data-uid]').dataset.uid;
-          const p = items.find(x => x._uid === uid);
-          if (!p) return;
-          currentCardForLogo = p;
-          $('cardLogoInput').click();
-        };
-      });
-
-      // Listener: Editar
-      listEl.querySelectorAll('.edit').forEach(btn => {
-        btn.onclick = (e) => {
-          const uid = e.target.closest('[data-uid]').dataset.uid;
-          const p = items.find(x => x._uid === uid);
-          if (p) openModal(p);
-        };
-      });
-
-      // Listener: Ativar / Desativar
-      listEl.querySelectorAll('.toggle-active').forEach(btn => {
-        btn.onclick = async (e) => {
-          const uid = e.target.closest('[data-uid]').dataset.uid;
-          const p = items.find(x => x._uid === uid);
-          if (!p) return;
-
-          try {
-            statusEl.textContent = `Alterando status de "${p.titulo}"...`;
-            await updateOfferEverywhere(p, { ativo: !p.ativo });
-            await load();
-          } catch (err) {
-            alert('Erro ao alterar status: ' + err.message);
-          }
-        };
-      });
-
-      // Listener: Excluir
-      listEl.querySelectorAll('.delete').forEach(btn => {
-        btn.onclick = async (e) => {
-          const uid = e.target.closest('[data-uid]').dataset.uid;
-          const p = items.find(x => x._uid === uid);
-          if (!p || !confirm(`Excluir "${p.titulo}"?`)) return;
-
-          try {
-            statusEl.textContent = `Excluindo "${p.titulo}"...`;
-            if (p._d1_id) {
-              await fetch(`/api/products/${p._d1_id}`, { method: 'DELETE' }).catch(() => {});
-            }
-            if (p._supa_id) {
-              const { error } = await _supabase.from('products').delete().eq('id', p._supa_id);
-              if (error) throw error;
-            }
-            await load();
-          } catch (err) {
-            alert('Erro ao excluir: ' + err.message);
-          }
-        };
-      });
-
-      // Listener: Copiar (Duplicar)
-      listEl.querySelectorAll('.duplicate').forEach(btn => {
-        btn.onclick = async (e) => {
-          const uid = e.target.closest('[data-uid]').dataset.uid;
-          const src = items.find(x => x._uid === uid);
-          if (!src) return;
-
-          const nextPriority = items.reduce((m, p) => Math.max(m, Number(p.priority_order) || 0), -1) + 1;
-          const payload = {
-            titulo: (src.titulo || 'Sem título') + ' (cópia)',
-            tag: src.tag || '',
-            tagClass: src.tagClass || null,
-            logo: src.logo || '',
-            link: src.link || '',
-            btnPrimario: src.btnPrimario || 'Acessar',
-            btnSecundario: src.btnSecundario || 'Detalhes',
-            vantagens: displayLines(src.vantagens),
-            tipo: editCsv(src.tipo),
-            perfis: editCsv(src.perfis),
-            ativo: src.ativo,
-            priority_order: nextPriority
-          };
-
-          statusEl.textContent = 'Copiando...';
-          try {
-            if (src._supa_id) {
-              const { error } = await _supabase.from('products').insert(payload).select();
-              if (error) throw error;
-            }
-            if (src._d1_id) {
-              await fetch('/api/products', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              }).catch(() => {});
-            }
-            statusEl.textContent = 'Produto copiado!';
-            await load();
-          } catch (err) {
-            statusEl.textContent = 'Erro ao copiar: ' + err.message;
-          }
-        };
-      });
+      absorbExistingTagsFromProducts(items);
+      renderFilteredAdminCards();
+      statusEl.textContent = `Total: ${items.length} itens sincronizados (${d1Products.length} na Cloudflare D1 • ${supabaseProducts.length} no Supabase)`;
 
       if (!sortableInstance) {
         sortableInstance = new Sortable(listEl, {
@@ -711,95 +1470,144 @@
       fillPicker();
     };
 
-    // Handler para o upload de imagem individual clicando direto no Card da oferta
+    // Busca e filtros rápidos do Admin
+    $('adminSearch')?.addEventListener('input', renderFilteredAdminCards);
+    document.querySelectorAll('[data-admin-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentAdminFilter = btn.getAttribute('data-admin-filter');
+        document.querySelectorAll('[data-admin-filter]').forEach(b => {
+          const active = b.getAttribute('data-admin-filter') === currentAdminFilter;
+          b.className = active
+            ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white'
+            : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200';
+        });
+        renderFilteredAdminCards();
+      });
+    });
+
+    // =========================================================================
+    // TROCA RÁPIDA DE THUMB PELO CARD (EXIBE MODAL COM THUMB ANTIGA ANTES)
+    // =========================================================================
     $('cardLogoInput').onchange = async (e) => {
       const file = e.target.files[0];
-      const targetOffer = currentCardForLogo;
       e.target.value = '';
-      if (!file || !targetOffer) return;
+      if (!file || !currentCardForLogo) return;
 
       try {
-        statusEl.textContent = `Atualizando imagem de "${targetOffer.titulo}"...`;
-        const dataUrl = await fileToOptimizedDataUrl(file);
-        await updateOfferEverywhere(targetOffer, { logo: dataUrl });
-        statusEl.textContent = `Imagem de "${targetOffer.titulo}" atualizada com sucesso!`;
-        await load();
+        pendingQuickNewLogo = await fileToOptimizedDataUrl(file);
+        $('quickThumbTitle').textContent = `Oferta: ${currentCardForLogo.titulo || 'Selecionada'}`;
+        $('quickOldThumbImg').src = fixLogo(currentCardForLogo.logo) || 'https://placehold.co/96x48/e2e8f0/4a5568?text=Sem+Logo';
+        $('quickNewThumbImg').src = pendingQuickNewLogo;
+        $('quickThumbModal').classList.remove('hidden');
       } catch (err) {
-        alert('Erro ao atualizar imagem da oferta: ' + err.message);
-        statusEl.textContent = 'Erro ao atualizar imagem.';
-      } finally {
-        currentCardForLogo = null;
+        alert('Erro ao ler imagem: ' + err.message);
       }
     };
 
-    // 2. Salvar Produto no Modal (Cria ou Edita em D1 e/ou Supabase)
+    window.closeQuickThumbModal = () => {
+      $('quickThumbModal').classList.add('hidden');
+      currentCardForLogo = null;
+      pendingQuickNewLogo = '';
+    };
+
+    $('confirmQuickThumbBtn').onclick = async () => {
+      if (!currentCardForLogo || !pendingQuickNewLogo) return;
+      const btn = $('confirmQuickThumbBtn');
+      btn.disabled = true;
+      btn.textContent = 'Substituindo...';
+
+      try {
+        await saveOrUpdateEverywhere(currentCardForLogo, {
+          titulo: currentCardForLogo.titulo || '',
+          tag: currentCardForLogo.tag || '',
+          tagClass: currentCardForLogo.tagClass || 'yellow',
+          logo: pendingQuickNewLogo,
+          link: currentCardForLogo.link || '',
+          btnPrimario: currentCardForLogo.btnPrimario || 'Receber Agora',
+          btnSecundario: currentCardForLogo.btnSecundario || 'Detalhes',
+          vantagens: displayLines(currentCardForLogo.vantagens),
+          tipo: editCsv(currentCardForLogo.tipo),
+          perfis: editCsv(currentCardForLogo.perfis),
+          ativo: currentCardForLogo.ativo,
+          priority_order: Number(currentCardForLogo.priority_order) || 0
+        });
+        closeQuickThumbModal();
+        await load();
+      } catch (err) {
+        alert('Erro ao substituir thumb: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirmar e Substituir';
+      }
+    };
+
+    // =========================================================================
+    // SALVAR PRODUTO OU ANÚNCIO NO MODAL PRINCIPAL
+    // =========================================================================
     $('save').onclick = async () => {
-  const btn = $('save');
-  const original = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = 'Salvando na Cloudflare...';
+      const btn = $('save');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Salvando...';
 
-  const payload = {
-    titulo: $('titulo').value.trim(),
-    tag: $('tag').value.trim(),
-    tagClass: $('tagClass').value.trim() || 'yellow',
-    logo: $('logo').value.trim(),
-    link: $('link').value.trim(),
-    btnPrimario: $('btnPrimario').value.trim() || 'Receber Agora',
-    btnSecundario: $('btnSecundario').value.trim() || 'Mais Info',
-    vantagens: normLines($('vantagens').value),
-    tipo: normCsv($('tipo').value),
-    perfis: normCsv(
-      ($('perfis') && $('perfis').value) ||
-      Array.from(document.querySelectorAll('[data-chip="perfil"]:checked'))
-        .map(cb => cb.value).join(',')
-    ),
-    ativo: $('ativo').checked,
-    priority_order: Number($('priority_order').value) || 0
-  };
+      syncVisualEditorToTextarea();
 
-  const uid = $('uid').value;
-  const existing = items.find(x => x._uid === uid);
+      const isAd = currentModalMode === 'ad';
+      const payload = isAd
+        ? {
+            titulo: $('titulo').value.trim() || 'Anúncio AdSense',
+            tag: $('adClientInput').value.trim() || 'ca-pub-4935884639623224',
+            tagClass: $('adLayoutInput').value.trim() || '',
+            logo: $('logo').value.trim(),
+            link: $('adSlotInput').value.trim(),
+            btnPrimario: 'Anúncio',
+            btnSecundario: $('adLayoutInput').value.trim() || '',
+            vantagens: '',
+            tipo: 'anuncio',
+            perfis: '',
+            ativo: $('ativo').checked,
+            priority_order: Number($('priority_order').value) || 0
+          }
+        : {
+            titulo: $('titulo').value.trim(),
+            tag: $('tag').value.trim(),
+            tagClass: $('tagClass').value.trim() || 'yellow',
+            logo: $('logo').value.trim(),
+            link: $('link').value.trim(),
+            btnPrimario: $('btnPrimario').value.trim() || 'Receber Agora',
+            btnSecundario: $('btnSecundario').value.trim() || 'Detalhes',
+            vantagens: normLines(htmlTextarea.value),
+            tipo: normCsv($('tipo').value),
+            perfis: normCsv($('perfis').value),
+            ativo: $('ativo').checked,
+            priority_order: Number($('priority_order').value) || 0
+          };
 
-  try {
-    let endpoint = '/api/products';
-    let method = 'POST';
+      const uid = $('uid').value;
+      const existing = items.find(x => x._uid === uid);
 
-    // Se já existe e tem ID na Cloudflare (D1), atualiza lá. Se não, cria na Cloudflare.
-    if (uid && existing && existing._d1_id) {
-      endpoint = `/api/products/${existing._d1_id}`;
-      method = 'PUT';
-    } else if (uid && existing && existing._supa_id) {
-      // Caso estivesse apenas no Supabase, criamos na Cloudflare para migrar para lá
-      method = 'POST';
-    }
+      try {
+        await saveOrUpdateEverywhere(existing, payload);
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i> Salvo com Sucesso!';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          closeModal();
+          load();
+        }, 450);
+      } catch (err) {
+        alert('Erro ao salvar: ' + err.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    };
 
-    const res = await fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) throw new Error(await res.text());
-
-    btn.innerHTML = 'Salvo na Cloudflare!';
-    setTimeout(() => {
-      btn.innerHTML = original;
-      btn.disabled = false;
-      closeModal();
-      load();
-    }, 600);
-  } catch (err) {
-    alert('Erro ao salvar na Cloudflare: ' + err.message);
-    btn.innerHTML = original;
-    btn.disabled = false;
-  }
-};
-
-    // 3. Salvar Ordem (Atualiza no Supabase e no D1)
+    // =========================================================================
+    // SALVAR ORDEM (DRAG & DROP)
+    // =========================================================================
     $('saveOrder').onclick = async () => {
       const uids = Array.from(listEl.children).map(el => el.dataset.uid);
-      statusEl.textContent = 'Salvando ordem...';
+      statusEl.textContent = 'Salvando nova ordem na Cloudflare D1 e Supabase...';
 
       try {
         const supaUpdates = [];
@@ -823,32 +1631,32 @@
         });
 
         if (supaUpdates.length) {
-          const { error } = await _supabase.from('products').upsert(supaUpdates, { onConflict: 'id' });
-          if (error) throw error;
+          await _supabase.from('products').upsert(supaUpdates, { onConflict: 'id' });
         }
         if (d1Promises.length) {
           await Promise.all(d1Promises);
         }
 
-        statusEl.textContent = 'Ordem salva!';
+        statusEl.textContent = 'Ordem salva e sincronizada!';
         await load();
       } catch (err) {
-        statusEl.textContent = 'Erro ao salvar: ' + (err?.message || err);
+        statusEl.textContent = 'Erro ao salvar ordem: ' + (err?.message || err);
       }
     };
 
-    // 4. Upload da Favicon geral do site
+    // =========================================================================
+    // FAVICON E AUTENTICAÇÃO
+    // =========================================================================
     $('uploadFavicon').onclick = () => $('faviconInput').click();
-
     $('faviconInput').onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const form = new FormData();
       form.append('file', file);
-      statusEl.textContent = 'A enviar favicon do site...';
+      statusEl.textContent = 'Enviando favicon do site...';
       try {
         const res = await fetch('/api/favicon', { method: 'POST', body: form });
-        statusEl.textContent = res.ok ? 'Favicon do site atualizada!' : 'Erro no upload';
+        statusEl.textContent = res.ok ? 'Favicon atualizado!' : 'Erro no upload do favicon';
         if (res.ok && $('pageFavicon')) {
           $('pageFavicon').href = `/api/favicon?t=${Date.now()}`;
         }
@@ -859,7 +1667,6 @@
       }
     };
 
-    // 5. Login e Sessão
     $('logout').onclick = async () => {
       await _supabase.auth.signOut();
       app.classList.add('hidden');
@@ -892,13 +1699,14 @@
       }
     })();
 
-    // 6. Regras de Resultados
+    // =========================================================================
+    // REGRAS DE RESULTADOS POR PERFIL
+    // =========================================================================
     const rulesModal = $('rulesModal');
     const rulesPerfil = $('rulesPerfil');
     const idsA = $('idsA'), idsB = $('idsB'), pesoA = $('pesoA'), limiteNeg = $('limiteNeg');
     const idsOutros = $('idsOutros'), limiteOutros = $('limiteOutros');
     const pickerProduto = $('pickerProduto'), addTarget = $('addTarget');
-    const openRulesBtn = $('openRules'), rulesClose = $('rulesClose'), rulesSave = $('rulesSave');
 
     function show(el) { el.classList.remove('hidden'); }
     function hide(el) { el.classList.add('hidden'); }
@@ -960,17 +1768,19 @@
       renderRulesPreview();
     };
 
-    openRulesBtn.onclick = async () => {
+    $('openRules').onclick = async () => {
       await loadRulesUI();
       renderRulesPreview();
       document.body.style.overflow = 'hidden';
       show(rulesModal);
     };
 
-    rulesClose.onclick = () => {
+    const closeRules = () => {
       hide(rulesModal);
       document.body.style.overflow = '';
     };
+    $('rulesClose').onclick = closeRules;
+    $('rulesCloseTop').onclick = closeRules;
 
     async function loadRulesUI() {
       toggleRulesBlocks();
@@ -980,10 +1790,7 @@
       pesoA.value = 70;
 
       const { data, error } = await _supabase.from('rules').select('*').eq('is_active', true);
-      if (error) {
-        alert('Erro ao carregar regras: ' + error.message);
-        return;
-      }
+      if (error) return;
 
       const by = (perfil, variant = null) => data?.find(r => r.perfil === perfil && r.variant === variant);
 
@@ -1009,7 +1816,7 @@
       renderRulesPreview();
     }
 
-    rulesSave.onclick = async () => {
+    $('rulesSave').onclick = async () => {
       const perfil = rulesPerfil.value;
       const payloads = [];
 
@@ -1044,27 +1851,19 @@
       const ins = await _supabase.from('rules').insert(payloads).select();
       if (ins.error) { alert('Erro ao salvar: ' + ins.error.message); return; }
 
-      alert('Regras salvas!');
-      await loadRulesUI();
-      renderRulesPreview();
-      hide(rulesModal);
-      document.body.style.overflow = '';
+      alert('Regras salvas com sucesso!');
+      closeRules();
     };
 
     function renderRulesPreview() {
       const pf = rulesPerfil.value;
-
       const mk = (idsCsv, listName) => {
         const ids = arrCsv(idsCsv);
         if (!ids.length) return '<p class="text-xs text-gray-500">Sem IDs.</p>';
         return ids.map(id => {
           const found = !!productById(id);
           const cls = 'badge' + (found ? '' : ' badge-miss');
-          return `
-            <span class="${cls}" data-id="${id}" data-list="${listName || ''}">
-              ${labelFor(id)} <span class="x" title="remover">×</span>
-            </span>
-          `;
+          return `<span class="${cls}" data-id="${id}" data-list="${listName || ''}">${labelFor(id)} <span class="x" title="remover">×</span></span>`;
         }).join('');
       };
 
@@ -1085,11 +1884,9 @@
 
       if (rulesPerfil.value === 'negativado') {
         const input = (list === 'B') ? idsB : idsA;
-        const arr = arrCsv(input.value).filter(v => v !== id);
-        input.value = csvJoin(arr);
+        input.value = csvJoin(arrCsv(input.value).filter(v => v !== id));
       } else {
-        const arr = arrCsv(idsOutros.value).filter(v => v !== id);
-        idsOutros.value = csvJoin(arr);
+        idsOutros.value = csvJoin(arrCsv(idsOutros.value).filter(v => v !== id));
       }
       renderRulesPreview();
     });
@@ -1101,8 +1898,6 @@
         if (!isNaN(n) && n > 0) {
           const byId = productById(n);
           if (byId) return String(getRealId(byId));
-          const idx = n - 1;
-          if (idx >= 0 && idx < items.length) return String(getRealId(items[idx]));
         }
         return String(tok);
       }));
@@ -1119,30 +1914,9 @@
       return `#${id} — ${p ? p.titulo : 'não encontrado'}`;
     }
 
-    function formatVantagem(openTag, closeTag) {
-  const textarea = document.getElementById('vantagens');
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const selected = textarea.value.substring(start, end);
-  const before = textarea.value.substring(0, start);
-  const after = textarea.value.substring(end);
 
-  textarea.value = before + openTag + selected + closeTag + after;
-
-  const newPos = start + openTag.length + selected.length + closeTag.length;
-  textarea.focus();
-  textarea.setSelectionRange(newPos, newPos);
-}
-
-// Sincroniza o select de preset com o campo de tag
-document.getElementById('tagPreset').addEventListener('change', function() {
-  const tagInput = document.getElementById('tag');
-  if (this.value) {
-    tagInput.value = this.value;
-  }
-});
   </script>
-</body>
 
+</body>
 
 </html>

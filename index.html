@@ -1919,6 +1919,56 @@
 
             showPage('page-home');
         });
+
+        // Auto-Sincronizador de Categorias (tipo) e Perfis (perfis) criados no Admin
+function syncDynamicAdminFilters(products) {
+    const typeContainer = document.querySelector('input[name="product_type"]')?.closest('.space-y-2.5, .space-y-2');
+    const perfilContainer = document.querySelector('input[data-filter="perfil"]')?.closest('.space-y-2.5, .space-y-2');
+    if (!typeContainer || !perfilContainer) return;
+
+    const existingTypes = new Set(
+        Array.from(document.querySelectorAll('input[name="product_type"]')).map(el => el.value.toLowerCase())
+    );
+    const existingPerfis = new Set(
+        Array.from(document.querySelectorAll('input[data-filter="perfil"]')).map(el => el.value.toLowerCase())
+    );
+
+    const formatTagLabel = (slug) => slug.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    products.forEach(p => {
+        if (isAdItem(p)) return;
+
+        // 1. Adiciona novas Categorias (tipo) que não existiam no HTML
+        toArray(p.tipo, true).forEach(t => {
+            if (t && t !== 'all' && t !== 'anuncio' && !existingTypes.has(t)) {
+                existingTypes.add(t);
+                const lbl = document.createElement('label');
+                lbl.className = 'flex items-center cursor-pointer';
+                lbl.innerHTML = `
+                    <input type="radio" name="product_type" value="${t}" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                    <span class="ml-2.5 text-gray-700 font-medium">${formatTagLabel(t)}</span>
+                `;
+                lbl.querySelector('input').addEventListener('change', apply);
+                typeContainer.appendChild(lbl);
+            }
+        });
+
+        // 2. Adiciona novos Perfis (perfis) que não existiam no HTML
+        toArray(p.perfis, true).forEach(pf => {
+            if (pf && !existingPerfis.has(pf)) {
+                existingPerfis.add(pf);
+                const lbl = document.createElement('label');
+                lbl.className = 'flex items-center cursor-pointer';
+                lbl.innerHTML = `
+                    <input type="checkbox" data-filter="perfil" value="${pf}" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    <span class="ml-2.5 text-gray-700 font-medium">${formatTagLabel(pf)}</span>
+                `;
+                lbl.querySelector('input').addEventListener('change', apply);
+                perfilContainer.appendChild(lbl);
+            }
+        });
+    });
+}
     </script>
 
 </body>
