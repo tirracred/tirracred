@@ -1993,7 +1993,7 @@
                     if (!perfisSelNorm.length) return true;
                     const pPerfis = toArray(p?.perfis, true).map(normalizeSlug);
                     const rawTxtNorm = normalizeSlug(String(p?.perfis || '') + ' ' + String(p?.tipo || ''));
-                    // União (some): quanto mais perfis selecionados, mais ofertas e páginas aparecem!
+                    //dd União (some): quanto mais perfis selecionados, mais ofertas e páginas aparecem!
                     return perfisSelNorm.some(sel => pPerfis.includes(sel) || rawTxtNorm.includes(sel));
                 };
 
