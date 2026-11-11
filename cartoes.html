@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <link rel="icon" type="image/png" href="public/favincon.png" onerror="this.href='../public/favincon.png'"/>
+    <link rel="preload" href="public/banner-1.png" as="image">
+    <link rel="preload" href="public/banner2.png" as="image">
+    <link rel="preload" href="public/banner3.png" as="image">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Cartões de Crédito e Radar de Score - TirraCred</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-emerald: #10b981;
+            --brand-dark: #064e3b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4;
+            overflow-x: hidden;
+        }
+
+        .font-mono-card {
+            font-family: 'Space Grotesk', monospace;
+            letter-spacing: 0.14em;
+        }
+
+        /* =====================================================================
+           SLIDERS CUSTOMIZADOS (LIMITE E SCORE)
+           ===================================================================== */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1fae5;
+            border-radius: 9999px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #10b981;
+            border: 3px solid #ffffff;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.14);
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1fae5;
+            border-radius: 9999px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+        }
+
+        /* Barra gradiente do Slider de Score (0 a 1000) */
+        input[type=range].score-range::-webkit-slider-runnable-track {
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 35%, #3b82f6 68%, #10b981 100%);
+            height: 9px;
+        }
+
+        /* =====================================================================
+           ANIMAÇÕES GERAIS E TRANSIÇÕES DE ETAPAS
+           ===================================================================== */
+        .fade-in { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes stageSlideIn {
+            0% { opacity: 0; transform: translateX(14px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes popScale {
+            0% { opacity: 0; transform: scale(0.88); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0px) rotate(-1deg); }
+            50% { transform: translateY(-7px) rotate(1deg); }
+        }
+
+        @keyframes holographicSweep {
+            0% { transform: translateX(-140%) skewX(-25deg); }
+            50%, 100% { transform: translateX(220%) skewX(-25deg); }
+        }
+
+        @keyframes radarPulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .page-btn-anim {
+            animation: popScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-float-card {
+            animation: floatCard 5s ease-in-out infinite;
+        }
+
+        .radar-pulse-badge {
+            animation: radarPulse 2s infinite;
+        }
+
+        .page-container {
+            display: none;
+        }
+        .page-container.active {
+            display: block;
+            animation: fadeIn 0.35s ease-in-out;
+        }
+
+        /* =====================================================================
+           SIMULADOR DE CARTÃO E SCORE COM TAMANHO 100% FIXO (PC E CELULAR)
+           Nunca altera a altura do banner ao trocar de etapa!
+           ===================================================================== */
+        .simulator-fixed-card {
+            height: 360px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sim-stage-hidden {
+            display: none !important;
+        }
+
+        .sim-stage-active {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+            animation: stageSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* =====================================================================
+           TRAVA DE PROPORÇÃO E ALTURA DO HERO BANNER (PC E CELULAR)
+           ===================================================================== */
+        .hero-bg-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            transition: opacity 0.75s ease-in-out;
+            will-change: opacity;
+            pointer-events: none;
+            transform: translateZ(0);
+        }
+
+        .hero-slides-stack {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: 1fr;
+            align-items: center;
+            width: 100%;
+            min-height: 112px;
+        }
+        @media (min-width: 1024px) {
+            .hero-slides-stack {
+                min-height: 175px;
+            }
+        }
+        .hero-slide-item {
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+            width: 100%;
+            transition: opacity 0.6s ease-in-out;
+            will-change: opacity;
+        }
+
+        /* =====================================================================
+           CARTÕES DE CRÉDITO 3D REALISTAS (COM CHIP EMV E EFEITO HOLOGRÁFICO)
+           ===================================================================== */
+        .credit-card-3d {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 1.586 / 1;
+            border-radius: 20px;
+            padding: 22px 24px;
+            color: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 22px 42px -12px rgba(6, 78, 59, 0.45), 0 4px 12px rgba(0,0,0,0.15);
+            transition: background 0.5s ease, transform 0.35s ease, box-shadow 0.35s ease;
+            user-select: none;
+        }
+        .credit-card-3d:hover {
+            transform: translateY(-4px) scale(1.015);
+        }
+        .credit-card-3d::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 55%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transform: translateX(-140%) skewX(-25deg);
+            animation: holographicSweep 6.5s infinite;
+            pointer-events: none;
+        }
+
+        /* Temas Dinâmicos do Cartão 3D conforme Score */
+        .card-theme-emerald {
+            background: linear-gradient(135deg, #059669 0%, #047857 52%, #064e3b 100%);
+            border: 1px solid rgba(110, 231, 183, 0.35);
+        }
+        .card-theme-gold {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%);
+            border: 1px solid rgba(253, 230, 138, 0.45);
+        }
+        .card-theme-platinum {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 55%, #0f172a 100%);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+        .card-theme-black {
+            background: linear-gradient(135deg, #18181b 0%, #09090b 60%, #1c1917 100%);
+            border: 1px solid rgba(212, 175, 55, 0.55);
+        }
+        .card-theme-purple {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 55%, #3b0764 100%);
+            border: 1px solid rgba(216, 180, 254, 0.4);
+        }
+
+        /* Chip Metálico EMV */
+        .emv-chip {
+            width: 44px;
+            height: 34px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #d97706 100%);
+            position: relative;
+            border: 1px solid rgba(120, 53, 15, 0.35);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
+        }
+        .emv-chip::before, .emv-chip::after {
+            content: "";
+            position: absolute;
+            border: 1px solid rgba(120, 53, 15, 0.28);
+        }
+        .emv-chip::before {
+            inset: 6px 0;
+            border-left: none;
+            border-right: none;
+        }
+        .emv-chip::after {
+            inset: 0 13px;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        /* Arco do Velocímetro de Score SVG */
+        .score-arc-progress {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
+        }
+
+        /* Carrossel de logos limpo */
+        .logo-carousel {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            height: 74px;
+            display: flex;
+            align-items: center;
+            -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        }
+        @media (min-width: 640px) {
+            .logo-carousel { height: 82px; }
+        }
+        .logo-carousel-track {
+            display: flex;
+            align-items: center;
+            width: calc(160px * 16);
+            animation: scrollLogos 36s linear infinite;
+        }
+        @media (min-width: 640px) {
+            .logo-carousel-track { width: calc(200px * 16); }
+        }
+        .logo-carousel-track:hover {
+            animation-play-state: paused;
+        }
+        .logo-carousel-item {
+            width: 160px;
+            height: 56px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+        }
+        @media (min-width: 640px) {
+            .logo-carousel-item {
+                width: 200px;
+                height: 62px;
+                padding: 0 24px;
+            }
+        }
+        .logo-carousel-item img {
+            max-height: 34px;
+            max-width: 118px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        @media (min-width: 640px) {
+            .logo-carousel-item img {
+                max-height: 40px;
+                max-width: 140px;
+            }
+        }
+        @keyframes scrollLogos {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* === AD CARDS & PRODUCT CARDS === */
+        #product-list .ad-card,
+        #results-grid .ad-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            padding: 0.875rem;
+        }
+        #product-list .ad-card-inner,
+        #results-grid .ad-card-inner {
+            display: block;
+            width: 100%;
+            min-height: 120px;
+        }
+        @media (min-width: 640px) {
+            #product-list .ad-card-inner,
+            #results-grid .ad-card-inner { min-height: 140px; }
+        }
+        #product-list .ad-badge,
+        #results-grid .ad-badge {
+            display: inline-block;
+            font-size: .75rem;
+            font-weight: 700;
+            margin-bottom: .75rem;
+            padding: .25rem .625rem;
+            border-radius: 9999px;
+            background: #F3F4F6;
+            color: #111827;
+        }
+
+        .product-card {
+            transition: all 0.25s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px -1px rgba(16, 185, 129, 0.28);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 14px -2px rgba(16, 185, 129, 0.35);
+        }
+        
+        .btn-secondary {
+            background: #f9fafb;
+            color: #374151;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            border: 1.5px solid #e5e7eb;
+            font-size: 0.875rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+        }
+        
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 22px -5px rgba(0, 0, 0, 0.08), 0 6px 8px -5px rgba(0, 0, 0, 0.03);
+        }
+
+        #product-list ins.adsbygoogle,
+        #results-grid ins.adsbygoogle {
+            display: block;
+            width: 100%;
+            min-height: 120px;
+        }
+        @media (min-width: 640px) {
+            #product-list ins.adsbygoogle,
+            #results-grid ins.adsbygoogle { min-height: 140px; }
+        }
+
+        .carousel-track {
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+        .dot {
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            width: 1.75rem;
+            border-radius: 9999px;
+        }
+    </style>
+
+    <!-- [ADSENSE LOADER ÚNICO | HEAD] -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+    <!-- ========================================================= -->
+    <!-- TOPO ESTÁTICO INTEGRADO (MESMO CABEÇALHO DO INDEX.HTML)   -->
+    <!-- ========================================================= -->
+    <div id="sticky-top-wrapper" class="sticky top-0 z-50">
+        <!-- Alerta Topo Estático (Zero Pulo de Linha) -->
+        <div id="top-alert" class="bg-yellow-400 text-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-yellow-950 border-b border-yellow-500/20">
+            Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de cartões ou produtos financeiros.
+        </div>
+
+        <!-- Header -->
+        <header id="main-header" class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-14 sm:h-16">
+
+                    <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white">
+                        <a href="index.html" class="flex items-center">
+                            <img src="public/logo.png" alt="TirraCred Logo" class="h-7 sm:h-8 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
+                        </a>
+                    </div>
+
+                    <!-- Desktop Navigation -->
+                    <nav class="hidden md:flex md:items-center md:space-x-8">
+                        <a href="index.html" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos 🤑</a>
+                        <a href="#hero-section" class="scroll-toggle text-green-600 font-extrabold text-sm transition-colors border-b-2 border-green-600 pb-0.5">Cartão de Crédito 💳</a>
+                        <a href="#score-studio-section" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Radar de Score 🎯</a>
+                        <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Limpar Nome 🧹</a>
+                        <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">YouTube 📺</a>
+                    </nav>
+
+                    <!-- Desktop Action -->
+                    <div class="hidden md:flex items-center gap-2">
+                        <a href="#home-filters" class="scroll-toggle inline-flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-2 text-sm font-bold text-green-700 hover:bg-green-100 transition">
+                            <span>Ver Todos os Cartões</span>
+                            <i class="fas fa-credit-card text-xs"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Mobile Menu Button -->
+                    <div class="md:hidden flex items-center">
+                        <button id="mobile-menu-button" type="button" aria-label="Abrir Menu" class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg">
+                <div class="px-4 py-3 space-y-1">
+                    <a href="index.html" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Empréstimos 🤑</a>
+                    <a href="#hero-section" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-extrabold text-green-700 bg-green-50">Cartão de Crédito 💳</a>
+                    <a href="#score-studio-section" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Radar de Score 🎯</a>
+                    <a href="#home-filters" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Vitrine de Cartões 🏦</a>
+                    <a href="#renegociacao" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Renegociar Dívidas 🧹</a>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">YouTube 📺</a>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- CONTEÚDO PRINCIPAL DA PÁGINA DE CARTÕES E SCORE           -->
+    <!-- ========================================================= -->
+    <div id="page-home" class="page-container active">
+        <main>
+            <!-- ========================================================= -->
+            <!-- 1. HERO BANNER + SIMULADOR DE CARTÃO POR SCORE (ESTÁTICO) -->
+            <!-- ========================================================= -->
+            <section id="hero-section" class="relative text-white h-[550px] sm:h-[525px] lg:h-[445px] flex items-center overflow-hidden">
+                <!-- Camadas de Imagem Isoladas -->
+                <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden pointer-events-none">
+                    <img src="public/banner3.png" alt="Banner Cartões 1" class="hero-bg-slide opacity-100" data-bg-slide="0" decoding="async" onerror="this.src='public/banner-1.png'">
+                    <img src="public/banner-1.png" alt="Banner Cartões 2" class="hero-bg-slide opacity-0" data-bg-slide="1" decoding="async">
+                    <img src="public/banner2.png" alt="Banner Cartões 3" class="hero-bg-slide opacity-0" data-bg-slide="2" decoding="async">
+                    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-emerald-950/70 to-slate-950/85 lg:bg-gradient-to-r lg:from-slate-950/85 lg:via-emerald-950/70 lg:to-slate-900/60"></div>
+                </div>
+
+                <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-10 items-center w-full">
+                    
+                    <!-- Coluna Esquerda: Mensagens Empilhadas em CSS Grid (1/1) + Mini Preview de Score -->
+                    <div class="lg:col-span-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-extrabold uppercase tracking-wider mb-2">
+                            <i class="fas fa-credit-card"></i> Match Inteligente por Score de Crédito
+                        </div>
+
+                        <div class="hero-slides-stack">
+                            <!-- Mensagem 1 -->
+                            <div class="hero-slide-item opacity-100 z-10" data-text-slide="0">
+                                <h1 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                    Descubra o cartão com aprovação imediata para seu Score!
+                                </h1>
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                                    Cruzamos seu Score atual com os bancos que estão liberando limite alto, anuidade grátis e cartões para negativados hoje.
+                                </p>
+                            </div>
+
+                            <!-- Mensagem 2 -->
+                            <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="1" aria-hidden="true">
+                                <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                    Score baixo ou negativado? Temos cartões sem consulta!
+                                </h2>
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                                    Opções com limite garantido, consignado e aprovação rápida via conta digital para você reconstruir seu crédito.
+                                </p>
+                            </div>
+
+                            <!-- Mensagem 3 -->
+                            <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="2" aria-hidden="true">
+                                <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                    Zero anuidade, Cashback na fatura e Cartão Virtual na hora.
+                                </h2>
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                                    Simule seu limite ideal ao lado em 30 segundos e receba o ranking personalizado de cartões para o seu CPF.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Indicadores discretos do banner + Pílulas de Score Ao Vivo -->
+                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-2.5 sm:mt-4">
+                            <div class="flex items-center gap-2">
+                                <button type="button" data-hero-dot="0" aria-label="Slide 1" class="h-1.5 w-6 rounded-full bg-emerald-400 transition-all duration-300"></button>
+                                <button type="button" data-hero-dot="1" aria-label="Slide 2" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
+                                <button type="button" data-hero-dot="2" aria-label="Slide 3" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
+                            </div>
+                            <span id="hero-live-score-pill" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold bg-white/10 backdrop-blur px-3 py-1 rounded-full border border-white/15 text-emerald-200">
+                                <i class="fas fa-gauge-high text-emerald-400"></i> Score Simulado: <strong id="hero-score-val" class="text-white">620 pts</strong> (Bom)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: SIMULADOR DE CARTÃO & SCORE (TAMANHO 100% FIXO) -->
+                    <div class="lg:col-span-6 w-full flex items-center justify-center">
+                        <div class="simulator-fixed-card bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                            
+                            <!-- Barra de Progresso Animada (Inicia em 0% antes de clicar, avança e retrocede) -->
+                            <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100 overflow-hidden">
+                                <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 0%"></div>
+                            </div>
+
+                            <!-- Cabeçalho do Simulador -->
+                            <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0 mt-0.5">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <h2 class="text-sm sm:text-lg font-extrabold text-gray-900 truncate">Radar de Cartão & Score</h2>
+                                    <span id="sim-summary-chip" class="hidden text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md shrink-0">
+                                        Limite R$ 2.500
+                                    </span>
+                                </div>
+                                <span id="step-badge" class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 shrink-0">
+                                    Passo 1 de 4
+                                </span>
+                            </div>
+                    
+                            <form id="cardLeadForm" class="flex-1 flex flex-col justify-between pt-2" novalidate>
+                                
+                                <!-- ===================================================== -->
+                                <!-- PASSO 1: LIMITE DESEJADO + BENEFÍCIO DO CARTÃO        -->
+                                <!-- ===================================================== -->
+                                <div id="stage-1-limite" class="sim-stage-active">
+                                    <div class="space-y-2.5 my-auto">
+                                        <div class="flex items-center justify-between">
+                                            <label for="limiteSlider" class="block text-xs sm:text-sm font-bold text-gray-700">1. Qual limite inicial você busca?</label>
+                                            <span id="limite-display" class="text-xl sm:text-2xl font-black text-green-600">R$ 2.500</span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between text-[11px] text-gray-400">
+                                            <span>R$ 300</span>
+                                            <span>R$ 30.000</span>
+                                        </div>
+                                        <input id="limiteSlider" name="valor" type="range" min="300" max="30000" value="2500" step="100" class="w-full">
+
+                                        <!-- Seleção Rápida de Limite -->
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <button type="button" data-quick-limit="800" class="quick-limit-btn text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                                                R$ 800 (Fácil)
+                                            </button>
+                                            <button type="button" data-quick-limit="2500" class="quick-limit-btn text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 transition">
+                                                💳 R$ 2.500 (Ideal)
+                                            </button>
+                                            <button type="button" data-quick-limit="5000" class="quick-limit-btn text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                                                R$ 5.000
+                                            </button>
+                                            <button type="button" data-quick-limit="12000" class="quick-limit-btn text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                                                R$ 12.000+ (Black)
+                                            </button>
+                                        </div>
+
+                                        <!-- Escolha do Principal Benefício -->
+                                        <div class="pt-1">
+                                            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                                                O que é mais importante no seu novo cartão?
+                                            </span>
+                                            <div class="grid grid-cols-2 gap-1.5">
+                                                <button type="button" data-benefit="zero_anuidade" class="benefit-btn bg-green-600 text-white py-1.5 px-2 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition">
+                                                    <i class="fas fa-ban text-[11px]"></i> Zero Anuidade
+                                                </button>
+                                                <button type="button" data-benefit="aprovacao_facil" class="benefit-btn bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-2 rounded-lg text-xs font-semibold hover:border-green-500 flex items-center justify-center gap-1.5 transition">
+                                                    <i class="fas fa-bolt text-amber-500 text-[11px]"></i> Aprovação Fácil
+                                                </button>
+                                                <button type="button" data-benefit="cashback" class="benefit-btn bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-2 rounded-lg text-xs font-semibold hover:border-green-500 flex items-center justify-center gap-1.5 transition">
+                                                    <i class="fas fa-coins text-emerald-600 text-[11px]"></i> Cashback / Milhas
+                                                </button>
+                                                <button type="button" data-benefit="limite_alto" class="benefit-btn bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-2 rounded-lg text-xs font-semibold hover:border-green-500 flex items-center justify-center gap-1.5 transition">
+                                                    <i class="fas fa-arrow-trend-up text-blue-600 text-[11px]"></i> Limite Alto
+                                                </button>
+                                            </div>
+                                            <input type="hidden" id="selectedBenefit" value="zero_anuidade">
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-2 shrink-0">
+                                        <button id="btn-to-stage-2" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 sm:py-3 text-sm font-extrabold text-white shadow-md transition active:scale-[0.99] flex items-center justify-center gap-2">
+                                            <span>Simular Meu Score de Crédito</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- ===================================================== -->
+                                <!-- PASSO 2: TERMÔMETRO DE SCORE INTERATIVO (0 A 1000)    -->
+                                <!-- ===================================================== -->
+                                <div id="stage-2-score" class="sim-stage-hidden">
+                                    <div class="space-y-2 my-auto">
+                                        <!-- Display Visual do Score com Velocímetro Compacto -->
+                                        <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                                            <div class="flex items-center gap-3">
+                                                <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
+                                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                                        <path class="text-gray-200" stroke-width="3.8" stroke="currentColor" fill="none"
+                                                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                                        <path id="sim-score-circle" class="text-emerald-500 transition-all duration-300" stroke-width="3.8" stroke-dasharray="62, 100" stroke-linecap="round" stroke="currentColor" fill="none"
+                                                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                                    </svg>
+                                                    <span id="sim-score-number" class="absolute text-sm font-black text-gray-900">620</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Sua Faixa de Score Estimada</span>
+                                                    <span id="sim-score-label" class="text-sm font-extrabold text-emerald-700">Score Bom (Alta Chance)</span>
+                                                    <span id="sim-score-tier-hint" class="block text-[11px] text-gray-500">Elegível a Cartões Gold & Platinum</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Slider de Score 0 a 1000 -->
+                                        <div>
+                                            <div class="flex justify-between text-[10px] font-bold text-gray-400 mb-1">
+                                                <span class="text-red-500">0 (Baixo)</span>
+                                                <span class="text-amber-600">400 (Regular)</span>
+                                                <span class="text-blue-600">700 (Bom)</span>
+                                                <span class="text-emerald-600">1000 (VIP)</span>
+                                            </div>
+                                            <input id="scoreSlider" type="range" min="100" max="1000" step="10" value="620" class="w-full score-range">
+                                        </div>
+
+                                        <!-- Condições de Perfil -->
+                                        <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 transition">
+                                                <input type="checkbox" id="chk-negativado" name="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2 text-[11px] text-gray-700 font-bold truncate">Estou Negativado</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 transition">
+                                                <input type="checkbox" id="chk-aposentado" name="aposentado_inss" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2 text-[11px] text-gray-700 font-bold truncate">Aposentado / CLT</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 transition">
+                                                <input type="checkbox" id="chk-autonomo" name="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2 text-[11px] text-gray-700 font-bold truncate">Autônomo / MEI</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 transition">
+                                                <input type="checkbox" id="chk-bolsafamilia" name="bolsafamilia" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2 text-[11px] text-gray-700 font-bold truncate">Bolsa Família</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 pt-2 shrink-0">
+                                        <button type="button" onclick="goToStage(1)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                            &larr; Limite
+                                        </button>
+                                        <button id="btn-to-stage-3" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
+                                            <span>Consultar Cartões p/ Meu CPF</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- ===================================================== -->
+                                <!-- PASSO 3: RADAR DE CPF E ELEGIBILIDADE (SEM PULO AUTO) -->
+                                <!-- ===================================================== -->
+                                <div id="stage-3-cpf" class="sim-stage-hidden">
+                                    <div class="space-y-2.5 my-auto">
+                                        <div>
+                                            <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">
+                                                3. Digite seu CPF para escanear cartões disponíveis
+                                            </label>
+                                            <div class="relative">
+                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3.5 py-2.5 text-base font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
+                                                <span id="cpf-spinner" class="hidden absolute right-3.5 top-3 text-green-600">
+                                                    <i class="fas fa-circle-notch fa-spin"></i>
+                                                </span>
+                                            </div>
+                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500">
+                                                Análise inteligente sem reduzir sua pontuação de Score.
+                                            </p>
+                                        </div>
+
+                                        <!-- Box de Diagnóstico de Cartões + Limite Rápido -->
+                                        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-3 shadow-sm fade-in">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
+                                                    <i class="fas fa-check-double"></i> <span id="cpf-approved-count">6 Cartões</span> + Limite Pix Liberados
+                                                </span>
+                                                <span class="text-[11px] font-black text-emerald-800">97% Match</span>
+                                            </div>
+                                            <p class="text-xs font-bold text-emerald-950">
+                                                Seu CPF possui elegibilidade para cartões sem anuidade e limite extra imediato de até <span id="facio-offer-max" class="underline font-extrabold">R$ 300,00</span>!
+                                            </p>
+                                        </div>
+
+                                        <div id="facio-unavailable-box" class="hidden rounded-xl border border-emerald-300 bg-emerald-50/70 p-3 text-xs text-emerald-950 fade-in">
+                                            <div class="font-extrabold mb-0.5 text-emerald-800">
+                                                <i class="fas fa-credit-card mr-1"></i> Cartões Compatíveis Encontrados!
+                                            </div>
+                                            <span class="text-[11px]">Identificamos cartões parceiros com alta taxa de aprovação para sua faixa de Score. Clique em continuar abaixo!</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 pt-2 shrink-0">
+                                        <button type="button" onclick="goToStage(2)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                            &larr; Score
+                                        </button>
+                                        <button id="btn-to-stage-4" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
+                                            <span>Continuar para Emitir Recomendações</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- ===================================================== -->
+                                <!-- PASSO 4: DADOS DO TITULAR DO CARTÃO                   -->
+                                <!-- ===================================================== -->
+                                <div id="stage-4-contato" class="sim-stage-hidden">
+                                    <div class="space-y-2.5 my-auto">
+                                        <div>
+                                            <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">
+                                                4. Nome Completo (Como aparecerá no cartão)
+                                            </label>
+                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-900 uppercase outline-none focus:border-green-600 transition">
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">WhatsApp</label>
+                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
+                                            </div>
+                                            <div>
+                                                <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Seu E-mail</label>
+                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col gap-1.5 pt-2 shrink-0">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="goToStage(3)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                                &larr; CPF
+                                            </button>
+
+                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-1.5">
+                                                <i class="fas fa-unlock-keyhole"></i>
+                                                <span>Ver Meus Cartões Pré-Aprovados &rarr;</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================= -->
+            <!-- 2. FAIXA DE EMPRESAS E EMISSORES PARCEIROS ROLANDO        -->
+            <!-- ========================================================= -->
+            <section class="bg-white border-b border-gray-200/80 shadow-sm">
+                <div class="logo-carousel">
+                    <div class="logo-carousel-track">
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <!-- Repete para loop infinito -->
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================= -->
+            <!-- 3. ESTÚDIO INTERATIVO DE SCORE & CARTÃO 3D AO VIVO        -->
+            <!-- ========================================================= -->
+            <section id="score-studio-section" class="py-10 sm:py-14 bg-gradient-to-b from-white to-green-50/60 border-b border-emerald-100">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+                    <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-3.5 py-1 rounded-full">
+                            <i class="fas fa-wand-magic-sparkles text-emerald-600"></i> Simulador Visual Interativo
+                        </span>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 mt-2">
+                            Veja qual categoria de Cartão seu Score libera hoje
+                        </h2>
+                        <p class="text-sm sm:text-base text-gray-600 mt-2">
+                            Teste sua pontuação de Score abaixo e veja em tempo real o cartão recomendado, a probabilidade de aprovação e o retorno em Cashback.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-xl border border-emerald-200/80 p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                        
+                        <!-- Coluna 1 (5 cols): Cartão de Crédito 3D Interativo + Velocímetro SVG -->
+                        <div class="lg:col-span-5 flex flex-col items-center space-y-5">
+                            <!-- Cartão 3D Dinâmico -->
+                            <div id="interactive-3d-card" class="credit-card-3d card-theme-emerald animate-float-card">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <span id="card-3d-badge" class="text-[10px] font-extrabold uppercase tracking-widest bg-white/20 backdrop-blur px-2.5 py-0.5 rounded-full">
+                                            Zero Anuidade • Internacional
+                                        </span>
+                                        <h3 id="card-3d-bank" class="text-lg font-black tracking-tight mt-1">TirraCred Platinum</h3>
+                                    </div>
+                                    <!-- Ícone Contactless NFC -->
+                                    <i class="fas fa-wifi rotate-90 text-white/80 text-lg"></i>
+                                </div>
+
+                                <!-- Chip Metálico + Número Simulado -->
+                                <div class="flex items-center justify-between mb-5">
+                                    <div class="emv-chip"></div>
+                                    <span id="card-3d-limit-pill" class="text-xs font-extrabold bg-black/25 backdrop-blur px-3 py-1 rounded-lg border border-white/15">
+                                        Limite est.: R$ 2.500
+                                    </span>
+                                </div>
+
+                                <div class="font-mono-card text-sm sm:text-base font-bold text-white/95 tracking-widest mb-4">
+                                    5482  ••••  ••••  9048
+                                </div>
+
+                                <div class="flex items-end justify-between text-xs">
+                                    <div>
+                                        <span class="block text-[9px] uppercase text-white/60 tracking-wider">Titular do Cartão</span>
+                                        <span id="card-3d-holder" class="font-bold uppercase tracking-wider text-white truncate max-w-[180px] block">
+                                            CLIENTE TIRRACRED
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-right">
+                                            <span class="block text-[9px] uppercase text-white/60">Validade</span>
+                                            <span class="font-bold">11/31</span>
+                                        </div>
+                                        <!-- Duplo Círculo Mastercard Style -->
+                                        <div class="flex items-center ml-1">
+                                            <span class="w-6 h-6 rounded-full bg-red-500/90 inline-block"></span>
+                                            <span class="w-6 h-6 rounded-full bg-amber-400/90 -ml-2.5 inline-block"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seletor Rápido de Cores/Estilos do Cartão -->
+                            <div class="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                                <span>Estilo do Cartão:</span>
+                                <button type="button" onclick="set3DCardTheme('emerald')" class="w-6 h-6 rounded-full bg-emerald-600 border-2 border-white shadow ring-1 ring-gray-300" title="Esmeralda Zero Anuidade"></button>
+                                <button type="button" onclick="set3DCardTheme('purple')" class="w-6 h-6 rounded-full bg-purple-600 border-2 border-white shadow ring-1 ring-gray-300" title="Roxo Digital"></button>
+                                <button type="button" onclick="set3DCardTheme('gold')" class="w-6 h-6 rounded-full bg-amber-500 border-2 border-white shadow ring-1 ring-gray-300" title="Gold Cashback"></button>
+                                <button type="button" onclick="set3DCardTheme('platinum')" class="w-6 h-6 rounded-full bg-slate-700 border-2 border-white shadow ring-1 ring-gray-300" title="Platinum Viagens"></button>
+                                <button type="button" onclick="set3DCardTheme('black')" class="w-6 h-6 rounded-full bg-zinc-950 border-2 border-amber-400 shadow ring-1 ring-gray-300" title="Ultrablack VIP"></button>
+                            </div>
+                        </div>
+
+                        <!-- Coluna 2 (7 cols): Controles do Radar de Score + Calculadora de Cashback e Limite -->
+                        <div class="lg:col-span-7 space-y-6">
+                            <!-- Controle 1: Score Interativo -->
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <span class="text-xs font-extrabold uppercase text-gray-500">1. Arraste para testar seu Score (Serasa / SPC)</span>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span id="studio-score-num" class="text-2xl sm:text-3xl font-black text-emerald-600">620</span>
+                                            <span class="text-xs font-bold text-gray-400">/ 1000 pts</span>
+                                            <span id="studio-score-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                                Score Bom
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Botões de Faixa de Score -->
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <button type="button" onclick="setStudioScore(260)" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition">
+                                            Baixo (&lt;350)
+                                        </button>
+                                        <button type="button" onclick="setStudioScore(480)" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition">
+                                            Regular (350-600)
+                                        </button>
+                                        <button type="button" onclick="setStudioScore(680)" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition">
+                                            Bom (600-800)
+                                        </button>
+                                        <button type="button" onclick="setStudioScore(880)" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition">
+                                            Excelente (800+)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <input id="studioScoreSlider" type="range" min="100" max="1000" step="10" value="620" class="w-full score-range">
+                            </div>
+
+                            <!-- Controle 2: Gasto Mensal Estimado (Calcula Cashback e Limite Recomendado) -->
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold uppercase text-gray-500">2. Gasto mensal estimado no cartão</span>
+                                    <span id="studio-spend-display" class="text-lg font-black text-gray-900">R$ 1.800 / mês</span>
+                                </div>
+                                <input id="studioSpendSlider" type="range" min="300" max="15000" step="100" value="1800" class="w-full">
+                            </div>
+
+                            <!-- 3 Métricas Calculadas Ao Vivo -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-center">
+                                    <span class="block text-[11px] font-bold uppercase text-emerald-800">Chance de Aprovação</span>
+                                    <span id="studio-approval-pct" class="text-2xl font-black text-emerald-700 mt-0.5 block">94%</span>
+                                    <span id="studio-approval-desc" class="text-[11px] text-emerald-900/80 font-medium">Aprovação Rápida</span>
+                                </div>
+
+                                <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-center">
+                                    <span class="block text-[11px] font-bold uppercase text-blue-800">Limite Projetado</span>
+                                    <span id="studio-projected-limit" class="text-xl sm:text-2xl font-black text-blue-700 mt-0.5 block">R$ 3.200</span>
+                                    <span class="text-[11px] text-blue-900/80 font-medium">Liberado progressivamente</span>
+                                </div>
+
+                                <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-center">
+                                    <span class="block text-[11px] font-bold uppercase text-amber-900">Retorno Anual (Cashback)</span>
+                                    <span id="studio-cashback-year" class="text-xl sm:text-2xl font-black text-amber-700 mt-0.5 block">R$ 324,00</span>
+                                    <span class="text-[11px] text-amber-900/80 font-medium">+ Isenção de Anuidade</span>
+                                </div>
+                            </div>
+
+                            <!-- Diagnóstico + Botão Direto para Filtrar Cartões desse Score -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+                                <p id="studio-recommendation-text" class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                    Com <strong>620 pontos</strong>, você tem acesso aos principais cartões <strong>Zero Anuidade e Gold</strong> com limite inicial entre R$ 1.500 e R$ 4.000.
+                                </p>
+                                <a href="#hero-section" onclick="syncStudioToHeroSimulator()" class="scroll-toggle btn-primary shrink-0 px-5 py-3 text-xs sm:text-sm whitespace-nowrap">
+                                    <i class="fas fa-bolt mr-1.5"></i> Solicitar com Este Perfil
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 4. VITRINE DE CARTÕES E FILTROS (SINCRONIZADA COM ADMIN)  -->
+    <!-- ========================================================= -->
+    <section id="home-filters" class="py-6 sm:py-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Cabeçalho da Vitrine com Atalhos Rápidos de Cartão -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-green-700 bg-green-100 px-3 py-1 rounded-full">
+                        Catálogo Oficial Atualizado
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">
+                        Compare os Melhores Cartões e Contas
+                    </h2>
+                </div>
+
+                <!-- Pílulas Rápidas de Filtro por Score -->
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="quickFilterCards('cartao')" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 transition">
+                        💳 Só Cartões de Crédito
+                    </button>
+                    <button type="button" onclick="quickFilterCards('negativado')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                        🔓 Aceita Score Baixo / Negativado
+                    </button>
+                    <button type="button" onclick="quickFilterCards('contas')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                        🏦 Contas com Cartão Virtual
+                    </button>
+                    <button type="button" onclick="quickFilterCards('all')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 transition">
+                        Ver Tudo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botão para abrir filtros no Mobile -->
+            <div class="lg:hidden mb-4">
+                <button id="filter-button" type="button" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm sm:text-base font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    <span>Filtrar por Categoria e Score</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
+                
+                <!-- Filtros Laterais (Sincronizados com o Admin) -->
+                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out translate-x-full lg:static lg:z-auto lg:h-auto lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm">
+                    <div class="h-full lg:h-auto flex flex-col">
+                        <div class="flex items-center justify-between border-b p-4 lg:hidden">
+                            <h3 class="text-lg font-bold text-gray-900">Filtros</h3>
+                            <button id="filter-close" type="button" class="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+
+                        <div class="p-5 sm:p-6 overflow-y-auto lg:overflow-visible">
+                            <div class="flex items-center justify-between mb-5">
+                                <h3 class="hidden text-lg font-extrabold text-gray-900 lg:block">Filtre a sua busca</h3>
+                                <button type="button" id="reset-filters-btn" class="text-xs font-bold text-green-700 hover:underline">
+                                    Mostrar Todos
+                                </button>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-bold text-xs uppercase tracking-wider mb-3 text-gray-500">Modalidade</h4>
+                                    <div id="filter-type-list" class="space-y-2.5 text-sm">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="all" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Todos os Produtos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="cartao" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-900 font-bold">💳 Cartões de Crédito</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Contas Digitais</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Empréstimos</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="emprestimocomgarantia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Empréstimos com Garantia</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="fgts" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">FGTS</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="bolsafamilia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Bolsa Família</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="seguro" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Seguros</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio" name="product_type" value="renegociar" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Renegociação de Dívidas</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <hr class="border-gray-100">
+
+                                <div>
+                                    <h4 class="font-bold text-xs uppercase tracking-wider mb-3 text-gray-500">Seu Perfil & Score</h4>
+                                    <div id="filter-perfil-list" class="space-y-2.5 text-sm">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Para Negativados</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Score Baixo</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="aposentado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Aposentado / Consignado</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="score-regular" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Score Regular</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                            <span class="ml-2.5 text-gray-700 font-medium">Autônomo / MEI</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Coluna Direita: Paginação Flexível Animada + Lista de Cartões -->
+                <div class="lg:col-span-3 flex flex-col">
+                    <!-- PAGINAÇÃO SUPERIOR FLEXÍVEL -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                        <span id="filter-results-summary" class="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                            Carregando cartões...
+                        </span>
+                        <nav id="pagination-top" aria-label="Paginação Superior" class="flex items-center justify-center flex-wrap gap-1.5">
+                            <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
+                            <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
+                            <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
+                        </nav>
+                    </div>
+
+                    <!-- LISTA DE PRODUTOS (Sem scroll interno travado, com min-h-[720px] para manter a proporção fixa da página) -->
+                    <div id="product-list" class="space-y-4 sm:space-y-5 min-h-[720px] transition-opacity duration-200"></div>
+
+                    <!-- PAGINAÇÃO INFERIOR FLEXÍVEL -->
+                    <nav id="pagination" aria-label="Paginação Inferior" class="flex items-center justify-center flex-wrap gap-1.5 mt-5 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
+                        <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 5. MATRIZ EDUCATIVA: QUAL CARTÃO APROVA EM CADA SCORE?     -->
+    <!-- ========================================================= -->
+    <section class="py-12 bg-white border-t border-gray-100">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                    Raio-X de Aprovação Bancária
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 mt-2">
+                    Entenda como os Bancos avaliam seu Score
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <!-- Faixa 1 -->
+                <div class="rounded-2xl border border-red-200 bg-red-50/40 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-red-100 text-red-800">0 a 350 pts</span>
+                            <i class="fas fa-unlock text-red-500"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-1">Score Baixo / Restrição</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-4">
+                            Priorize cartões vinculados a contas digitais com movimentação Pix, cartões consignados (INSS/CLT) ou com limite garantido.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-red-200/60 text-xs font-bold text-red-800">
+                        ✓ Aprovação até 92% na categoria
+                    </div>
+                </div>
+
+                <!-- Faixa 2 -->
+                <div class="rounded-2xl border border-amber-200 bg-amber-50/40 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-amber-100 text-amber-900">351 a 600 pts</span>
+                            <i class="fas fa-credit-card text-amber-600"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-1">Score Regular</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-4">
+                            Elegível a cartões nacionais e internacionais sem anuidade de fintechs e bancos varejistas (como Carrefour, PicPay e Mercado Pago).
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-amber-200/60 text-xs font-bold text-amber-900">
+                        ✓ Limite inicial típico: R$ 500 a R$ 1.800
+                    </div>
+                </div>
+
+                <!-- Faixa 3 -->
+                <div class="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">601 a 800 pts</span>
+                            <i class="fas fa-star text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-1">Score Bom</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-4">
+                            Alta compatibilidade com cartões Gold e Platinum de grandes bancos (Itaú, Santander, Banco do Brasil) com programas de pontos e cashback.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-blue-200/60 text-xs font-bold text-blue-800">
+                        ✓ Limite inicial típico: R$ 2.000 a R$ 6.000
+                    </div>
+                </div>
+
+                <!-- Faixa 4 -->
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">801 a 1000 pts</span>
+                            <i class="fas fa-crown text-emerald-600"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-1">Score Excelente</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-4">
+                            Acesso às linhas Signature, Infinite e Black com salas VIP em aeroportos, seguros de viagem gratuitos e cashback elevado.
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-emerald-200/60 text-xs font-bold text-emerald-800">
+                        ✓ Limites acima de R$ 10.000+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 6. BLOCO DA RENEGOCIAÇÃO (AUMENTAR SCORE LIMPANDO O NOME) -->
+    <!-- ========================================================= -->
+    <section id="renegociacao" class="py-14 sm:py-16 bg-gray-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl sm:text-3xl font-extrabold mb-3">
+                Quer aumentar seu Score rápido? Negocie dívidas com até
+                <span class="text-green-400">99% de desconto</span>
+            </h2>
+            <p class="text-base sm:text-lg text-gray-300 mb-7 max-w-2xl mx-auto">
+                Limpar restrições no CPF é o passo número 1 para destravar limites maiores nos cartões de crédito.
+            </p>
+
+            <div class="max-w-md mx-auto">
+                <form class="flex justify-center" action="https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount" target="_blank">
+                    <button type="submit" class="w-full sm:w-auto bg-green-500 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-green-600 transition shadow-lg">
+                        Consultar Acordos no Meu CPF
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 7. COMO FUNCIONA - CARROSSEL RESPONSIVO                   -->
+    <!-- ========================================================= -->
+    <section class="bg-white py-12 sm:py-16 w-full border-t border-gray-100">
+        <div class="container mx-auto px-4 max-w-3xl">
+            <div class="text-center mb-6">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-green-700 bg-green-100 px-3 py-1 rounded-full">Passo a Passo</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">Como solicitar seu cartão na TirraCred</h2>
+            </div>
+
+            <div id="carousel-container" class="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200/80 shadow-sm px-3 py-8 sm:px-10 sm:py-10">
+                <div id="carousel-track" class="flex items-stretch carousel-track">
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12 flex items-center">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">1</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Informe seu Score e Limite Desejado</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Configure sua faixa de Score no nosso radar inteligente para filtrarmos apenas os bancos que aprovam o seu perfil.</p>
+                        </div>
+                    </div>
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12 flex items-center">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">2</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Compare Anuidade, Cashback e Limite</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Veja o índice de compatibilidade (Match %) de cada cartão e escolha entre opções sem anuidade ou com aprovação imediata.</p>
+                        </div>
+                    </div>
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12 flex items-center">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">3</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Ative o Cartão Virtual na Hora</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Finalize o pedido diretamente no ambiente seguro da instituição emissora e libere seu cartão virtual para compras hoje mesmo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="prevBtn" type="button" aria-label="Slide Anterior" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-gray-700 shadow-md transition">
+                    <i class="fas fa-chevron-left text-xs sm:text-sm"></i>
+                </button>
+                <button id="nextBtn" type="button" aria-label="Próximo Slide" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-gray-700 shadow-md transition">
+                    <i class="fas fa-chevron-right text-xs sm:text-sm"></i>
+                </button>
+            </div>
+
+            <div id="carousel-dots" class="flex justify-center items-center space-x-2.5 mt-4"></div>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 8. FOOTER (EXATAMENTE IGUAL AO INDEX.HTML)                -->
+    <!-- ========================================================= -->
+    <footer class="bg-green-900 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Para Você</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="hover:text-green-400 transition">Empréstimo Pessoal</a></li>
+                        <li><a href="index.html" class="hover:text-green-400 transition">Empréstimo para Negativado</a></li>
+                        <li><a href="#home-filters" class="scroll-toggle hover:text-green-400 transition">Cartão de Crédito</a></li>
+                        <li><a href="#renegociacao" class="scroll-toggle hover:text-green-400 transition">Renegociar Dívidas</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Links Úteis</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="hover:text-green-400 transition">Sobre Nós</a></li>
+                        <li><a href="pages/termo de consentimento.html" class="hover:text-green-400 transition">Termos de Uso</a></li>
+                        <li><a href="pages/termo de consentimento.html" class="hover:text-green-400 transition">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Fale Conosco</h3> 
+                    <p class="text-sm text-gray-200 break-all">
+                        <a href="mailto:atendimento@tirracred.com.br" class="hover:text-green-400 transition">atendimento@tirracred.com.br</a>
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Canal Oficial</h3>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-3.5 py-2 rounded-lg transition">
+                        <i class="fab fa-youtube text-red-400 text-lg"></i>
+                        <span>YouTube TirraCred</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="border-t border-green-800 mt-8 pt-8">
+                <p class="text-xs text-gray-300 text-center leading-relaxed max-w-4xl mx-auto">
+                    TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 61.811.560/0001-10.
+                    <br>As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
+                </p>
+                <p class="text-xs text-gray-400 text-center mt-2">© 2026 TirraCred. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- SCRIPTS PRINCIPAIS (RADAR DE SCORE + VITRINE + FACIO API) -->
+    <!-- ========================================================= -->
+    <script>
+        function formatCPF(value) {
+            const numericValue = (value || '').replace(/\D/g, '').slice(0, 11);
+            return numericValue
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        }
+
+        function formatPhone(value) {
+            const numericValue = (value || '').replace(/\D/g, '').slice(0, 11);
+            return numericValue
+                .replace(/^(\d{2})(\d)/g, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2');
+        }
+
+        function formatBRL(val) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(Number(val) || 0);
+        }
+
+        const formatCurrencyNoCents = (value) => new Intl.NumberFormat('pt-BR', { 
+            style: 'currency', 
+            currency: 'BRL', 
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(Number(value) || 0);
+
+        function validateCPF(cpf) {
+            const cleanCPF = (cpf || '').replace(/\D/g, '');
+            if (cleanCPF.length !== 11 || /^(\d)\1+$/.test(cleanCPF)) return false;
+            let sum = 0;
+            for (let i = 0; i < 9; i++) sum += parseInt(cleanCPF.charAt(i), 10) * (10 - i);
+            let remainder = sum % 11;
+            let firstVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            if (firstVerifier !== parseInt(cleanCPF.charAt(9), 10)) return false;
+            sum = 0;
+            for (let i = 0; i < 10; i++) sum += parseInt(cleanCPF.charAt(i), 10) * (11 - i);
+            remainder = sum % 11;
+            let secondVerifier = (remainder < 2) ? 0 : 11 - remainder;
+            return secondVerifier === parseInt(cleanCPF.charAt(10), 10);
+        }
+
+        // Classificação inteligente do Score (0 a 1000)
+        function evaluateScoreMeta(score) {
+            const s = Number(score) || 620;
+            if (s < 350) {
+                return {
+                    band: 'baixo',
+                    label: 'Score Baixo (Reconstrução)',
+                    shortLabel: 'Baixo',
+                    tierHint: 'Ideal: Cartões s/ Consulta & Consignado',
+                    cardTheme: 'purple',
+                    cardTitle: 'TirraCred Fácil Internacional',
+                    cardBadge: 'Sem Consulta SPC • Limite Garantido',
+                    colorClass: 'text-red-600',
+                    badgeClass: 'bg-red-100 text-red-800',
+                    strokeClass: 'text-red-500',
+                    approvalPct: 89
+                };
+            }
+            if (s <= 600) {
+                return {
+                    band: 'regular',
+                    label: 'Score Regular (Em Evolução)',
+                    shortLabel: 'Regular',
+                    tierHint: 'Elegível a Cartões Zero Anuidade',
+                    cardTheme: 'emerald',
+                    cardTitle: 'TirraCred Digital Zero',
+                    cardBadge: 'Zero Anuidade • Aprovação Rápida',
+                    colorClass: 'text-amber-600',
+                    badgeClass: 'bg-amber-100 text-amber-900',
+                    strokeClass: 'text-amber-500',
+                    approvalPct: 92
+                };
+            }
+            if (s <= 800) {
+                return {
+                    band: 'bom',
+                    label: 'Score Bom (Alta Chance)',
+                    shortLabel: 'Bom',
+                    tierHint: 'Elegível a Cartões Gold & Platinum',
+                    cardTheme: 'gold',
+                    cardTitle: 'TirraCred Gold Cashback',
+                    cardBadge: 'Cashback 1,2% • Zero Anuidade',
+                    colorClass: 'text-blue-600',
+                    badgeClass: 'bg-blue-100 text-blue-800',
+                    strokeClass: 'text-blue-600',
+                    approvalPct: 96
+                };
+            }
+            return {
+                band: 'excelente',
+                label: 'Score Excelente (Perfil VIP)',
+                shortLabel: 'Excelente',
+                tierHint: 'Elegível a Cartões Platinum & Black VIP',
+                cardTheme: 'black',
+                cardTitle: 'TirraCred Ultrablack VIP',
+                cardBadge: 'Salas VIP • Cashback 2,0% • Limite Alto',
+                colorClass: 'text-emerald-600',
+                badgeClass: 'bg-emerald-100 text-emerald-800',
+                strokeClass: 'text-emerald-500',
+                approvalPct: 99
+            };
+        }
+
+        // Troca manual de tema do cartão 3D
+        window.set3DCardTheme = function(themeName) {
+            const cardEl = document.getElementById('interactive-3d-card');
+            if (!cardEl) return;
+            cardEl.className = `credit-card-3d card-theme-${themeName} animate-float-card`;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ===================================================
+            // 1. MENU MOBILE E DRAWER DE FILTROS
+            // ===================================================
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+
+            const filterBtn   = document.getElementById('filter-button');
+            const filterPanel = document.getElementById('filter-panel');
+            const closeBtn    = document.getElementById('filter-close');
+
+            const overlay = document.createElement('div');
+            overlay.id = 'filter-overlay';
+            Object.assign(overlay.style, {
+                position: 'fixed',
+                inset: '0',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: '40',
+                opacity: '0',
+                pointerEvents: 'none',
+                transition: 'opacity .3s ease-in-out'
+            });
+            document.body.appendChild(overlay);
+
+            function openPanel() {
+                if (!filterPanel) return;
+                filterPanel.classList.remove('translate-x-full');
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+                document.body.style.overflow = 'hidden';
+            }
+            function closePanel() {
+                if (!filterPanel) return;
+                filterPanel.classList.add('translate-x-full');
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+                document.body.style.overflow = '';
+            }
+            filterBtn?.addEventListener('click', openPanel);
+            closeBtn?.addEventListener('click', closePanel);
+            overlay.addEventListener('click', closePanel);
+
+            // ===================================================
+            // 2. SIMULADOR DE CARTÃO E SCORE (4 ETAPAS FIXAS)
+            //    Barra inicia em 0% e avança/retrocede (0 -> 33 -> 66 -> 100%)
+            // ===================================================
+            const cardForm = document.getElementById('cardLeadForm');
+            const limiteSlider = document.getElementById('limiteSlider');
+            const limiteDisplay = document.getElementById('limite-display');
+            const scoreSlider = document.getElementById('scoreSlider');
+            const summaryChip = document.getElementById('sim-summary-chip');
+            const progressBar = document.getElementById('sim-progress-bar');
+            const stepBadge = document.getElementById('step-badge');
+
+            const stage1 = document.getElementById('stage-1-limite');
+            const stage2 = document.getElementById('stage-2-score');
+            const stage3 = document.getElementById('stage-3-cpf');
+            const stage4 = document.getElementById('stage-4-contato');
+
+            let currentSubStage = 1;
+
+            function updateSummaryChip() {
+                if (!summaryChip) return;
+                const lim = formatCurrencyNoCents(limiteSlider?.value || 2500);
+                const sc = scoreSlider?.value || 620;
+                summaryChip.textContent = `${lim} • Score ${sc}`;
+            }
+
+            window.goToStage = function(stageNum) {
+                currentSubStage = stageNum;
+                const stages = [stage1, stage2, stage3, stage4];
+
+                stages.forEach((el, idx) => {
+                    if (!el) return;
+                    if (idx + 1 === stageNum) {
+                        el.classList.remove('sim-stage-hidden');
+                        el.classList.add('sim-stage-active');
+                    } else {
+                        el.classList.remove('sim-stage-active');
+                        el.classList.add('sim-stage-hidden');
+                    }
+                });
+
+                updateSummaryChip();
+                if (summaryChip) {
+                    summaryChip.classList.toggle('hidden', stageNum === 1);
+                }
+
+                // Barra de progresso inicia em 0% no Passo 1 e avança/volta conforme a etapa
+                if (progressBar) {
+                    const progressByStage = { 1: 0, 2: 33, 3: 66, 4: 100 };
+                    progressBar.style.width = `${progressByStage[stageNum] ?? 0}%`;
+                }
+
+                if (stepBadge) {
+                    stepBadge.textContent = `Passo ${stageNum} de 4`;
+                }
+
+                if (stageNum === 3) {
+                    setTimeout(() => document.getElementById('cpf')?.focus(), 60);
+                } else if (stageNum === 4) {
+                    setTimeout(() => document.getElementById('nomeInput')?.focus(), 60);
+                }
+            };
+
+            // Sincroniza Limite Desejado
+            function updateLimitUI(val) {
+                const num = Number(val) || 2500;
+                if (limiteDisplay) limiteDisplay.textContent = formatCurrencyNoCents(num);
+                const pill3d = document.getElementById('card-3d-limit-pill');
+                if (pill3d) pill3d.textContent = `Limite est.: ${formatCurrencyNoCents(num)}`;
+                updateSummaryChip();
+            }
+
+            limiteSlider?.addEventListener('input', (e) => updateLimitUI(e.target.value));
+            document.querySelectorAll('.quick-limit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetVal = btn.getAttribute('data-quick-limit');
+                    if (limiteSlider && targetVal) {
+                        limiteSlider.value = targetVal;
+                        updateLimitUI(targetVal);
+                    }
+                });
+            });
+
+            // Botões de Benefício Principal do Cartão
+            const benefitBtns = document.querySelectorAll('.benefit-btn');
+            const selectedBenefitInput = document.getElementById('selectedBenefit');
+            benefitBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    benefitBtns.forEach(b => {
+                        b.className = 'benefit-btn bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-2 rounded-lg text-xs font-semibold hover:border-green-500 flex items-center justify-center gap-1.5 transition';
+                    });
+                    btn.className = 'benefit-btn bg-green-600 text-white py-1.5 px-2 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition';
+                    if (selectedBenefitInput) {
+                        selectedBenefitInput.value = btn.getAttribute('data-benefit') || 'zero_anuidade';
+                    }
+                });
+            });
+
+            // ===================================================
+            // 3. SINCRONIZAÇÃO ENTRE O MEDIDOR DE SCORE DO HERO E O ESTÚDIO 3D
+            // ===================================================
+            const studioScoreSlider = document.getElementById('studioScoreSlider');
+            const studioSpendSlider = document.getElementById('studioSpendSlider');
+
+            function syncAllScoreVisuals(scoreValue, fromStudio = false) {
+                const s = Math.max(100, Math.min(1000, Number(scoreValue) || 620));
+                const meta = evaluateScoreMeta(s);
+                const pct = Math.round((s / 1000) * 100);
+
+                if (scoreSlider && fromStudio) scoreSlider.value = s;
+                if (studioScoreSlider && !fromStudio) studioScoreSlider.value = s;
+
+                // 1) Atualiza Velocímetro Compacto do Hero (Passo 2)
+                const simScoreNum = document.getElementById('sim-score-number');
+                const simScoreCircle = document.getElementById('sim-score-circle');
+                const simScoreLabel = document.getElementById('sim-score-label');
+                const simScoreTierHint = document.getElementById('sim-score-tier-hint');
+                const heroScoreVal = document.getElementById('hero-score-val');
+
+                if (simScoreNum) simScoreNum.textContent = s;
+                if (simScoreCircle) {
+                    simScoreCircle.setAttribute('stroke-dasharray', `${pct}, 100`);
+                    simScoreCircle.className = `${meta.strokeClass} transition-all duration-300`;
+                }
+                if (simScoreLabel) {
+                    simScoreLabel.textContent = meta.label;
+                    simScoreLabel.className = `text-sm font-extrabold ${meta.colorClass}`;
+                }
+                if (simScoreTierHint) simScoreTierHint.textContent = meta.tierHint;
+                if (heroScoreVal) heroScoreVal.textContent = `${s} pts`;
+
+                // Se o score for baixo (< 350), marca automaticamente a sugestão de score baixo/negativado se aplicável
+                updateSummaryChip();
+
+                // 2) Atualiza o Estúdio 3D e a Calculadora de Cashback
+                const studioNum = document.getElementById('studio-score-num');
+                const studioBadge = document.getElementById('studio-score-badge');
+                const card3d = document.getElementById('interactive-3d-card');
+                const card3dBank = document.getElementById('card-3d-bank');
+                const card3dBadge = document.getElementById('card-3d-badge');
+
+                if (studioNum) {
+                    studioNum.textContent = s;
+                    studioNum.className = `text-2xl sm:text-3xl font-black ${meta.colorClass}`;
+                }
+                if (studioBadge) {
+                    studioBadge.textContent = `Score ${meta.shortLabel}`;
+                    studioBadge.className = `text-xs font-extrabold px-2.5 py-0.5 rounded-full ${meta.badgeClass}`;
+                }
+                if (card3d) {
+                    card3d.className = `credit-card-3d card-theme-${meta.cardTheme} animate-float-card`;
+                }
+                if (card3dBank) card3dBank.textContent = meta.cardTitle;
+                if (card3dBadge) card3dBadge.textContent = meta.cardBadge;
+
+                updateStudioCalculations(s, Number(studioSpendSlider?.value || 1800), meta);
+            }
+
+            function updateStudioCalculations(scoreVal, monthlySpend, metaObj) {
+                const meta = metaObj || evaluateScoreMeta(scoreVal);
+                const spendDisp = document.getElementById('studio-spend-display');
+                const approvalPctEl = document.getElementById('studio-approval-pct');
+                const projLimitEl = document.getElementById('studio-projected-limit');
+                const cashbackYearEl = document.getElementById('studio-cashback-year');
+                const recTextEl = document.getElementById('studio-recommendation-text');
+
+                if (spendDisp) spendDisp.textContent = `${formatCurrencyNoCents(monthlySpend)} / mês`;
+                if (approvalPctEl) approvalPctEl.textContent = `${meta.approvalPct}%`;
+
+                // Calcula limite projetado realista baseado em Score + Gasto Mensal
+                const multiplier = scoreVal < 350 ? 0.8 : (scoreVal <= 600 ? 1.4 : (scoreVal <= 800 ? 2.2 : 3.5));
+                const projectedLimit = Math.max(400, Math.round((monthlySpend * multiplier) / 100) * 100);
+                if (projLimitEl) projLimitEl.textContent = formatCurrencyNoCents(projectedLimit);
+
+                // Calcula Cashback Anual (1% a 1.8% dependendo da faixa)
+                const cashbackRate = scoreVal > 800 ? 0.018 : (scoreVal > 600 ? 0.012 : 0.008);
+                const annualCashback = monthlySpend * 12 * cashbackRate;
+                if (cashbackYearEl) cashbackYearEl.textContent = formatBRL(annualCashback);
+
+                if (recTextEl) {
+                    recTextEl.innerHTML = `Com <strong>${scoreVal} pontos</strong> (${meta.label}), você tem <strong>${meta.approvalPct}% de compatibilidade</strong> com cartões de limite projetado em <strong>${formatCurrencyNoCents(projectedLimit)}</strong>.`;
+                }
+            }
+
+            window.setStudioScore = function(val) {
+                syncAllScoreVisuals(val, true);
+            };
+
+            window.syncStudioToHeroSimulator = function() {
+                const stScore = Number(studioScoreSlider?.value || 620);
+                const stSpend = Number(studioSpendSlider?.value || 1800);
+                if (limiteSlider) {
+                    limiteSlider.value = Math.min(30000, Math.max(500, stSpend * 2));
+                    updateLimitUI(limiteSlider.value);
+                }
+                syncAllScoreVisuals(stScore, true);
+                goToStage(2);
+            };
+
+            scoreSlider?.addEventListener('input', (e) => syncAllScoreVisuals(e.target.value, false));
+            studioScoreSlider?.addEventListener('input', (e) => syncAllScoreVisuals(e.target.value, true));
+            studioSpendSlider?.addEventListener('input', (e) => {
+                updateStudioCalculations(Number(studioScoreSlider?.value || 620), Number(e.target.value));
+            });
+
+            // Quando o usuário digita o nome no Passo 4, grava ao vivo no Cartão 3D!
+            const nomeInput = document.getElementById('nomeInput');
+            nomeInput?.addEventListener('input', (e) => {
+                const holderEl = document.getElementById('card-3d-holder');
+                if (holderEl) {
+                    holderEl.textContent = e.target.value.trim().toUpperCase() || 'CLIENTE TIRRACRED';
+                }
+            });
+
+            // Navegação das Etapas do Simulador
+            document.getElementById('btn-to-stage-2')?.addEventListener('click', () => goToStage(2));
+            document.getElementById('btn-to-stage-3')?.addEventListener('click', () => goToStage(3));
+            document.getElementById('btn-to-stage-4')?.addEventListener('click', () => {
+                const rawCpf = document.getElementById('cpf')?.value || '';
+                if (!validateCPF(rawCpf)) {
+                    const cpfMsg = document.getElementById('cpf-message');
+                    if (cpfMsg) {
+                        cpfMsg.textContent = '✕ Digite um CPF válido de 11 dígitos antes de continuar.';
+                        cpfMsg.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                    }
+                    document.getElementById('cpf')?.focus();
+                    return;
+                }
+                goToStage(4);
+            });
+
+            // ===================================================
+            // 4. RADAR DE CPF E INTEGRAÇÃO FACIO API (SEM PULO AUTOMÁTICO)
+            // ===================================================
+            const cpfInput = document.getElementById('cpf');
+            const cpfSpinner = document.getElementById('cpf-spinner');
+            const whatsappInput = document.getElementById('whatsapp');
+            const cpfMessage = document.getElementById('cpf-message');
+            const facioOfferBox = document.getElementById('facio-offer-box');
+            const facioUnavailableBox = document.getElementById('facio-unavailable-box');
+            const facioOfferMax = document.getElementById('facio-offer-max');
+
+            let facioState = {
+                lastCheckedCpf: null,
+                isAvailable: false,
+                checking: false,
+                offer: {
+                    maxValue: 300.0,
+                    fee: 72.9,
+                    baseFee: 9.9,
+                    description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                }
+            };
+
+            async function checkCardAndFacioEligibility(rawCpf) {
+                const cleanCpf = (rawCpf || '').replace(/\D/g, '');
+                if (!validateCPF(cleanCpf)) return false;
+
+                if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking) {
+                    return facioState.isAvailable;
+                }
+
+                facioState.checking = true;
+                facioState.lastCheckedCpf = cleanCpf;
+
+                cpfSpinner?.classList.remove('hidden');
+                if (cpfMessage) {
+                    cpfMessage.textContent = 'Escaneando emissores de cartões para o seu CPF...';
+                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-semibold animate-pulse';
+                }
+
+                try {
+                    const res = await fetch('/api/facio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        facioState.isAvailable = typeof data.isAvailable === 'boolean' ? data.isAvailable : true;
+                        if (data.offer) facioState.offer = data.offer;
+                    } else if (res.status === 400) {
+                        facioState.isAvailable = false;
+                    } else {
+                        facioState.isAvailable = true;
+                    }
+                } catch (e) {
+                    facioState.isAvailable = true;
+                } finally {
+                    facioState.checking = false;
+                    cpfSpinner?.classList.add('hidden');
+                }
+
+                if (facioOfferMax && facioState.offer?.maxValue) {
+                    facioOfferMax.textContent = formatBRL(facioState.offer.maxValue);
+                }
+
+                if (facioState.isAvailable) {
+                    facioOfferBox?.classList.remove('hidden');
+                    facioUnavailableBox?.classList.add('hidden');
+                    if (cpfMessage) {
+                        cpfMessage.textContent = '✓ CPF elegível! Clique em Continuar abaixo:';
+                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold';
+                    }
+                } else {
+                    facioOfferBox?.classList.add('hidden');
+                    facioUnavailableBox?.classList.remove('hidden');
+                    if (cpfMessage) {
+                        cpfMessage.textContent = '✓ CPF validado! Clique em Continuar abaixo:';
+                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold';
+                    }
+                }
+
+                return facioState.isAvailable;
+            }
+
+            cpfInput?.addEventListener('input', (e) => {
+                e.target.value = formatCPF(e.target.value);
+                const clean = e.target.value.replace(/\D/g, '');
+
+                if (clean.length < 11) {
+                    facioOfferBox?.classList.add('hidden');
+                    facioUnavailableBox?.classList.add('hidden');
+                    facioState.lastCheckedCpf = null;
+                    if (cpfMessage) {
+                        cpfMessage.textContent = 'Análise inteligente sem reduzir sua pontuação de Score.';
+                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500';
+                    }
+                    return;
+                }
+
+                if (clean.length === 11) {
+                    if (validateCPF(clean)) {
+                        checkCardAndFacioEligibility(clean);
+                    } else {
+                        facioOfferBox?.classList.add('hidden');
+                        facioUnavailableBox?.classList.add('hidden');
+                        if (cpfMessage) {
+                            cpfMessage.textContent = '✕ CPF inválido. Verifique os dígitos.';
+                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                        }
+                    }
+                }
+            });
+
+            whatsappInput?.addEventListener('input', (e) => {
+                e.target.value = formatPhone(e.target.value);
+            });
+
+            // ===================================================
+            // 5. SUBMISSÃO DO FORMULÁRIO -> REDIRECIONA PARA RESULTADOS.HTML
+            // ===================================================
+            cardForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(cardForm);
+                const nome = String(formData.get('nome') || '').trim();
+                const cpf = String(formData.get('cpf') || '').replace(/\D/g, '');
+                const email = String(formData.get('email') || '').trim().toLowerCase();
+                let whatsapp = String(formData.get('whatsapp') || '').replace(/\D/g, '');
+
+                if (whatsapp.length === 13 && whatsapp.startsWith('55')) whatsapp = whatsapp.slice(2);
+
+                if (!validateCPF(cpf)) {
+                    goToStage(3);
+                    alert('Por favor, informe um CPF válido de 11 dígitos.');
+                    cpfInput?.focus();
+                    return;
+                }
+
+                if (currentSubStage < 4) {
+                    goToStage(4);
+                    return;
+                }
+
+                if (!nome || !nome.includes(' ')) {
+                    alert('Informe seu nome completo (nome e sobrenome).');
+                    nomeInput?.focus();
+                    return;
+                }
+
+                if (whatsapp.length !== 11 || whatsapp.charAt(2) !== '9') {
+                    alert('Informe um celular WhatsApp válido com DDD + 9.');
+                    whatsappInput?.focus();
+                    return;
+                }
+
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Informe um e-mail válido.');
+                    document.getElementById('emailInput')?.focus();
+                    return;
+                }
+
+                const submitBtn = document.getElementById('submit-btn-home');
+                const originalText = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Liberando Cartões...';
+                }
+
+                try {
+                    if (facioState.lastCheckedCpf !== cpf) {
+                        await checkCardAndFacioEligibility(cpf);
+                    }
+
+                    const scoreVal = Number(scoreSlider?.value || 620);
+                    const limitVal = Number(limiteSlider?.value || 2500);
+                    const isNegativado = document.getElementById('chk-negativado')?.checked || (scoreVal < 350);
+                    const isAposentado = document.getElementById('chk-aposentado')?.checked || false;
+                    const isBolsaFamilia = document.getElementById('chk-bolsafamilia')?.checked || false;
+                    const isAutonomo = document.getElementById('chk-autonomo')?.checked || false;
+
+                    const leadContextPayload = {
+                        nome,
+                        cpf,
+                        whatsapp,
+                        email,
+                        valor: limitVal,
+                        parcelas: 12,
+                        score: scoreVal,
+                        modalidade: 'cartao',
+                        beneficio: selectedBenefitInput?.value || 'zero_anuidade',
+                        negativado: isNegativado,
+                        aposentado: isAposentado,
+                        bolsafamilia: isBolsaFamilia,
+                        autonomo: isAutonomo,
+                        facioAvailable: facioState.isAvailable,
+                        facioMaxValue: facioState.offer?.maxValue ?? 300,
+                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                        facioFee: facioState.offer?.fee ?? 72.9,
+                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                    };
+
+                    try {
+                        sessionStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                        localStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                    } catch (_) {}
+
+                    const params = new URLSearchParams({
+                        nome,
+                        valor: limitVal,
+                        parcelas: 12,
+                        score: scoreVal,
+                        modalidade: 'cartao',
+                        negativado: isNegativado,
+                        aposentado: isAposentado,
+                        bolsafamilia: isBolsaFamilia,
+                        autonomo: isAutonomo,
+                        facioAvailable: facioState.isAvailable,
+                        facioMaxValue: facioState.offer?.maxValue ?? 300,
+                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                        facioFee: facioState.offer?.fee ?? 72.9,
+                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                    });
+
+                    const isInsidePagesDir = window.location.pathname.includes('/pages/');
+                    const targetResultsPath = isInsidePagesDir ? `./resultados.html` : `./pages/resultados.html`;
+                    window.location.href = `${targetResultsPath}?${params.toString()}`;
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                }
+            });
+
+            // ===================================================
+            // 6. CARROSSEL "COMO FUNCIONA" E LINKS DE SCROLL
+            // ===================================================
+            const track = document.getElementById('carousel-track');
+            const nextButton = document.getElementById('nextBtn');
+            const prevButton = document.getElementById('prevBtn');
+            const dotsNav = document.getElementById('carousel-dots');
+            const carouselContainer = document.getElementById('carousel-container');
+
+            if (track && nextButton && prevButton && dotsNav) {
+                const slides = Array.from(track.children);
+                const slideCount = slides.length;
+                let currentIndex = 0;
+
+                dotsNav.innerHTML = '';
+                for (let i = 0; i < slideCount; i++) {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.classList.add('dot', 'w-2.5', 'h-2.5', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+                    dot.addEventListener('click', () => {
+                        currentIndex = i;
+                        updateCarousel();
+                    });
+                    dotsNav.appendChild(dot);
+                }
+                const dots = Array.from(dotsNav.children);
+
+                const updateCarousel = () => {
+                    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    dots.forEach((dot, index) => {
+                        const isActive = index === currentIndex;
+                        dot.classList.toggle('active', isActive);
+                        dot.classList.toggle('bg-green-600', isActive);
+                        dot.classList.toggle('bg-gray-300', !isActive);
+                    });
+                    prevButton.style.display = currentIndex === 0 ? 'none' : 'flex';
+                    nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'flex';
+                };
+
+                nextButton.addEventListener('click', () => {
+                    if (currentIndex < slideCount - 1) { currentIndex++; updateCarousel(); }
+                });
+                prevButton.addEventListener('click', () => {
+                    if (currentIndex > 0) { currentIndex--; updateCarousel(); }
+                });
+                updateCarousel();
+            }
+
+            const stickyWrapper = document.getElementById('sticky-top-wrapper');
+            document.querySelectorAll('.scroll-toggle').forEach(link => {
+                link.addEventListener('click', function(event) {
+                    const targetHref = this.getAttribute('href');
+                    if (!targetHref || !targetHref.startsWith('#')) return;
+                    event.preventDefault();
+                    const targetElement = document.querySelector(targetHref);
+                    mobileMenu?.classList.add('hidden');
+                    if (targetElement) {
+                        const topH = stickyWrapper ? stickyWrapper.offsetHeight : 0;
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - topH - 8;
+                        window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ===================================================
+            // 7. ROTAÇÃO ESTÁTICA DO HERO BANNER
+            // ===================================================
+            const bgSlides = document.querySelectorAll('#hero-background [data-bg-slide]');
+            const textSlides = document.querySelectorAll('[data-text-slide]');
+            const heroDots = document.querySelectorAll('[data-hero-dot]');
+            let currentHeroIndex = 0;
+            let heroInterval = null;
+
+            function setHeroSlide(index) {
+                currentHeroIndex = index;
+                bgSlides.forEach((img, idx) => {
+                    img.classList.toggle('opacity-100', idx === index);
+                    img.classList.toggle('opacity-0', idx !== index);
+                });
+                textSlides.forEach((slide, idx) => {
+                    const active = idx === index;
+                    slide.classList.toggle('opacity-100', active);
+                    slide.classList.toggle('z-10', active);
+                    slide.classList.toggle('opacity-0', !active);
+                    slide.classList.toggle('pointer-events-none', !active);
+                    slide.classList.toggle('z-0', !active);
+                });
+                heroDots.forEach((dot, idx) => {
+                    dot.className = (idx === index)
+                        ? 'h-1.5 w-6 rounded-full bg-emerald-400 transition-all duration-300'
+                        : 'h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300';
+                });
+            }
+
+            function startHeroRotation() {
+                if (heroInterval) clearInterval(heroInterval);
+                heroInterval = setInterval(() => {
+                    setHeroSlide((currentHeroIndex + 1) % textSlides.length);
+                }, 8000);
+            }
+
+            heroDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    setHeroSlide(Number(dot.getAttribute('data-hero-dot')) || 0);
+                    startHeroRotation();
+                });
+            });
+            startHeroRotation();
+
+            // ===================================================
+            // 8. VITRINE DE CARTÕES E PRODUTOS (D1 + SUPABASE)
+            // ===================================================
+            const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+            const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const listEl = document.getElementById('product-list');
+            const pagTop = document.getElementById('pagination-top');
+            const pagBottom = document.getElementById('pagination');
+            const resultsSummaryEl = document.getElementById('filter-results-summary');
+
+            const state = { all: [], filtered: [], page: 1, perPage: 4 };
+
+            const toVantagensLines = (v) => {
+                if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
+                if (typeof v === 'string') {
+                    const trimmed = v.trim();
+                    if (!trimmed) return [];
+                    try {
+                        const j = JSON.parse(trimmed);
+                        if (Array.isArray(j)) return j.map(s => String(s).trim()).filter(Boolean);
+                    } catch (e) {}
+                    if (trimmed.includes('\n')) return trimmed.split('\n').map(s => s.trim()).filter(Boolean);
+                    return trimmed.replace(/^\{|\}$/g, '').split(',').map(s => s.replace(/^"|"$|/g, '').trim()).filter(Boolean);
+                }
+                return [];
+            };
+
+            const toArray = (v, lower = false) => {
+                if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
+                if (typeof v === 'string') {
+                    try {
+                        const j = JSON.parse(v);
+                        if (Array.isArray(j)) return lower ? j.map(s => String(s).toLowerCase().trim()) : j;
+                    } catch (e) {}
+                    const arr = v.replace(/^\{|\}$/g, '').split(',').map(s => s.replace(/"/g, '').trim()).filter(Boolean);
+                    return lower ? arr.map(s => s.toLowerCase()) : arr;
+                }
+                return [];
+            };
+
+            const normalizeSlug = (str) => String(str || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9_-]/g, '')
+                .replace(/s$/, '');
+
+            const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
+            const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const safeURL = (u) => /^https?:\/\//i.test(String(u || '')) ? String(u) : '#';
+
+            const badgeMap = {
+                red: 'bg-red-100 text-red-800',
+                blue: 'bg-blue-100 text-blue-800',
+                yellow: 'bg-yellow-100 text-yellow-800',
+                purple: 'bg-purple-100 text-purple-800',
+                green: 'bg-emerald-100 text-emerald-800'
+            };
+            const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
+
+            const isAdItem = (p) => {
+                const tipo = String(p?.tipo || '').toLowerCase().trim();
+                const tag  = String(p?.tag  || '');
+                const slot = String(p?.slot || p?.link || '').toString().trim();
+                return tipo.includes('anuncio') || tag.includes('ca-pub') || /^\d{5,}$/.test(slot);
+            };
+
+            function renderProductCardHTML(p, idx = 0) {
+                const vantagens = toVantagensLines(p.vantagens);
+                const vHtml = vantagens.map(v => `
+                    <li class="flex items-start text-sm sm:text-base">
+                        <span class="mr-2 text-green-700 font-bold shrink-0">✓</span><span>${v}</span>
+                    </li>`
+                ).join('');
+
+                return `
+                    <div class="product-card fade-in" style="animation-delay: ${idx * 45}ms">
+                        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm h-full flex flex-col">
+                            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
+                                <div class="flex-shrink-0 flex justify-center">
+                                    <div class="w-32 h-20 p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center">
+                                        <img src="${fixLogo(p.logo)}" alt="Logo ${esc(p.titulo || '')}" class="max-w-full max-h-full w-auto h-auto object-contain"
+                                             onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Cartao';">
+                                    </div>
+                                </div>
+                                <div class="flex-grow w-full">
+                                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                        <div class="flex-grow text-center sm:text-left">
+                                            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2.5">
+                                                <span class="inline-block ${safeBadge(p.tagClass)} text-xs font-bold px-3 py-1 rounded-full">
+                                                    ${esc(p.tag || 'Cartão Recomendado')}
+                                                </span>
+                                                <span class="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                                    <i class="fas fa-gauge-high"></i> Aprovação Rápida
+                                                </span>
+                                            </div>
+                                            <h4 class="text-lg sm:text-xl font-extrabold text-gray-900 mb-3">${esc(p.titulo || '')}</h4>
+                                            <ul class="space-y-2 text-gray-600 mb-4 text-left">${vHtml}</ul>
+                                        </div>
+                                        <div class="flex-shrink-0 w-full lg:w-44 mt-2 lg:mt-0">
+                                            <div class="product-actions">
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-primary text-center w-full">
+                                                    ${esc(p.btnPrimario || 'Pedir Cartão')}
+                                                </a>
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-secondary text-center w-full">
+                                                    ${esc(p.btnSecundario || 'Condições')}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            const renderPaginationBars = (totalPages, totalItemsCount) => {
+                const total = Math.max(1, totalPages);
+                if (resultsSummaryEl) {
+                    resultsSummaryEl.textContent = `${totalItemsCount} ${totalItemsCount === 1 ? 'opção encontrada' : 'opções encontradas'} • Página ${state.page} de ${total}`;
+                }
+
+                [pagTop, pagBottom].forEach((c, barIdx) => {
+                    if (!c) return;
+                    c.innerHTML = '';
+
+                    const mk = (label, p, dis = false, cur = false, delayMs = 0) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.textContent = label;
+                        b.disabled = dis || cur;
+                        b.style.animationDelay = `${delayMs}ms`;
+                        b.className = 'page-btn-anim ' + (cur
+                            ? 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm'
+                            : (dis
+                                ? 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition'));
+
+                        if (!b.disabled) {
+                            b.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                state.page = p;
+                                render();
+                                if (barIdx === 1) {
+                                    const anchor = document.getElementById('home-filters');
+                                    const topH = stickyWrapper ? stickyWrapper.offsetHeight : 0;
+                                    if (anchor) {
+                                        const y = anchor.getBoundingClientRect().top + window.pageYOffset - topH - 8;
+                                        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+                                    }
+                                }
+                            });
+                        }
+                        return b;
+                    };
+
+                    c.appendChild(mk('Anterior', state.page - 1, state.page <= 1, false, 0));
+                    for (let i = 1; i <= total; i++) {
+                        c.appendChild(mk(String(i), i, false, i === state.page, i * 25));
+                    }
+                    c.appendChild(mk('Próximo', state.page + 1, state.page >= total, false, (total + 1) * 25));
+                });
+            };
+
+            const render = () => {
+                const start = (state.page - 1) * state.perPage;
+                const end   = start + state.perPage;
+                const items = state.filtered.slice(start, end);
+
+                listEl.innerHTML = items.length ? items.map((p, idx) => {
+                    if (isAdItem(p)) return '';
+                    return renderProductCardHTML(p, idx);
+                }).join('') : `
+                    <div class="h-80 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-gray-200 p-6 fade-in">
+                        <p class="text-gray-600 font-semibold mb-3">Nenhum cartão específico para esta combinação de filtros.</p>
+                        <button type="button" onclick="document.getElementById('reset-filters-btn').click()" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition">
+                            Mostrar Todos os Cartões e Ofertas
+                        </button>
+                    </div>`;
+
+                const totalOffersOnly = state.filtered.filter(p => !isAdItem(p)).length;
+                const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+                renderPaginationBars(totalPages, totalOffersOnly);
+            };
+
+            const apply = () => {
+                const selectedTypeRaw = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+                const selectedTypeNorm = normalizeSlug(selectedTypeRaw);
+
+                const perfisSelNorm = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+                    .map(e => normalizeSlug(e.value));
+
+                const all = Array.isArray(state.all) ? state.all.filter(p => !isAdItem(p)) : [];
+
+                const matchesType = (p) => {
+                    if (selectedTypeRaw === 'all') return true;
+                    const pTypes = toArray(p?.tipo, true);
+                    const rawTitle = String(p?.titulo || '').toLowerCase();
+                    if (selectedTypeRaw === 'cartao') {
+                        return pTypes.some(t => t.includes('cartao') || t.includes('contas')) || /cart[aã]o|card|cr[eé]dito/i.test(rawTitle);
+                    }
+                    return pTypes.some(t => t === selectedTypeRaw.toLowerCase() || normalizeSlug(t) === selectedTypeNorm);
+                };
+
+                const matchesPerfis = (p) => {
+                    if (!perfisSelNorm.length) return true;
+                    const pPerfis = toArray(p?.perfis, true).map(normalizeSlug);
+                    const rawTxtNorm = normalizeSlug(String(p?.perfis || '') + ' ' + String(p?.tipo || '') + ' ' + String(p?.vantagens || ''));
+                    return perfisSelNorm.some(sel => pPerfis.includes(sel) || rawTxtNorm.includes(sel));
+                };
+
+                let filteredList = all.filter(p => matchesType(p) && matchesPerfis(p));
+                // Se a base tiver poucos itens marcados explicitamente como 'cartao', exibe todos priorizando cartões no topo
+                if (filteredList.length === 0 && selectedTypeRaw === 'cartao' && perfisSelNorm.length === 0) {
+                    filteredList = [...all];
+                }
+
+                state.filtered = filteredList;
+                state.page = 1;
+                render();
+
+                if (window.innerWidth < 1024) closePanel();
+            };
+
+            window.quickFilterCards = function(mode) {
+                document.querySelectorAll('input[data-filter="perfil"]:checked').forEach(cb => cb.checked = false);
+                if (mode === 'negativado') {
+                    const allRadio = document.querySelector('input[name="product_type"][value="all"]');
+                    if (allRadio) allRadio.checked = true;
+                    const negCb = document.querySelector('input[data-filter="perfil"][value="negativado"]');
+                    if (negCb) negCb.checked = true;
+                } else {
+                    const radio = document.querySelector(`input[name="product_type"][value="${mode}"]`);
+                    if (radio) radio.checked = true;
+                }
+                apply();
+            };
+
+            function syncDynamicAdminFilters(products) {
+                const typeContainer = document.getElementById('filter-type-list');
+                const perfilContainer = document.getElementById('filter-perfil-list');
+                if (!typeContainer || !perfilContainer) return;
+
+                const existingTypesNorm = new Set(
+                    Array.from(typeContainer.querySelectorAll('input[name="product_type"]')).map(el => normalizeSlug(el.value))
+                );
+                const existingPerfisNorm = new Set(
+                    Array.from(perfilContainer.querySelectorAll('input[data-filter="perfil"]')).map(el => normalizeSlug(el.value))
+                );
+
+                let adminSavedCategories = [];
+                let adminSavedProfiles = [];
+                try {
+                    adminSavedCategories = JSON.parse(localStorage.getItem('tirracred_Taxonomy_Categories') || '[]');
+                    adminSavedProfiles = JSON.parse(localStorage.getItem('tirracred_Taxonomy_Profiles') || '[]');
+                } catch (e) {}
+
+                const cleanLabel = (rawLabel, fallbackSlug) => {
+                    const txt = String(rawLabel || fallbackSlug || '').replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]\s*/u, '').trim();
+                    return txt.charAt(0).toUpperCase() + txt.slice(1).replace(/[-_]/g, ' ');
+                };
+
+                const addTypeOptionIfNew = (slug, labelText) => {
+                    const cleanSlug = String(slug || '').toLowerCase().trim();
+                    const norm = normalizeSlug(cleanSlug);
+                    if (!cleanSlug || cleanSlug === 'all' || cleanSlug === 'anuncio' || existingTypesNorm.has(norm)) return;
+                    existingTypesNorm.add(norm);
+
+                    const lbl = document.createElement('label');
+                    lbl.className = 'flex items-center cursor-pointer';
+                    lbl.innerHTML = `
+                        <input type="radio" name="product_type" value="${esc(cleanSlug)}" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                        <span class="ml-2.5 text-gray-700 font-medium">${esc(labelText)}</span>
+                    `;
+                    lbl.querySelector('input').addEventListener('change', apply);
+                    typeContainer.appendChild(lbl);
+                };
+
+                const addPerfilOptionIfNew = (slug, labelText) => {
+                    const cleanSlug = String(slug || '').toLowerCase().trim();
+                    const norm = normalizeSlug(cleanSlug);
+                    if (!cleanSlug || existingPerfisNorm.has(norm)) return;
+                    existingPerfisNorm.add(norm);
+
+                    const lbl = document.createElement('label');
+                    lbl.className = 'flex items-center cursor-pointer';
+                    lbl.innerHTML = `
+                        <input type="checkbox" data-filter="perfil" value="${esc(cleanSlug)}" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="ml-2.5 text-gray-700 font-medium">${esc(labelText)}</span>
+                    `;
+                    lbl.querySelector('input').addEventListener('change', apply);
+                    perfilContainer.appendChild(lbl);
+                };
+
+                if (Array.isArray(adminSavedCategories)) {
+                    adminSavedCategories.forEach(cat => { if (cat?.slug) addTypeOptionIfNew(cat.slug, cleanLabel(cat.label, cat.slug)); });
+                }
+                if (Array.isArray(adminSavedProfiles)) {
+                    adminSavedProfiles.forEach(prof => { if (prof?.slug) addPerfilOptionIfNew(prof.slug, cleanLabel(prof.label, prof.slug)); });
+                }
+
+                products.forEach(p => {
+                    if (isAdItem(p)) return;
+                    toArray(p.tipo, true).forEach(t => addTypeOptionIfNew(t, cleanLabel(null, t)));
+                    toArray(p.perfis, true).forEach(pf => addPerfilOptionIfNew(pf, cleanLabel(null, pf)));
+                });
+            }
+
+            document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]').forEach(f => {
+                f.addEventListener('change', apply);
+            });
+
+            document.getElementById('reset-filters-btn')?.addEventListener('click', () => {
+                const allRadio = document.querySelector('input[name="product_type"][value="all"]');
+                if (allRadio) allRadio.checked = true;
+                document.querySelectorAll('input[data-filter="perfil"]:checked').forEach(cb => cb.checked = false);
+                apply();
+            });
+
+            // Carrega produtos da Cloudflare D1 + Supabase
+            (async () => {
+                listEl.innerHTML = '<div class="flex justify-center items-center h-80 bg-white rounded-2xl border border-gray-200"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+
+                let d1Products = [];
+                let supabaseProducts = [];
+
+                try {
+                    const res = await fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data)) d1Products = data;
+                    }
+                } catch (e) {}
+
+                try {
+                    const { data, error } = await _supabase
+                        .from('products')
+                        .select('*')
+                        .order('priority_order', { ascending: true });
+                    if (!error && Array.isArray(data) && data.length > 0) {
+                        supabaseProducts = data;
+                    } else {
+                        const restRes = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=priority_order.asc`, {
+                            cache: 'no-store',
+                            headers: {
+                                'apikey': SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                            }
+                        });
+                        if (restRes.ok) {
+                            const restData = await restRes.json();
+                            if (Array.isArray(restData)) supabaseProducts = restData;
+                        }
+                    }
+                } catch (e) {}
+
+                const seen = new Set();
+                const merged = [];
+                for (const p of [...d1Products, ...supabaseProducts]) {
+                    const isAtivo = p.ativo !== false && p.ativo !== 0 && p.ativo !== '0';
+                    if (!isAtivo) continue;
+                    const titleKey = (p.titulo || '').toLowerCase().trim();
+                    const uniqueKey = (titleKey && !isAdItem(p)) ? `title:${titleKey}` : `ad:${p.id}_${p.link || ''}`;
+                    if (!seen.has(uniqueKey)) {
+                        seen.add(uniqueKey);
+                        merged.push(p);
+                    }
+                }
+
+                // Ordena colocando Cartões de Crédito em destaque no topo da página de cartões
+                merged.sort((a, b) => {
+                    const aIsCard = String(a.tipo || '').toLowerCase().includes('cartao') || /cart[aã]o/i.test(a.titulo || '') ? 0 : 1;
+                    const bIsCard = String(b.tipo || '').toLowerCase().includes('cartao') || /cart[aã]o/i.test(b.titulo || '') ? 0 : 1;
+                    if (aIsCard !== bIsCard) return aIsCard - bIsCard;
+                    return (Number(a.priority_order) ?? 999) - (Number(b.priority_order) ?? 999);
+                });
+
+                state.all = merged.map(p => ({ ...p, logo: fixLogo(p.logo) }));
+                syncDynamicAdminFilters(state.all);
+                apply();
+            })();
+
+            // Inicializa os cálculos visuais do Estúdio 3D
+            syncAllScoreVisuals(620, false);
+        });
+    </script>
+
+</body>
+</html>
