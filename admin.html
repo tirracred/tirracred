@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
@@ -17,30 +17,22 @@
     .sortable-chosen { cursor: grabbing; }
     .modal-bg { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
 
-    /* Editor Visual WYSIWYG Minimalista */
-    #visualEditor {
-      min-height: 120px;
-      max-height: 220px;
-      overflow-y: auto;
+    /* Linhas Individuais do Editor Visual de Vantagens */
+    .adv-row-editor {
       outline: none;
-      line-height: 1.6;
+      min-height: 24px;
+      line-height: 1.5;
+      word-break: break-word;
     }
-    #visualEditor > div, #visualEditor > p {
-      padding: 3px 6px;
-      border-radius: 6px;
-      margin-bottom: 4px;
-      background: #f8fafc;
-      border: 1px solid #f1f5f9;
-    }
-    #visualEditor > div:focus-within, #visualEditor:focus {
-      border-color: #10b981;
-      background: #ffffff;
-    }
-    #visualEditor:empty:before {
+    .adv-row-editor:empty:before {
       content: attr(data-placeholder);
       color: #94a3b8;
       pointer-events: none;
-      display: block;
+    }
+    .adv-row-wrap:focus-within {
+      border-color: #10b981;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
     }
 
     /* Badges das Regras */
@@ -185,7 +177,7 @@
       <!-- Corpo Rolável do Modal (2 Colunas: Editor à esquerda + Preview/Tags à direita) -->
       <div class="p-5 sm:p-6 overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- COLUNA ESQUERDA (7 cols): DADOS, IMAGEM (ANTES/DEPOIS) E EDITOR VISUAL -->
+        <!-- COLUNA ESQUERDA (7 cols): DADOS, IMAGEM (ANTES/DEPOIS) E EDITOR DE LINHAS -->
         <div class="lg:col-span-7 space-y-5">
           <input type="hidden" id="uid">
 
@@ -214,11 +206,11 @@
           <!-- 1. TÍTULO E TAG DE MARKETING -->
           <div id="offerMainFields" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
-              <div class="sm:col-span-7">
+              <div class="sm:col-span-8">
                 <label class="text-xs font-bold uppercase text-gray-500">Nome da Instituição / Oferta</label>
-                <input id="titulo" placeholder="Ex: Velotax — Empréstimo Pix" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
+                <input id="titulo" placeholder="Ex: Facio - Dinheiro na conta 💵" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
               </div>
-              <div class="sm:col-span-5">
+              <div class="sm:col-span-4">
                 <label class="text-xs font-bold uppercase text-gray-500">Prioridade (Ordem)</label>
                 <input id="priority_order" type="number" placeholder="0" class="w-full mt-1 px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:border-emerald-600 outline-none">
               </div>
@@ -267,7 +259,7 @@
                 <input type="file" id="modalLogoFile" accept="image/*" class="hidden">
               </div>
 
-              <input id="logo" placeholder="Caminho (ex: public/velotax.png) ou envie uma imagem" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white font-mono">
+              <input id="logo" placeholder="Caminho (ex: public/facio.png) ou envie uma imagem" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white font-mono">
 
               <!-- Box Comparativo: Aparece a Thumb Atual e, ao trocar, mostra a Antiga prestes a ser deletada -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -299,15 +291,23 @@
               </div>
             </div>
 
-            <!-- 3. EDITOR VISUAL DE VANTAGENS (SEM HTML CRU) -->
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
+            <!-- 3. EDITOR VISUAL DE VANTAGENS POR LINHAS INDEPENDENTES (SEM PRECISAR DE VÍRGULA) -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-2">
-                <label class="text-xs font-extrabold uppercase text-gray-600">
-                  Vantagens da Oferta <span class="text-gray-400 font-normal">(1 vantagem por linha)</span>
-                </label>
-                <button type="button" id="toggleHtmlSourceBtn" class="text-[11px] font-semibold text-gray-500 hover:text-gray-800 underline">
-                  Ver código HTML
-                </button>
+                <div>
+                  <label class="text-xs font-extrabold uppercase text-gray-600">
+                    Vantagens da Oferta <span class="text-emerald-700 font-bold">(Quebra de Linha Automática)</span>
+                  </label>
+                  <p class="text-[11px] text-gray-500">Cada caixa abaixo é uma linha automática no site (não precisa colocar vírgula).</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="addAdvantageRow('', true)" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-sm transition">
+                    <i class="fas fa-plus"></i> Nova Linha
+                  </button>
+                  <button type="button" id="toggleHtmlSourceBtn" class="text-[11px] font-semibold text-gray-500 hover:text-gray-800 underline">
+                    Ver código HTML
+                  </button>
+                </div>
               </div>
 
               <!-- Barra de Ferramentas Visual (B, I, U, Cores, Ícones, Limpar) -->
@@ -333,21 +333,27 @@
                 <button type="button" onmousedown="event.preventDefault(); insertVisualText('🔥 ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Fogo">🔥</button>
                 <button type="button" onmousedown="event.preventDefault(); insertVisualText('⚡ ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Raio">⚡</button>
                 <button type="button" onmousedown="event.preventDefault(); insertVisualText('💰 ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Dinheiro">💰</button>
+                <button type="button" onmousedown="event.preventDefault(); insertVisualText('💵 ')" class="px-2 py-1 rounded-lg hover:bg-gray-100 text-xs border border-gray-200" title="Inserir Cédula">💵</button>
                 <button type="button" onmousedown="event.preventDefault(); execVisualCmd('removeFormat')" class="px-2 py-1 rounded-lg hover:bg-red-50 text-red-600 text-[11px] font-bold border border-red-200 ml-auto" title="Limpar formatação do texto selecionado">
                   <i class="fas fa-eraser"></i> Limpar
                 </button>
               </div>
 
-              <!-- Área Editável Visual (Onde o usuário edita vendo negrito e cores reais) -->
-              <div id="visualEditor" contenteditable="true"
-                   data-placeholder="Digite cada vantagem e aperte Enter para criar uma nova linha. Selecione qualquer palavra e clique nos botões acima para colorir ou deixar em negrito..."
-                   class="w-full p-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-800"></div>
+              <!-- Lista de Linhas Visuais Independentes -->
+              <div id="visualRowsWrapper" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+              <!-- Botão Grande de "+" para Adicionar Mais Linhas -->
+              <button type="button" id="addAdvantageBottomBtn" onclick="addAdvantageRow('', true)"
+                      class="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/70 text-emerald-800 text-xs font-extrabold transition flex items-center justify-center gap-2">
+                <i class="fas fa-plus-circle text-emerald-600 text-sm"></i>
+                <span>Adicionar Nova Linha de Vantagem</span>
+              </button>
 
               <!-- Textarea HTML oculto (Sincronizado automaticamente) -->
               <textarea id="vantagens" rows="4" class="hidden w-full p-3 bg-slate-900 text-emerald-300 font-mono text-xs rounded-xl border border-slate-700"></textarea>
             </div>
 
-            <!-- 4. LINKS E BOTÕES DE AÇÃO (CAMPOS QUE FALTAVAM NO FORMULÁRIO) -->
+            <!-- 4. LINKS E BOTÕES DE AÇÃO -->
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <div class="sm:col-span-12">
                 <label class="text-xs font-bold uppercase text-gray-500">Link de Afiliado / Destino (URL)</label>
@@ -355,7 +361,7 @@
               </div>
               <div class="sm:col-span-6">
                 <label class="text-xs font-bold uppercase text-gray-500">Texto do Botão Principal</label>
-                <input id="btnPrimario" placeholder="Ex: Receber Agora" value="Receber Agora" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm">
+                <input id="btnPrimario" placeholder="Ex: SOLICITAR AGORA" value="Receber Agora" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm">
               </div>
               <div class="sm:col-span-6">
                 <label class="text-xs font-bold uppercase text-gray-500">Texto do Botão Secundário</label>
@@ -368,16 +374,21 @@
         <!-- COLUNA DIREITA (5 cols): PREVIEW AO VIVO + CATEGORIAS E TAGS DE PERFIL -->
         <div class="lg:col-span-5 space-y-5">
 
-          <!-- 1. PREVIEW AO VIVO DO CARD -->
+          <!-- 1. PREVIEW AO VIVO DO CARD (COM EMOJIS NAS TAGS E ANIMAÇÃO DE MATCH) -->
           <div class="bg-emerald-950/5 p-4 rounded-2xl border border-emerald-200/80">
             <div class="flex items-center justify-between mb-2.5">
               <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
                 <i class="fas fa-eye text-emerald-600"></i> Preview ao Vivo no Site
               </span>
-              <label class="inline-flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer bg-white px-2.5 py-1 rounded-full border border-gray-200">
-                <input id="ativo" type="checkbox" checked class="h-4 w-4 accent-emerald-600 rounded">
-                <span>Visível no Site</span>
-              </label>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="triggerMatchCountAnimation()" class="text-[11px] font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2 py-0.5 rounded-full transition" title="Ver animação do Match subindo">
+                  ▶️ Animar Match
+                </button>
+                <label class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer bg-white px-2.5 py-1 rounded-full border border-gray-200">
+                  <input id="ativo" type="checkbox" checked class="h-4 w-4 accent-emerald-600 rounded">
+                  <span>Visível no Site</span>
+                </label>
+              </div>
             </div>
 
             <!-- Card Simulado -->
@@ -386,21 +397,39 @@
                 <span id="prevTag" class="text-xs font-extrabold px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                   Top¹ - Empréstimo
                 </span>
-                <span class="text-[11px] font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full">🔥 96% Match</span>
+                <!-- Selo Match com Animação Count-Up -->
+                <span onclick="triggerMatchCountAnimation()" class="cursor-pointer inline-flex items-center gap-1 text-[11px] font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-sm select-none" title="Clique para repetir a animação">
+                  🔥 <span id="prevMatchNumber">96</span>% Match
+                </span>
               </div>
+
               <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
                 <div class="w-20 h-12 rounded-xl border border-gray-200 bg-gray-50 p-1.5 flex items-center justify-center shrink-0">
                   <img id="prevLogo" src="https://placehold.co/96x48/e2e8f0/4a5568?text=Logo" class="max-w-full max-h-full object-contain" alt="Logo">
                 </div>
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
+                  <!-- Aqui agora aparecem as Tags com Emojis (ex: 💰 Empréstimos) -->
                   <div id="prevCategoriesPills" class="flex flex-wrap gap-1 mb-1"></div>
                   <h4 id="prevTitle" class="font-black text-gray-900 text-base truncate">Nome da Instituição</h4>
                 </div>
               </div>
+
+              <!-- Barra Animada de Compatibilidade -->
+              <div class="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                  <span class="text-gray-600">Compatibilidade com o Perfil</span>
+                  <span class="text-emerald-700"><span id="prevMatchBarText">96</span>%</span>
+                </div>
+                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div id="prevMatchBarFill" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-75" style="width: 96%"></div>
+                </div>
+              </div>
+
               <ul id="prevVantagens" class="space-y-1.5 text-xs text-gray-700"></ul>
+
               <div class="pt-2">
-                <span id="prevBtnPrimario" class="block w-full py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs text-center shadow-sm">
-                  Receber Agora
+                <span id="prevBtnPrimario" class="block w-full py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-xs text-center shadow-sm uppercase">
+                  SOLICITAR AGORA
                 </span>
               </div>
             </div>
@@ -418,9 +447,9 @@
             <!-- Chips de Categorias -->
             <div id="categoryChipsContainer" class="flex flex-wrap gap-1.5"></div>
 
-            <!-- Adicionar Nova Categoria -->
+            <!-- Adicionar Nova Categoria (aceita emoji + nome) -->
             <div class="flex gap-2 pt-1">
-              <input id="newCategoryInput" type="text" placeholder="Nova categoria (ex: consorcio, veiculos)..."
+              <input id="newCategoryInput" type="text" placeholder="Ex: 🚗 Financiamento ou Consórcio..."
                      class="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded-xl bg-white outline-none focus:border-emerald-600">
               <button type="button" id="addCategoryBtn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shrink-0">
                 + Categoria
@@ -435,7 +464,7 @@
               <label class="text-xs font-extrabold uppercase text-gray-700 block">
                 2. Tags de Perfil / Gênero (Ex: Aposentado, Negativado)
               </label>
-              <p class="text-[11px] text-gray-500">Adicione ou remova tags. Qualquer tag nova criada aqui aparecerá nos filtros.</p>
+              <p class="text-[11px] text-gray-500">Adicione ou remova tags (com ou sem emoji). Aparecerão no preview e filtros.</p>
             </div>
 
             <!-- Chips de Perfis -->
@@ -443,7 +472,7 @@
 
             <!-- Adicionar Novo Perfil/Gênero -->
             <div class="flex gap-2 pt-1">
-              <input id="newProfileInput" type="text" placeholder="Novo perfil (ex: aposentados, clt, mei)..."
+              <input id="newProfileInput" type="text" placeholder="Ex: 👴 Aposentados, 🪪 CLT, 💼 MEI..."
                      class="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded-xl bg-white outline-none focus:border-emerald-600">
               <button type="button" id="addProfileBtn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shrink-0">
                 + Tag Perfil
@@ -627,13 +656,15 @@
     let items = [];
     let sortableInstance = null;
     let currentModalMode = 'offer'; // 'offer' | 'ad'
-    let originalModalLogo = '';     // Guarda a thumb antiga para mostrar a comparação antes de deletar
+    let originalModalLogo = '';
     let currentAdminFilter = 'all';
     let currentCardForLogo = null;
     let pendingQuickNewLogo = '';
+    let lastFocusedAdvRow = null;
+    let matchAnimFrame = null;
 
     // =========================================================================
-    // CATÁLOGO DINÂMICO DE TAGS DE CATEGORIA (TIPO) E GÊNERO/PERFIL (PERFIS)
+    // 1. CATÁLOGO DE TAGS COM EMOJIS (EXIBIDOS NO PREVIEW E NOS CARDS)
     // =========================================================================
     const DEFAULT_CATEGORIES = [
       { slug: 'emprestimo', label: '💰 Empréstimos' },
@@ -659,7 +690,17 @@
     function getCustomTaxonomy(storageKey, defaults) {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-        if (Array.isArray(saved) && saved.length) return saved;
+        if (Array.isArray(saved) && saved.length) {
+          // Garante que os emojis padrões sejam mantidos
+          const map = new Map(defaults.map(d => [d.slug, d]));
+          saved.forEach(s => {
+            if (s && s.slug) {
+              const def = map.get(s.slug);
+              map.set(s.slug, { slug: s.slug, label: s.label || def?.label || `🏷️ ${s.slug}` });
+            }
+          });
+          return Array.from(map.values());
+        }
       } catch (e) {}
       return [...defaults];
     }
@@ -676,7 +717,20 @@
     let selectedCategoriesSet = new Set();
     let selectedProfilesSet = new Set();
 
-    // Sincroniza tags existentes nos produtos carregados com o catálogo de chips
+    // Retorna o nome da categoria COM EMOJI (ex: "💰 Empréstimos") em vez de "emprestimo"
+    function getCategoryLabelWithEmoji(slug) {
+      const clean = String(slug || '').toLowerCase().trim();
+      const found = availableCategories.find(c => c.slug === clean);
+      return found ? found.label : `🏷️ ${clean}`;
+    }
+
+    // Retorna o nome do perfil COM EMOJI (ex: "🚫 Negativado") em vez de "negativado"
+    function getProfileLabelWithEmoji(slug) {
+      const clean = String(slug || '').toLowerCase().trim();
+      const found = availableProfiles.find(p => p.slug === clean);
+      return found ? found.label : `👤 ${clean}`;
+    }
+
     function absorbExistingTagsFromProducts(productsList) {
       productsList.forEach(p => {
         if (isAdItem(p)) return;
@@ -698,7 +752,6 @@
     }
 
     function renderTaxonomyChipsUI() {
-      // 1) Categorias (tipo)
       const catWrap = $('categoryChipsContainer');
       if (catWrap) {
         catWrap.innerHTML = availableCategories.map(cat => {
@@ -711,14 +764,13 @@
             }" onclick="toggleCategoryChip('${cat.slug}')">
               <span>${active ? '✓ ' : ''}${cat.label}</span>
               <button type="button" onclick="event.stopPropagation(); deleteCategoryTag('${cat.slug}')"
-                      class="ml-1 text-[11px] opacity-60 hover:opacity-100" title="Excluir categoria da lista">×</button>
+                      class="ml-1 text-[11px] opacity-60 hover:opacity-100" title="Excluir categoria">×</button>
             </span>
           `;
         }).join('');
       }
       $('tipo').value = Array.from(selectedCategoriesSet).join(',');
 
-      // 2) Perfis / Gêneros (perfis)
       const profWrap = $('profileChipsContainer');
       if (profWrap) {
         profWrap.innerHTML = availableProfiles.map(prof => {
@@ -766,15 +818,25 @@
       renderTaxonomyChipsUI();
     };
 
+    // Verifica se o texto digitado já começa com emoji; se não, adiciona um emoji padrão
+    function ensureEmojiPrefix(rawText, fallbackEmoji) {
+      const hasEmoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(rawText);
+      return hasEmoji ? rawText : `${fallbackEmoji} ${rawText}`;
+    }
+
     $('addCategoryBtn').onclick = () => {
       const raw = $('newCategoryInput').value.trim();
       if (!raw) return;
       const slug = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]/g, '');
       if (!slug) return;
-      if (!availableCategories.some(c => c.slug === slug)) {
-        availableCategories.push({ slug, label: `🏷️ ${raw}` });
-        saveCustomTaxonomy('tirracred_Taxonomy_Categories', availableCategories);
+      const labelWithEmoji = ensureEmojiPrefix(raw, '🏷️');
+      const existing = availableCategories.find(c => c.slug === slug);
+      if (existing) {
+        existing.label = labelWithEmoji;
+      } else {
+        availableCategories.push({ slug, label: labelWithEmoji });
       }
+      saveCustomTaxonomy('tirracred_Taxonomy_Categories', availableCategories);
       selectedCategoriesSet.add(slug);
       $('newCategoryInput').value = '';
       renderTaxonomyChipsUI();
@@ -785,75 +847,141 @@
       if (!raw) return;
       const slug = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]/g, '');
       if (!slug) return;
-      if (!availableProfiles.some(p => p.slug === slug)) {
-        availableProfiles.push({ slug, label: `👤 ${raw}` });
-        saveCustomTaxonomy('tirracred_Taxonomy_Profiles', availableProfiles);
+      const labelWithEmoji = ensureEmojiPrefix(raw, '👤');
+      const existing = availableProfiles.find(p => p.slug === slug);
+      if (existing) {
+        existing.label = labelWithEmoji;
+      } else {
+        availableProfiles.push({ slug, label: labelWithEmoji });
       }
+      saveCustomTaxonomy('tirracred_Taxonomy_Profiles', availableProfiles);
       selectedProfilesSet.add(slug);
       $('newProfileInput').value = '';
       renderTaxonomyChipsUI();
     };
 
     // =========================================================================
-    // EDITOR VISUAL WYSIWYG MINIMALISTA (SEM TAGS HTML CRUAS)
+    // 2. EDITOR DE VANTAGENS POR LINHAS COM BOTÃO "+" E SEM VÍRGULA
     // =========================================================================
-    const visualEditor = $('visualEditor');
+    const visualRowsWrapper = $('visualRowsWrapper');
     const htmlTextarea = $('vantagens');
     let showingRawHtml = false;
 
-    // Limpa e fecha automaticamente qualquer tag quebrada como <span><b>texto<span>
-    function sanitizeAndNormalizeLines(rawHtmlText) {
-      const rawLines = String(rawHtmlText || '').split('\n').map(s => s.trim()).filter(Boolean);
-      return rawLines.map(line => {
-        const temp = document.createElement('div');
-        temp.innerHTML = line;
-        return temp.innerHTML.trim();
-      }).filter(Boolean);
+    function sanitizeSingleLineHtml(rawLine) {
+      const cleaned = String(rawLine || '')
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/,\s*$/, '') // Remove vírgula solta no final caso o usuário tenha colocado antes
+        .trim();
+      if (!cleaned) return '';
+      const temp = document.createElement('div');
+      temp.innerHTML = cleaned;
+      return temp.innerHTML.trim();
+    }
+
+    // Cria uma linha individual de vantagem com botão "×" e suporte à tecla Enter
+    window.addAdvantageRow = function(initialHtml = '', shouldFocus = false, insertAfterNode = null) {
+      const rowWrap = document.createElement('div');
+      rowWrap.className = 'adv-row-wrap flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 transition shadow-sm';
+
+      const checkIcon = document.createElement('span');
+      checkIcon.className = 'text-emerald-600 font-black text-xs select-none shrink-0';
+      checkIcon.textContent = '✓';
+
+      const editable = document.createElement('div');
+      editable.className = 'adv-row-editor flex-1 text-sm text-gray-800';
+      editable.contentEditable = 'true';
+      editable.setAttribute('data-placeholder', 'Digite a vantagem (ex: PIX na conta em 2 minutos)...');
+      editable.innerHTML = sanitizeSingleLineHtml(initialHtml);
+
+      editable.addEventListener('focus', () => {
+        lastFocusedAdvRow = editable;
+      });
+
+      editable.addEventListener('input', () => {
+        syncRowsToHiddenData();
+      });
+
+      // Apertar Enter cria automaticamente uma nova linha abaixo!
+      editable.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          window.addAdvantageRow('', true, rowWrap);
+        } else if (e.key === 'Backspace' && editable.textContent.trim() === '' && visualRowsWrapper.children.length > 1) {
+          e.preventDefault();
+          const prev = rowWrap.previousElementSibling?.querySelector('.adv-row-editor');
+          rowWrap.remove();
+          syncRowsToHiddenData();
+          if (prev) prev.focus();
+        }
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'w-6 h-6 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-xs font-bold shrink-0 transition';
+      delBtn.title = 'Remover esta linha';
+      delBtn.innerHTML = '<i class="fas fa-times"></i>';
+      delBtn.onclick = () => {
+        if (visualRowsWrapper.children.length <= 1) {
+          editable.innerHTML = '';
+        } else {
+          rowWrap.remove();
+        }
+        syncRowsToHiddenData();
+      };
+
+      rowWrap.appendChild(checkIcon);
+      rowWrap.appendChild(editable);
+      rowWrap.appendChild(delBtn);
+
+      if (insertAfterNode && insertAfterNode.parentNode === visualRowsWrapper) {
+        insertAfterNode.insertAdjacentElement('afterend', rowWrap);
+      } else {
+        visualRowsWrapper.appendChild(rowWrap);
+      }
+
+      syncRowsToHiddenData();
+
+      if (shouldFocus) {
+        setTimeout(() => {
+          editable.focus();
+          lastFocusedAdvRow = editable;
+        }, 10);
+      }
+      return editable;
+    };
+
+    function getCleanLinesArrayFromEditor() {
+      const editors = Array.from(visualRowsWrapper.querySelectorAll('.adv-row-editor'));
+      return editors
+        .map(ed => sanitizeSingleLineHtml(ed.innerHTML))
+        .filter(Boolean);
+    }
+
+    function syncRowsToHiddenData() {
+      if (showingRawHtml) return;
+      const lines = getCleanLinesArrayFromEditor();
+      htmlTextarea.value = lines.join('\n');
+      updateLivePreview();
     }
 
     function setVisualEditorFromLines(vantagensData) {
       const lines = toArrayLines(vantagensData);
-      const cleanLines = sanitizeAndNormalizeLines(lines.join('\n'));
-      htmlTextarea.value = cleanLines.join('\n');
+      visualRowsWrapper.innerHTML = '';
 
-      if (!cleanLines.length) {
-        visualEditor.innerHTML = '';
-        return;
+      if (!lines.length) {
+        window.addAdvantageRow('', false);
+      } else {
+        lines.forEach(line => window.addAdvantageRow(line, false));
       }
-      visualEditor.innerHTML = cleanLines.map(line => `<div>${line}</div>`).join('');
+      syncRowsToHiddenData();
     }
-
-    function syncVisualEditorToTextarea() {
-      if (showingRawHtml) return;
-      const lines = [];
-      const children = Array.from(visualEditor.childNodes);
-
-      if (children.length === 0) {
-        htmlTextarea.value = '';
-        return;
-      }
-
-      children.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const txt = node.textContent.trim();
-          if (txt) lines.push(txt);
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-          const html = node.innerHTML.replace(/<br\s*\/?>/gi, '').trim();
-          if (html) lines.push(html);
-        }
-      });
-
-      htmlTextarea.value = sanitizeAndNormalizeLines(lines.join('\n')).join('\n');
-      updateLivePreview();
-    }
-
-    visualEditor.addEventListener('input', syncVisualEditorToTextarea);
-    visualEditor.addEventListener('blur', syncVisualEditorToTextarea);
 
     htmlTextarea.addEventListener('input', () => {
       if (showingRawHtml) {
-        const clean = sanitizeAndNormalizeLines(htmlTextarea.value);
-        visualEditor.innerHTML = clean.map(l => `<div>${l}</div>`).join('');
+        const rawLines = htmlTextarea.value.split('\n').map(l => sanitizeSingleLineHtml(l)).filter(Boolean);
+        visualRowsWrapper.innerHTML = '';
+        if (!rawLines.length) window.addAdvantageRow('', false);
+        else rawLines.forEach(l => window.addAdvantageRow(l, false));
         updateLivePreview();
       }
     });
@@ -861,40 +989,99 @@
     $('toggleHtmlSourceBtn').onclick = () => {
       showingRawHtml = !showingRawHtml;
       if (showingRawHtml) {
-        syncVisualEditorToTextarea();
-        visualEditor.classList.add('hidden');
+        syncRowsToHiddenData();
+        visualRowsWrapper.classList.add('hidden');
+        $('addAdvantageBottomBtn').classList.add('hidden');
         htmlTextarea.classList.remove('hidden');
         $('toggleHtmlSourceBtn').textContent = 'Voltar para Editor Visual';
       } else {
         setVisualEditorFromLines(htmlTextarea.value);
         htmlTextarea.classList.add('hidden');
-        visualEditor.classList.remove('hidden');
+        visualRowsWrapper.classList.remove('hidden');
+        $('addAdvantageBottomBtn').classList.remove('hidden');
         $('toggleHtmlSourceBtn').textContent = 'Ver código HTML';
       }
     };
 
+    function ensureActiveRowFocus() {
+      if (lastFocusedAdvRow && document.body.contains(lastFocusedAdvRow)) {
+        lastFocusedAdvRow.focus();
+        return lastFocusedAdvRow;
+      }
+      const first = visualRowsWrapper.querySelector('.adv-row-editor');
+      if (first) {
+        first.focus();
+        lastFocusedAdvRow = first;
+        return first;
+      }
+      return window.addAdvantageRow('', true);
+    }
+
     window.execVisualCmd = (cmd) => {
-      visualEditor.focus();
+      ensureActiveRowFocus();
       document.execCommand(cmd, false, null);
-      syncVisualEditorToTextarea();
+      syncRowsToHiddenData();
     };
 
     window.execVisualColor = (hexColor) => {
-      visualEditor.focus();
+      ensureActiveRowFocus();
       document.execCommand('styleWithCSS', false, true);
       document.execCommand('foreColor', false, hexColor);
-      syncVisualEditorToTextarea();
+      syncRowsToHiddenData();
     };
 
     window.insertVisualText = (txt) => {
-      visualEditor.focus();
+      ensureActiveRowFocus();
       document.execCommand('insertText', false, txt);
-      syncVisualEditorToTextarea();
+      syncRowsToHiddenData();
     };
 
     // =========================================================================
-    // SELO DE MARKETING E PREVIEW AO VIVO
+    // 3. ANIMAÇÃO DE CONTAGEM DO MATCH (0% -> PONTUAÇÃO ALVO) E PREVIEW AO VIVO
     // =========================================================================
+    function getTargetMatchScore() {
+      const prio = Number($('priority_order').value) || 0;
+      const isFgts = selectedCategoriesSet.has('fgts');
+      if (isFgts) return 99;
+      return Math.max(82, Math.min(98, 98 - (prio * 2)));
+    }
+
+    window.triggerMatchCountAnimation = function(customTarget = null) {
+      const target = customTarget ?? getTargetMatchScore();
+      const numEl = $('prevMatchNumber');
+      const barTextEl = $('prevMatchBarText');
+      const barFillEl = $('prevMatchBarFill');
+
+      if (!numEl || !barFillEl) return;
+      if (matchAnimFrame) cancelAnimationFrame(matchAnimFrame);
+
+      const duration = 950;
+      const startTime = performance.now();
+      barFillEl.style.width = '0%';
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Curva easeOutQuart suave
+        const eased = 1 - Math.pow(1 - progress, 4);
+        const currentVal = Math.round(eased * target);
+
+        numEl.textContent = currentVal;
+        if (barTextEl) barTextEl.textContent = currentVal;
+        barFillEl.style.width = `${currentVal}%`;
+
+        if (progress < 1) {
+          matchAnimFrame = requestAnimationFrame(step);
+        } else {
+          numEl.textContent = target;
+          if (barTextEl) barTextEl.textContent = target;
+          barFillEl.style.width = `${target}%`;
+        }
+      }
+
+      matchAnimFrame = requestAnimationFrame(step);
+    };
+
     const badgeColorMap = {
       yellow: 'bg-amber-100 text-amber-900 border border-amber-300',
       green: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
@@ -950,7 +1137,7 @@
       const tag = $('tag').value.trim() || 'Recomendado';
       const color = $('tagClass').value || 'yellow';
       const logoSrc = $('logo').value.trim() ? fixLogo($('logo').value.trim()) : 'https://placehold.co/96x48/e2e8f0/4a5568?text=Logo';
-      const btnP = $('btnPrimario').value.trim() || 'Receber Agora';
+      const btnP = $('btnPrimario').value.trim() || 'SOLICITAR AGORA';
 
       $('prevTitle').textContent = title;
       $('prevTag').textContent = tag;
@@ -958,19 +1145,29 @@
       $('prevLogo').src = logoSrc;
       $('prevBtnPrimario').textContent = btnP;
 
+      // Renderiza as tags no Preview COM OS EMOJIS REAIS!
       const pillsWrap = $('prevCategoriesPills');
       if (pillsWrap) {
         const allPills = [
-          ...Array.from(selectedCategoriesSet).map(s => `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">${s}</span>`),
-          ...Array.from(selectedProfilesSet).map(s => `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">${s}</span>`)
+          ...Array.from(selectedCategoriesSet).map(slug => {
+            const label = getCategoryLabelWithEmoji(slug);
+            return `<span class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">${label}</span>`;
+          }),
+          ...Array.from(selectedProfilesSet).map(slug => {
+            const label = getProfileLabelWithEmoji(slug);
+            return `<span class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">${label}</span>`;
+          })
         ];
-        pillsWrap.innerHTML = allPills.slice(0, 4).join('');
+        pillsWrap.innerHTML = allPills.join('');
       }
 
-      const lines = sanitizeAndNormalizeLines(htmlTextarea.value);
+      const lines = showingRawHtml
+        ? htmlTextarea.value.split('\n').map(l => sanitizeSingleLineHtml(l)).filter(Boolean)
+        : getCleanLinesArrayFromEditor();
+
       $('prevVantagens').innerHTML = (lines.length ? lines : ['Solicitação 100% online com liberação rápida']).map(l => `
         <li class="flex items-start gap-2">
-          <span class="text-emerald-600 font-black">✓</span>
+          <span class="text-emerald-600 font-black shrink-0">✓</span>
           <span>${l}</span>
         </li>
       `).join('');
@@ -979,29 +1176,43 @@
     ['titulo', 'tag', 'link', 'btnPrimario', 'btnSecundario'].forEach(id => {
       $(id)?.addEventListener('input', updateLivePreview);
     });
+    $('priority_order')?.addEventListener('input', () => {
+      triggerMatchCountAnimation();
+    });
 
     // =========================================================================
-    // HELPERS GERAIS E UPLOAD DE IMAGEM
+    // 4. HELPERS GERAIS E PARSER AUTOMÁTICO DE LINHAS
     // =========================================================================
     const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
     const normCsv = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean).join(',');
     const csvToArr = (txt = '') => String(txt).split(',').map(s => s.trim()).filter(Boolean);
-    const normLines = (txt = '') => String(txt).split('\n').map(s => s.trim()).filter(Boolean).join('\n');
 
+    // Converte qualquer formato antigo (JSON array, quebras de linha \n ou Postgres array) em array de linhas limpas
     const toArrayLines = (v) => {
-      if (Array.isArray(v)) return v;
+      if (Array.isArray(v)) return v.map(s => sanitizeSingleLineHtml(s)).filter(Boolean);
       if (typeof v === 'string') {
+        const trimmed = v.trim();
+        if (!trimmed) return [];
         try {
-          const j = JSON.parse(v);
-          if (Array.isArray(j)) return j;
+          const j = JSON.parse(trimmed);
+          if (Array.isArray(j)) return j.map(s => sanitizeSingleLineHtml(s)).filter(Boolean);
         } catch (e) {}
-        return v.split('\n').map(s => s.trim()).filter(Boolean);
+
+        if (trimmed.includes('\n')) {
+          return trimmed.split('\n').map(s => sanitizeSingleLineHtml(s)).filter(Boolean);
+        }
+
+        // Formato legado Postgres {"item 1","item 2"}
+        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+          return trimmed.slice(1, -1).split('","').map(s => sanitizeSingleLineHtml(s.replace(/^"|"$|/g, ''))).filter(Boolean);
+        }
+
+        return [sanitizeSingleLineHtml(trimmed)].filter(Boolean);
       }
       return [];
     };
 
     const editCsv = (v) => Array.isArray(v) ? v.join(',') : (v || '');
-    const displayLines = (v) => Array.isArray(v) ? v.join('\n') : toArrayLines(v).join('\n');
 
     const isAdItem = (p) => {
       const tipo = String(p?.tipo || '').toLowerCase().trim();
@@ -1085,7 +1296,7 @@
       updateThumbComparisonUI(p.logo || '');
 
       $('link').value = p.link ?? '';
-      $('btnPrimario').value = p.btnPrimario ?? 'Receber Agora';
+      $('btnPrimario').value = p.btnPrimario ?? 'SOLICITAR AGORA';
       $('btnSecundario').value = p.btnSecundario ?? 'Simular Parcelas';
       $('priority_order').value = p.priority_order ?? items.length;
       $('ativo').checked = p._uid ? Boolean(p.ativo) : true;
@@ -1108,6 +1319,9 @@
 
       document.body.style.overflow = 'hidden';
       modal.classList.remove('hidden');
+
+      // Dispara a animação progressiva do Match assim que o modal abre!
+      setTimeout(() => triggerMatchCountAnimation(), 80);
     };
 
     const closeModal = () => {
@@ -1140,7 +1354,7 @@
     };
 
     // =========================================================================
-    // RENDERIZAÇÃO DOS CARDS NO PAINEL ADMIN
+    // RENDERIZAÇÃO DOS CARDS NO PAINEL ADMIN (COM EMOJIS NAS CATEGORIAS)
     // =========================================================================
     function sourceBadgeHTML(p) {
       if (p._source === 'both') return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">D1 + Supabase</span>`;
@@ -1154,8 +1368,8 @@
       const cats = csvToArr(editCsv(p.tipo)).filter(c => c !== 'anuncio');
       const profs = csvToArr(editCsv(p.perfis));
 
-      const catBadges = cats.map(c => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">${c}</span>`).join('');
-      const profBadges = profs.map(pr => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">${pr}</span>`).join('');
+      const catBadges = cats.map(c => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">${getCategoryLabelWithEmoji(c)}</span>`).join('');
+      const profBadges = profs.map(pr => `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">${getProfileLabelWithEmoji(pr)}</span>`).join('');
 
       return `
       <div class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between gap-3 ${!p.ativo ? 'opacity-60 bg-gray-50' : ''}" data-uid="${p._uid}">
@@ -1220,7 +1434,7 @@
       let supaSaved = false;
       const errors = [];
 
-      // 1) Atualiza ou cria no Cloudflare D1 (/api/products)
+      // 1) Cloudflare D1
       try {
         const d1Id = existingItem?._d1_id;
         const endpoint = d1Id ? `/api/products/${d1Id}` : '/api/products';
@@ -1237,7 +1451,7 @@
         errors.push('D1: ' + err.message);
       }
 
-      // 2) Atualiza ou cria no Supabase (para que páginas que leem Supabase também recebam na hora)
+      // 2) Supabase
       try {
         if (existingItem?._supa_id) {
           const { error } = await _supabase
@@ -1259,6 +1473,13 @@
       if (!d1Saved && !supaSaved) {
         throw new Error(errors.join(' | ') || 'Falha ao salvar nas bases de dados');
       }
+    }
+
+    // Formata as vantagens em JSON Array string (ex: '["Linha 1","Linha 2"]')
+    // Assim tanto o index.html quanto o resultados.html quebram linha automaticamente sem precisar de vírgula!
+    function serializeVantagensAsJsonArray(vData) {
+      const cleanArr = toArrayLines(vData);
+      return JSON.stringify(cleanArr);
     }
 
     // =========================================================================
@@ -1283,7 +1504,6 @@
     }
 
     function bindCardEvents() {
-      // Trocar Thumb com Modal Comparativo (Antiga vs Nova)
       listEl.querySelectorAll('.change-logo').forEach(btn => {
         btn.onclick = (e) => {
           const uid = e.target.closest('[data-uid]').dataset.uid;
@@ -1294,7 +1514,6 @@
         };
       });
 
-      // Editar
       listEl.querySelectorAll('.edit').forEach(btn => {
         btn.onclick = (e) => {
           const uid = e.target.closest('[data-uid]').dataset.uid;
@@ -1303,7 +1522,6 @@
         };
       });
 
-      // Ativar / Ocultar
       listEl.querySelectorAll('.toggle-active').forEach(btn => {
         btn.onclick = async (e) => {
           const uid = e.target.closest('[data-uid]').dataset.uid;
@@ -1320,7 +1538,7 @@
               link: p.link || '',
               btnPrimario: p.btnPrimario || 'Receber Agora',
               btnSecundario: p.btnSecundario || 'Detalhes',
-              vantagens: displayLines(p.vantagens),
+              vantagens: serializeVantagensAsJsonArray(p.vantagens),
               tipo: editCsv(p.tipo),
               perfis: editCsv(p.perfis),
               ativo: !p.ativo,
@@ -1333,7 +1551,6 @@
         };
       });
 
-      // Excluir
       listEl.querySelectorAll('.delete').forEach(btn => {
         btn.onclick = async (e) => {
           const uid = e.target.closest('[data-uid]').dataset.uid;
@@ -1355,7 +1572,6 @@
         };
       });
 
-      // Duplicar
       listEl.querySelectorAll('.duplicate').forEach(btn => {
         btn.onclick = async (e) => {
           const uid = e.target.closest('[data-uid]').dataset.uid;
@@ -1371,7 +1587,7 @@
             link: src.link || '',
             btnPrimario: src.btnPrimario || 'Receber Agora',
             btnSecundario: src.btnSecundario || 'Detalhes',
-            vantagens: displayLines(src.vantagens),
+            vantagens: serializeVantagensAsJsonArray(src.vantagens),
             tipo: editCsv(src.tipo),
             perfis: editCsv(src.perfis),
             ativo: src.ativo,
@@ -1394,7 +1610,6 @@
       let d1Products = [];
       let supabaseProducts = [];
 
-      // 1) Cloudflare D1
       try {
         const res = await fetch(`/api/products?all=true&t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
@@ -1405,7 +1620,6 @@
         console.warn('D1 indisponível:', e);
       }
 
-      // 2) Supabase
       try {
         const { data, error } = await _supabase
           .from('products')
@@ -1432,7 +1646,6 @@
         console.warn('Supabase indisponível:', e);
       }
 
-      // 3) Mescla priorizando dados recentes da D1 e vinculando _supa_id
       const byKey = new Map();
       items = [];
 
@@ -1470,7 +1683,6 @@
       fillPicker();
     };
 
-    // Busca e filtros rápidos do Admin
     $('adminSearch')?.addEventListener('input', renderFilteredAdminCards);
     document.querySelectorAll('[data-admin-filter]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1486,7 +1698,7 @@
     });
 
     // =========================================================================
-    // TROCA RÁPIDA DE THUMB PELO CARD (EXIBE MODAL COM THUMB ANTIGA ANTES)
+    // TROCA RÁPIDA DE THUMB PELO CARD
     // =========================================================================
     $('cardLogoInput').onchange = async (e) => {
       const file = e.target.files[0];
@@ -1525,7 +1737,7 @@
           link: currentCardForLogo.link || '',
           btnPrimario: currentCardForLogo.btnPrimario || 'Receber Agora',
           btnSecundario: currentCardForLogo.btnSecundario || 'Detalhes',
-          vantagens: displayLines(currentCardForLogo.vantagens),
+          vantagens: serializeVantagensAsJsonArray(currentCardForLogo.vantagens),
           tipo: editCsv(currentCardForLogo.tipo),
           perfis: editCsv(currentCardForLogo.perfis),
           ativo: currentCardForLogo.ativo,
@@ -1550,7 +1762,11 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Salvando...';
 
-      syncVisualEditorToTextarea();
+      syncRowsToHiddenData();
+
+      const linesArray = showingRawHtml
+        ? htmlTextarea.value.split('\n').map(l => sanitizeSingleLineHtml(l)).filter(Boolean)
+        : getCleanLinesArrayFromEditor();
 
       const isAd = currentModalMode === 'ad';
       const payload = isAd
@@ -1562,7 +1778,7 @@
             link: $('adSlotInput').value.trim(),
             btnPrimario: 'Anúncio',
             btnSecundario: $('adLayoutInput').value.trim() || '',
-            vantagens: '',
+            vantagens: '[]',
             tipo: 'anuncio',
             perfis: '',
             ativo: $('ativo').checked,
@@ -1574,9 +1790,10 @@
             tagClass: $('tagClass').value.trim() || 'yellow',
             logo: $('logo').value.trim(),
             link: $('link').value.trim(),
-            btnPrimario: $('btnPrimario').value.trim() || 'Receber Agora',
+            btnPrimario: $('btnPrimario').value.trim() || 'SOLICITAR AGORA',
             btnSecundario: $('btnSecundario').value.trim() || 'Detalhes',
-            vantagens: normLines(htmlTextarea.value),
+            // Salva como JSON Array string: o index.html e o resultados.html separam cada linha automaticamente sem precisar de vírgula!
+            vantagens: JSON.stringify(linesArray),
             tipo: normCsv($('tipo').value),
             perfis: normCsv($('perfis').value),
             ativo: $('ativo').checked,
@@ -1918,5 +2135,6 @@
   </script>
 
 </body>
+
 
 </html>

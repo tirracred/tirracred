@@ -2031,6 +2031,66 @@
                 resultsContent?.classList.remove('hidden');
             }, 680);
         });
+
+        // Anima todos os indicadores de Match (0% -> Pontuação Alvo) nos Cards e no Termômetro
+function animateAllMatchScores() {
+    // 1. Anima o Termômetro Principal do Topo
+    const gaugeText = document.getElementById('score-gauge-text');
+    const gaugePath = document.getElementById('score-gauge-path');
+    if (gaugeText && gaugePath) {
+        const targetGauge = parseInt(gaugeText.textContent.replace(/\D/g, ''), 10) || 95;
+        const start = performance.now();
+        const dur = 1100;
+        gaugePath.setAttribute('stroke-dasharray', `0, 100`);
+
+        function stepGauge(now) {
+            const p = Math.min(1, (now - start) / dur);
+            const eased = 1 - Math.pow(1 - p, 4);
+            const cur = Math.round(eased * targetGauge);
+            gaugeText.textContent = `${cur}%`;
+            gaugePath.setAttribute('stroke-dasharray', `${cur}, 100`);
+            if (p < 1) requestAnimationFrame(stepGauge);
+        }
+        requestAnimationFrame(stepGauge);
+    }
+
+    // 2. Anima os Selos "🔥 XX% Match" e as Barras de Afinidade de cada Card
+    document.querySelectorAll('#product-grid .product-card').forEach((card, idx) => {
+        const badgeEl = Array.from(card.querySelectorAll('span')).find(s => s.textContent.includes('Match'));
+        const pctLabelEl = card.querySelector('.text-emerald-700.shrink-0');
+        const barFillEl = card.querySelector('.bg-gradient-to-r.from-emerald-500');
+
+        const rawTarget = badgeEl ? parseInt(badgeEl.textContent.replace(/\D/g, ''), 10) : 0;
+        if (!rawTarget) return;
+
+        const duration = 1000 + (idx * 90);
+        const startTime = performance.now();
+        if (barFillEl) {
+            barFillEl.style.transition = 'none';
+            barFillEl.style.width = '0%';
+        }
+
+        function stepCard(now) {
+            const progress = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - Math.pow(1 - progress, 4);
+            const current = Math.round(eased * rawTarget);
+
+            if (badgeEl) badgeEl.innerHTML = `🔥 ${current}% Match`;
+            if (pctLabelEl) pctLabelEl.textContent = `${current}%`;
+            if (barFillEl) barFillEl.style.width = `${current}%`;
+
+            if (progress < 1) requestAnimationFrame(stepCard);
+        }
+        requestAnimationFrame(stepCard);
+    });
+}
+
+// Dispara a animação automaticamente sempre que o grid de produtos atualizar
+const _gridObserver = new MutationObserver(() => animateAllMatchScores());
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('product-grid');
+    if (grid) _gridObserver.observe(grid, { childList: true });
+});
     </script>
 
 </body>
