@@ -497,9 +497,9 @@
                     <div class="lg:col-span-6 w-full flex items-center justify-center">
                         <div class="simulator-fixed-card bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
                             
-                            <!-- Barra de Progresso Animada no Topo do Card -->
+                            <!-- Barra de Progresso Animada no Topo do Card (Inicia em 0% antes de clicar!) -->
                             <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100 overflow-hidden">
-                                <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 25%"></div>
+                                <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 0%"></div>
                             </div>
 
                             <!-- Cabeçalho do Card -->
@@ -629,7 +629,7 @@
                                             </p>
                                         </div>
 
-                                        <!-- Box do Resultado da Facio (Permanece na tela para o usuário ler com calma!) -->
+                                        <!-- Box do Resultado da Facio -->
                                         <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-3 shadow-sm fade-in">
                                             <div class="flex items-center justify-between mb-1">
                                                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
@@ -1100,7 +1100,7 @@
             mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
             // ===================================================
-            // 3. SIMULADOR DE TAMANHO FIXO (4 ETAPAS NO MESMO QUADRADINHO)
+            // 3. SIMULADOR DE TAMANHO FIXO (BARRA 0% -> 33% -> 66% -> 100%)
             // ===================================================
             const leadForm = document.getElementById('leadFormHome');
             const valorSlider = document.getElementById('valorHome');
@@ -1154,8 +1154,10 @@
                     summaryChip.classList.toggle('hidden', stageNum === 1);
                 }
 
+                // Inicia em 0% no Passo 1; avança ao clicar em continuar e volta se o usuário clicar em voltar!
                 if (progressBar) {
-                    progressBar.style.width = `${stageNum * 25}%`;
+                    const progressByStage = { 1: 0, 2: 33, 3: 66, 4: 100 };
+                    progressBar.style.width = `${progressByStage[stageNum] ?? 0}%`;
                 }
 
                 if (stepBadge) {
@@ -1342,7 +1344,6 @@
                     }
                 }
 
-                // Permanece na Etapa 3 para o usuário ver o resultado da consulta e clicar quando quiser!
                 return facioState.isAvailable;
             }
 
@@ -1629,8 +1630,6 @@
             const toggleLinks = document.querySelectorAll('.scroll-toggle');
             const stickyWrapper = document.getElementById('sticky-top-wrapper');
 
-            // Corrige o clique repetido em "Ver Todas as Ofertas":
-            // Passa shouldScrollTop = false para nunca puxar a tela de volta para o formulário!
             toggleLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
                     event.preventDefault();
@@ -2198,7 +2197,7 @@
             showPage('page-home', false);
         });
 
-        
+
     </script>
 
 </body>
