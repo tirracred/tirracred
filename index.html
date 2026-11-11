@@ -74,9 +74,9 @@
         }
 
         /* Animações */
-        .fade-in { animation: fadeIn 0.45s ease-in-out forwards; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -86,6 +86,27 @@
         .page-container.active {
             display: block;
             animation: fadeIn 0.35s ease-in-out;
+        }
+
+        /* Expansão Gradual Suave do Formulário (Accordion CSS Grid) */
+        .progressive-reveal {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.3s ease;
+            overflow: hidden;
+            margin-top: 0 !important;
+            pointer-events: none;
+        }
+        .progressive-reveal.is-open {
+            grid-template-rows: 1fr;
+            opacity: 1;
+            margin-top: 1rem !important;
+            pointer-events: auto;
+        }
+        .progressive-inner {
+            min-height: 0;
+            overflow: hidden;
         }
 
         /* =====================================================================
@@ -104,9 +125,6 @@
             transform: translateZ(0);
         }
 
-        /* Empilha todas as mensagens na mesma célula CSS Grid (1 / 1).
-           A altura fica permanentemente travada pela maior frase em qualquer tela,
-           impedindo que a troca de texto mova o formulário 1 milímetro sequer. */
         .hero-slides-stack {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
@@ -120,6 +138,22 @@
             width: 100%;
             transition: opacity 0.6s ease-in-out;
             will-change: opacity;
+        }
+
+        /* Scrollbar elegante para o Box Predefinido de Produtos */
+        #products-viewport-box::-webkit-scrollbar {
+            width: 7px;
+        }
+        #products-viewport-box::-webkit-scrollbar-track {
+            background: #ecfdf5;
+            border-radius: 9999px;
+        }
+        #products-viewport-box::-webkit-scrollbar-thumb {
+            background: #6ee7b7;
+            border-radius: 9999px;
+        }
+        #products-viewport-box::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
         }
 
         /* Carrossel de logos proporcional em qualquer tela */
@@ -266,8 +300,8 @@
         }
         
         .product-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 24px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -5px rgba(0, 0, 0, 0.03);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 22px -5px rgba(0, 0, 0, 0.08), 0 6px 8px -5px rgba(0, 0, 0, 0.03);
         }
 
         :root { --alert-h: 0px; }
@@ -404,9 +438,9 @@
     <!-- ========================================================= -->
     <div id="page-home" class="page-container active">
         <main>
-            <!-- Hero e Simulador (Proporção 100% Travada — Mensagens nunca movem o formulário) -->
-            <section id="hero-section" class="relative text-white py-8 sm:py-12 lg:py-16 overflow-hidden">
-                <!-- Camadas de Imagem Isoladas (Resolução nativa preservada em PC e Celular) -->
+            <!-- Hero e Simulador: Altura travada (lg:h-[680px]) para que a expansão gradual do formulário NUNCA mude a proporção do banner -->
+            <section id="hero-section" class="relative text-white py-8 sm:py-12 lg:py-0 lg:h-[680px] flex items-center overflow-hidden">
+                <!-- Camadas de Imagem Isoladas -->
                 <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden pointer-events-none">
                     <img src="public/banner-1.png" alt="Banner 1" class="hero-bg-slide opacity-100" data-bg-slide="0" decoding="async">
                     <img src="public/banner2.png" alt="Banner 2" class="hero-bg-slide opacity-0" data-bg-slide="1" decoding="async">
@@ -416,9 +450,7 @@
 
                 <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
                     
-                    <!-- Coluna de Mensagens Empilhadas em CSS Grid (1/1):
-                         As 3 mensagens já ocupam o espaço simultaneamente na mesma célula.
-                         Trocar de banner apenas alterna a opacidade, sem NUNCA empurrar o formulário! -->
+                    <!-- Coluna de Mensagens Empilhadas em CSS Grid (1/1) -->
                     <div class="lg:col-span-6 text-center lg:text-left">
                         <div class="hero-slides-stack">
                             <!-- Mensagem do Banner 1 -->
@@ -452,7 +484,7 @@
                             </div>
                         </div>
 
-                        <!-- Indicadores discretos do banner (permitem clicar e mostram qual slide está ativo sem mexer no layout) -->
+                        <!-- Indicadores discretos do banner -->
                         <div class="flex items-center justify-center lg:justify-start gap-2 mt-4">
                             <button type="button" data-hero-dot="0" aria-label="Banner 1" class="h-1.5 w-6 rounded-full bg-emerald-400 transition-all duration-300"></button>
                             <button type="button" data-hero-dot="1" aria-label="Banner 2" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
@@ -460,23 +492,26 @@
                         </div>
                     </div>
 
-                    <!-- Coluna do Simulador (Posição 100% Ancorada e Estável) -->
-                    <div class="lg:col-span-6 w-full">
-                        <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                    <!-- Coluna do Simulador (Compacto ao entrar, expande gradualmente conforme preenchimento) -->
+                    <div class="lg:col-span-6 w-full flex items-center justify-center">
+                        <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100 transition-all duration-300">
                             <!-- Indicador de Etapas -->
-                            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                                <h2 class="text-lg sm:text-2xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
+                            <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-gray-100">
+                                <h2 class="text-lg sm:text-xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
                                 <span id="step-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-green-100 text-green-800 shrink-0">
                                     Etapa 1 de 2
                                 </span>
                             </div>
                     
                             <form id="leadFormHome" novalidate>
-                                <!-- PASSO 1: VALOR, PARCELAS E PERFIL -->
-                                <fieldset id="form-step-1" class="space-y-4 sm:space-y-5">
+                                <!-- ===================================================== -->
+                                <!-- PASSO 1: EXPANSÃO GRADUAL CONFORME INTERAÇÃO          -->
+                                <!-- ===================================================== -->
+                                <fieldset id="form-step-1">
+                                    <!-- 1.1 VALOR DESEJADO (Visível inicialmente) -->
                                     <div>
                                         <div class="flex items-center justify-between">
-                                            <label for="valorHome" class="block text-sm font-semibold text-gray-700">Valor desejado</label>
+                                            <label for="valorHome" class="block text-sm font-semibold text-gray-700">1. Qual valor você precisa?</label>
                                             <span id="valor-display-home" class="text-2xl font-extrabold text-green-600">R$ 300</span>
                                         </div>
 
@@ -486,8 +521,8 @@
                                         </div>
                                         <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
 
-                                        <!-- Botões de Seleção Rápida de Valor -->
-                                        <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+                                        <!-- Botões de Seleção Rápida de Valor (Clicar expande o próximo passo) -->
+                                        <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-2.5">
                                             <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
                                                 ⚡ Até R$ 300 (Facio)
                                             </button>
@@ -499,47 +534,60 @@
                                             </button>
                                         </div>
 
-                                        <!-- Aviso fixo (não usa display:none para nunca mudar a altura do formulário ao mexer no slider) -->
-                                        <div id="facio-step1-hint" class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900 transition-colors">
-                                            <span class="text-base shrink-0">🚀</span>
-                                            <span><strong>Faixa de Liberação Rápida:</strong> Valores de até <strong>R$ 300</strong> contam com antecipação salarial Facio (taxas a partir de R$ 9,90).</span>
+                                        <!-- Aviso da faixa Facio -->
+                                        <div id="facio-step1-hint" class="mt-2.5 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900 transition-colors">
+                                            <span class="text-sm shrink-0">🚀</span>
+                                            <span><strong>Faixa de Liberação Rápida:</strong> Valores até <strong>R$ 300</strong> contam com antecipação Facio (a partir de R$ 9,90).</span>
                                         </div>
                                     </div>
-                  
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prazo / Modalidade</label>
-                                        <div class="grid grid-cols-4 gap-2">
-                                            <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-semibold shadow-sm truncate">1x (Rápido)</button>
-                                            <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">12x</button>
-                                            <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">24x</button>
-                                            <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">36x</button>
+
+                                    <!-- 1.2 PRAZO / MODALIDADE (Expande ao escolher valor) -->
+                                    <div id="progressive-prazo-box" class="progressive-reveal">
+                                        <div class="progressive-inner pt-1">
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">2. Escolha o prazo ou modalidade:</label>
+                                            <div class="grid grid-cols-4 gap-2">
+                                                <button type="button" data-parcelas="1" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2 px-1.5 rounded-lg text-xs sm:text-sm font-medium hover:border-green-500 transition truncate">1x (Rápido)</button>
+                                                <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2 px-1.5 rounded-lg text-xs sm:text-sm font-medium hover:border-green-500 transition">12x</button>
+                                                <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2 px-1.5 rounded-lg text-xs sm:text-sm font-medium hover:border-green-500 transition">24x</button>
+                                                <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2 px-1.5 rounded-lg text-xs sm:text-sm font-medium hover:border-green-500 transition">36x</button>
+                                            </div>
+                                            <input type="hidden" name="parcelas" id="parcelasHome" value="1">
                                         </div>
-                                        <input type="hidden" name="parcelas" id="parcelasHome" value="1">
                                     </div>
-                  
-                                    <div class="space-y-2 pt-1">
-                                        <span class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Marque se alguma opção se aplica a você:</span>
-                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                            <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                            <input type="checkbox" name="aposentado_inss" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                            <input type="checkbox" name="bolsafamilia" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Recebo Bolsa Família</span>
-                                        </label>
+
+                                    <!-- 1.3 CAIXAS DE SELEÇÃO DE PERFIL (Só aparecem após selecionar o prazo!) -->
+                                    <div id="progressive-perfil-box" class="progressive-reveal">
+                                        <div class="progressive-inner space-y-1.5 pt-1">
+                                            <span class="block text-xs font-bold uppercase tracking-wider text-emerald-700">
+                                                3. Marque se alguma opção se aplica a você (Opcional):
+                                            </span>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-gray-50 border border-gray-100 hover:border-gray-200 transition">
+                                                <input type="checkbox" name="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2.5 text-xs sm:text-sm text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-gray-50 border border-gray-100 hover:border-gray-200 transition">
+                                                <input type="checkbox" name="aposentado_inss" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2.5 text-xs sm:text-sm text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-gray-50 border border-gray-100 hover:border-gray-200 transition">
+                                                <input type="checkbox" name="bolsafamilia" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                <span class="ml-2.5 text-xs sm:text-sm text-gray-700 font-medium">Recebo Bolsa Família</span>
+                                            </label>
+                                        </div>
                                     </div>
-                 
-                                    <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-sm sm:text-base font-bold text-white shadow-md transition-transform active:scale-[0.99] sm:hover:scale-[1.01]">
-                                        Continuar para Verificar CPF &rarr;
-                                    </button>
+
+                                    <!-- Botão Inteligente da Etapa 1 (Avança o preenchimento gradual ou vai para o CPF) -->
+                                    <div class="mt-4">
+                                        <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3 text-sm sm:text-base font-bold text-white shadow-md transition-transform active:scale-[0.99] sm:hover:scale-[1.01]">
+                                            Escolher Prazo e Continuar &rarr;
+                                        </button>
+                                    </div>
                                 </fieldset>
                  
-                                <!-- PASSO 2: DADOS PESSOAIS + CONSULTA REAL-TIME DA API FACIO -->
-                                <fieldset id="form-step-2" class="hidden space-y-4">
+                                <!-- ===================================================== -->
+                                <!-- PASSO 2: CPF PRIMEIRO -> EXPANDE DADOS PESSOAIS       -->
+                                <!-- ===================================================== -->
+                                <fieldset id="form-step-2" class="hidden">
                                     <div>
                                         <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">1. Digite seu CPF para consultar disponibilidade imediata</label>
                                         <div class="relative">
@@ -552,71 +600,70 @@
                                     </div>
 
                                     <!-- CARD OFICIAL DA OFERTA FACIO (Exibido quando isAvailable === true) -->
-                                    <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-md fade-in">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white">
+                                    <div id="facio-offer-box" class="hidden mt-2 rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-3.5 shadow-md fade-in">
+                                        <div class="flex items-center justify-between mb-1.5">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-bold text-white">
                                                 <i class="fas fa-check-circle"></i> CPF Disponível na Facio
                                             </span>
-                                            <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
+                                            <img src="public/facio.png" alt="Facio" class="h-5 object-contain" onerror="this.style.display='none'">
                                         </div>
 
-                                        <p id="facio-offer-desc" class="text-sm sm:text-base font-extrabold text-gray-900 mb-2">
+                                        <p id="facio-offer-desc" class="text-xs sm:text-sm font-extrabold text-gray-900 mb-2">
                                             Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.
                                         </p>
 
-                                        <!-- Detalhes reais retornados pelo objeto offer da API -->
-                                        <div class="grid grid-cols-3 gap-2 bg-white rounded-lg p-2.5 border border-emerald-200 text-center mb-2">
+                                        <div class="grid grid-cols-3 gap-2 bg-white rounded-lg p-2 border border-emerald-200 text-center">
                                             <div>
                                                 <span class="block text-[10px] uppercase text-gray-500 font-semibold">Limite Máx.</span>
-                                                <span id="facio-offer-max" class="text-sm font-extrabold text-emerald-700">R$ 300,00</span>
+                                                <span id="facio-offer-max" class="text-xs sm:text-sm font-extrabold text-emerald-700">R$ 300,00</span>
                                             </div>
                                             <div class="border-x border-gray-100">
                                                 <span class="block text-[10px] uppercase text-gray-500 font-semibold">Taxa Mínima</span>
-                                                <span id="facio-offer-basefee" class="text-sm font-extrabold text-gray-800">R$ 9,90</span>
+                                                <span id="facio-offer-basefee" class="text-xs sm:text-sm font-extrabold text-gray-800">R$ 9,90</span>
                                             </div>
                                             <div>
                                                 <span class="block text-[10px] uppercase text-gray-500 font-semibold">Modalidade</span>
                                                 <span id="facio-offer-type" class="text-xs font-bold text-gray-800">Antecipação</span>
                                             </div>
                                         </div>
-
-                                        <p class="text-[11px] text-gray-600 leading-tight">
-                                            Complete seus dados abaixo e clique em <strong>Solicitar Agora na Facio</strong> para abrir sua janela de aprovação simplificada, ou clique em <strong>Ver Recomendações e Ofertas</strong>.
-                                        </p>
                                     </div>
 
-                                    <!-- AVISO QUANDO O CPF NÃO ESTÁ DISPONÍVEL NA FACIO (isAvailable === false) -->
-                                    <div id="facio-unavailable-box" class="hidden rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 fade-in">
-                                        <strong>Nota:</strong> Neste momento seu CPF não possui janela disponível na <strong>Facio</strong>, mas separamos outras instituições parceiras abaixo. Complete seus dados e clique em <strong>Ver Recomendações</strong>!
+                                    <!-- AVISO QUANDO O CPF NÃO ESTÁ DISPONÍVEL NA FACIO -->
+                                    <div id="facio-unavailable-box" class="hidden mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900 fade-in">
+                                        <strong>Nota:</strong> Seu CPF não possui janela na Facio neste momento, mas separamos outras instituições parceiras abaixo!
                                     </div>
 
-                                    <div>
-                                        <label for="nomeInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">2. Nome Completo</label>
-                                        <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
-                                    </div>
+                                    <!-- CAMPOS DE CONTATO (Expandem gradualmente após digitar o CPF!) -->
+                                    <div id="progressive-contact-box" class="progressive-reveal">
+                                        <div class="progressive-inner space-y-3 pt-1">
+                                            <div>
+                                                <label for="nomeInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">2. Nome Completo</label>
+                                                <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm sm:text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                            </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <label for="whatsapp" class="block text-xs font-bold uppercase text-gray-600 mb-1">3. Celular / WhatsApp</label>
-                                            <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="15">
-                                        </div>
-                                        <div>
-                                            <label for="emailInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">4. Seu Melhor E-mail</label>
-                                            <input id="emailInput" name="email" type="email" placeholder="seuemail@exemplo.com" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                <div>
+                                                    <label for="whatsapp" class="block text-xs font-bold uppercase text-gray-600 mb-1">3. Celular / WhatsApp</label>
+                                                    <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm sm:text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="15">
+                                                </div>
+                                                <div>
+                                                    <label for="emailInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">4. Seu Melhor E-mail</label>
+                                                    <input id="emailInput" name="email" type="email" placeholder="seuemail@exemplo.com" required class="w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm sm:text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                    
-                                    <div class="flex flex-col gap-2.5 pt-2">
-                                        <!-- Botão Direto da Facio (Dispara POST /leadgen/lead na ação real do cliente) -->
-                                        <button id="btn-facio-direct" type="button" class="hidden w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-sm sm:text-base font-extrabold text-white shadow-lg transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
+                                    <div class="flex flex-col gap-2 pt-3">
+                                        <button id="btn-facio-direct" type="button" class="hidden w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3 text-sm sm:text-base font-extrabold text-white shadow-lg transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
                                             <span>⚡ Solicitar Até R$ 300 Direto na Facio</span>
                                         </button>
 
-                                        <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-sm sm:text-base font-bold text-white shadow transition-transform active:scale-[0.99]">
+                                        <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3 text-sm sm:text-base font-bold text-white shadow transition-transform active:scale-[0.99]">
                                             Ver Recomendações e Ofertas
                                         </button>
 
-                                        <button id="prev-step-btn" type="button" class="w-full pt-1 text-center text-sm font-semibold text-gray-500 hover:text-gray-900">
+                                        <button id="prev-step-btn" type="button" class="w-full pt-1 text-center text-xs sm:text-sm font-semibold text-gray-500 hover:text-gray-900">
                                             &larr; Voltar para alterar valor
                                         </button>
                                     </div>
@@ -659,7 +706,9 @@
         </main>
     </div>
 
-    <!-- Seção Filtros e Vitrine Geral -->
+    <!-- ========================================================= -->
+    <!-- SEÇÃO FILTROS E VITRINE COM BOX PREDEFINIDO ESTÁVEL       -->
+    <!-- ========================================================= -->
     <section id="home-filters" class="py-6 sm:py-10">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             
@@ -671,10 +720,10 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
                 
-                <!-- Filtros Laterais -->
-                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-24 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
+                <!-- Filtros Laterais (Sincronizados com o Admin) -->
+                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-20 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
                     <div class="h-full flex flex-col">
                         <div class="flex items-center justify-between border-b p-4 lg:hidden">
                             <h3 class="text-lg font-bold text-gray-900">Filtros</h3>
@@ -684,11 +733,17 @@
                         </div>
 
                         <div class="p-5 sm:p-6 overflow-y-auto">
-                            <h3 class="hidden text-lg font-extrabold mb-5 text-gray-900 lg:block">Filtre a sua busca</h3>
+                            <div class="flex items-center justify-between mb-5">
+                                <h3 class="hidden text-lg font-extrabold text-gray-900 lg:block">Filtre a sua busca</h3>
+                                <button type="button" id="reset-filters-btn" class="text-xs font-bold text-green-700 hover:underline">
+                                    Limpar
+                                </button>
+                            </div>
+
                             <div class="space-y-6">
                                 <div>
-                                    <h4 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-500">Tipo de Produto</h4>
-                                    <div class="space-y-2.5 text-sm">
+                                    <h4 class="font-bold text-xs uppercase tracking-wider mb-3 text-gray-500">Tipo de Produto</h4>
+                                    <div id="filter-type-list" class="space-y-2.5 text-sm">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
                                             <span class="ml-2.5 text-gray-700 font-medium">Todos</span>
@@ -731,8 +786,8 @@
                                 <hr class="border-gray-100">
 
                                 <div>
-                                    <h4 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-500">Seu Perfil</h4>
-                                    <div class="space-y-2.5 text-sm">
+                                    <h4 class="font-bold text-xs uppercase tracking-wider mb-3 text-gray-500">Seu Perfil</h4>
+                                    <div id="filter-perfil-list" class="space-y-2.5 text-sm">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                             <span class="ml-2.5 text-gray-700 font-medium">Para Negativados</span>
@@ -760,20 +815,22 @@
                     </div>
                 </aside>
 
-                <!-- Coluna de Produtos com Paginação Superior e Inferior Predefinidas -->
+                <!-- Coluna Direita: Paginação Superior + BOX PREDEFINIDO COM PROPORÇÃO TRAVADA + Paginação Inferior -->
                 <div class="lg:col-span-3 flex flex-col">
-                    <!-- PAGINAÇÃO SUPERIOR (Sempre visível em qualquer filtro) -->
-                    <nav id="pagination-top" aria-label="Paginação Superior" class="flex items-center justify-center flex-wrap gap-2 mb-5 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <!-- PAGINAÇÃO SUPERIOR -->
+                    <nav id="pagination-top" aria-label="Paginação Superior" class="flex items-center justify-center flex-wrap gap-2 mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                         <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
                         <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
                         <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
                     </nav>
 
-                    <!-- LISTA DE PRODUTOS -->
-                    <div id="product-list" class="space-y-4 sm:space-y-5"></div>
+                    <!-- BOX PREDEFINIDO DE PRODUTOS (Altura fixa: selecionar filtros NUNCA muda a proporção nem joga o scroll para baixo) -->
+                    <div id="products-viewport-box" class="h-[760px] sm:h-[820px] overflow-y-auto overscroll-contain rounded-2xl border border-emerald-200/80 bg-white/60 p-3 sm:p-4 shadow-inner">
+                        <div id="product-list" class="space-y-4 sm:space-y-5"></div>
+                    </div>
 
-                    <!-- PAGINAÇÃO INFERIOR (Sempre visível em qualquer filtro) -->
-                    <nav id="pagination" aria-label="Paginação Inferior" class="flex items-center justify-center flex-wrap gap-2 mt-6 mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <!-- PAGINAÇÃO INFERIOR -->
+                    <nav id="pagination" aria-label="Paginação Inferior" class="flex items-center justify-center flex-wrap gap-2 mt-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                         <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
                         <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
                         <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
@@ -1035,7 +1092,7 @@
             mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
             // ===================================================
-            // 3. SIMULADOR MULTI-ETAPAS (ESTÁVEL SEM PULOS DE LAYOUT)
+            // 3. SIMULADOR COM EXPANSÃO GRADUAL (SEM ABRIR TUDO DE UMA VEZ)
             // ===================================================
             const leadForm = document.getElementById('leadFormHome');
             const valorSlider = document.getElementById('valorHome');
@@ -1050,6 +1107,13 @@
             const nextBtn = document.getElementById('next-step-btn');
             const prevBtn = document.getElementById('prev-step-btn');
 
+            const progPrazoBox = document.getElementById('progressive-prazo-box');
+            const progPerfilBox = document.getElementById('progressive-perfil-box');
+            const progContactBox = document.getElementById('progressive-contact-box');
+
+            let isPrazoRevealed = false;
+            let isPerfilRevealed = false;
+
             const formatCurrencyNoCents = (value) => new Intl.NumberFormat('pt-BR', { 
                 style: 'currency', 
                 currency: 'BRL', 
@@ -1057,24 +1121,49 @@
                 maximumFractionDigits: 0
             }).format(value);
 
-            function updateSliderUI(val) {
-                const numVal = Number(val) || 300;
-                if (valorDisplay) valorDisplay.textContent = formatCurrencyNoCents(numVal);
-                // Mantém o box #facio-step1-hint sempre visível (apenas mudando o tom da borda)
-                // para que a altura do formulário nunca mude ao arrastar o slider.
-                if (facioStep1Hint) {
-                    if (numVal <= 300) {
-                        facioStep1Hint.className = 'mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-300 px-3 py-2 text-xs text-emerald-950 transition-colors';
-                    } else {
-                        facioStep1Hint.className = 'mt-3 flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-600 transition-colors';
+            function revealPrazoSection() {
+                if (!isPrazoRevealed && progPrazoBox) {
+                    isPrazoRevealed = true;
+                    progPrazoBox.classList.add('is-open');
+                    if (nextBtn && !isPerfilRevealed) {
+                        nextBtn.innerHTML = 'Selecionar Opções de Perfil &rarr;';
                     }
                 }
             }
 
+            function revealPerfilSection() {
+                revealPrazoSection();
+                if (!isPerfilRevealed && progPerfilBox) {
+                    isPerfilRevealed = true;
+                    progPerfilBox.classList.add('is-open');
+                    if (nextBtn) {
+                        nextBtn.innerHTML = 'Continuar para Verificar CPF &rarr;';
+                    }
+                }
+            }
+
+            function updateSliderUI(val, fromUserInteraction = false) {
+                const numVal = Number(val) || 300;
+                if (valorDisplay) valorDisplay.textContent = formatCurrencyNoCents(numVal);
+                if (facioStep1Hint) {
+                    if (numVal <= 300) {
+                        facioStep1Hint.className = 'mt-2.5 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-300 px-3 py-2 text-xs text-emerald-950 transition-colors';
+                    } else {
+                        facioStep1Hint.className = 'mt-2.5 flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-600 transition-colors';
+                    }
+                }
+                if (fromUserInteraction) {
+                    revealPrazoSection();
+                }
+            }
+
             if (valorSlider) {
-                updateSliderUI(valorSlider.value);
+                updateSliderUI(valorSlider.value, false);
                 valorSlider.addEventListener('input', (e) => {
-                    updateSliderUI(e.target.value);
+                    updateSliderUI(e.target.value, true);
+                });
+                valorSlider.addEventListener('change', (e) => {
+                    updateSliderUI(e.target.value, true);
                 });
             }
 
@@ -1083,7 +1172,7 @@
                     const targetVal = btn.getAttribute('data-quick-val');
                     if (valorSlider && targetVal) {
                         valorSlider.value = targetVal;
-                        updateSliderUI(targetVal);
+                        updateSliderUI(targetVal, true);
                     }
                 });
             });
@@ -1098,12 +1187,30 @@
                         btn.classList.add('bg-green-600', 'text-white', 'font-semibold', 'shadow-sm');
                         btn.classList.remove('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'font-medium');
                         parcelasInput.value = btn.dataset.parcelas;
+                        // Assim que a pessoa escolhe o prazo, expande gradualmente as caixas de Negativado/Aposentado/Bolsa Família!
+                        revealPerfilSection();
                     });
                 });
             }
 
             if (step1 && step2 && nextBtn && prevBtn) {
                 nextBtn.addEventListener('click', () => {
+                    // Se o usuário clicar no botão antes de expandir, vai revelando gradualmente etapa por etapa
+                    if (!isPrazoRevealed) {
+                        revealPrazoSection();
+                        return;
+                    }
+                    if (!isPerfilRevealed) {
+                        // Marca 1x como padrão visual caso ainda não tenha clicado em uma parcela
+                        const hasSelectedParcela = Array.from(parcelaBtns).some(b => b.classList.contains('bg-green-600'));
+                        if (!hasSelectedParcela && parcelaBtns[0]) {
+                            parcelaBtns[0].click();
+                        } else {
+                            revealPerfilSection();
+                        }
+                        return;
+                    }
+
                     step1.classList.add('hidden');
                     step2.classList.remove('hidden');
                     if (stepBadge) stepBadge.textContent = 'Etapa 2 de 2';
@@ -1167,6 +1274,9 @@
                 const cleanCpf = (rawCpf || '').replace(/\D/g, '');
                 if (!validateCPF(cleanCpf)) return false;
 
+                // Expande os campos de Nome, WhatsApp e E-mail assim que o CPF válido é preenchido
+                progContactBox?.classList.add('is-open');
+
                 if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking) {
                     return facioState.isAvailable;
                 }
@@ -1212,7 +1322,7 @@
                     facioUnavailableBox?.classList.add('hidden');
                     btnFacioDirect?.classList.remove('hidden');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF válido e disponível para antecipação na Facio!';
+                        cpfMessage.textContent = '✓ CPF válido! Complete seus dados abaixo:';
                         cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-emerald-700 font-bold';
                     }
                 } else {
@@ -1220,7 +1330,7 @@
                     btnFacioDirect?.classList.add('hidden');
                     facioUnavailableBox?.classList.remove('hidden');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF válido. Veja as recomendações disponíveis abaixo.';
+                        cpfMessage.textContent = '✓ CPF válido. Preencha abaixo para ver as recomendações:';
                         cpfMessage.className = 'text-xs mt-1 min-h-[1.1rem] text-amber-700 font-semibold';
                     }
                 }
@@ -1284,6 +1394,9 @@
                     cpfInput?.focus();
                     return null;
                 }
+
+                // Garante que os campos de contato estejam abertos caso o usuário tenha clicado direto
+                progContactBox?.classList.add('is-open');
 
                 if (!nome || !nome.includes(' ')) {
                     alert('Por favor, informe seu nome completo (nome e sobrenome).');
@@ -1580,18 +1693,36 @@
             }
 
             // ===================================================
-            // 8. LISTA DE PRODUTOS E PAGINAÇÃO SEMPRE VISÍVEL
+            // 8. LISTA DE PRODUTOS, BOX PREDEFINIDO E SINCRONIZAÇÃO COM O ADMIN
             // ===================================================
             const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
             const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+            const viewportBox = document.getElementById('products-viewport-box');
             const listEl = document.getElementById('product-list');
             const pagTop = document.getElementById('pagination-top');
             const pagBottom = document.getElementById('pagination');
-            const filters = document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]');
 
             const state = { all: [], filtered: [], page: 1, perPage: 10 };
+
+            // Converte qualquer formato salvo pelo Admin (JSON Array, quebras de linha \n ou CSV)
+            const toVantagensLines = (v) => {
+                if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
+                if (typeof v === 'string') {
+                    const trimmed = v.trim();
+                    if (!trimmed) return [];
+                    try {
+                        const j = JSON.parse(trimmed);
+                        if (Array.isArray(j)) return j.map(s => String(s).trim()).filter(Boolean);
+                    } catch (e) {}
+                    if (trimmed.includes('\n')) {
+                        return trimmed.split('\n').map(s => s.trim()).filter(Boolean);
+                    }
+                    return trimmed.replace(/^\{|\}$/g, '').split(',').map(s => s.replace(/^"|"$|/g, '').trim()).filter(Boolean);
+                }
+                return [];
+            };
 
             const toArray = (v, lower = false) => {
                 if (Array.isArray(v)) return lower ? v.map(x => String(x).toLowerCase().trim()) : v;
@@ -1606,6 +1737,14 @@
                 }
                 return [];
             };
+
+            // Normaliza slugs para que "aposentado" e "aposentados" batam perfeitamente nos filtros
+            const normalizeSlug = (str) => String(str || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9_-]/g, '')
+                .replace(/s$/, '');
 
             const fixLogo = (p) => (p || '').replace(/^(\.\.\/)+public\//, 'public/');
 
@@ -1628,7 +1767,8 @@
                 red: 'bg-red-100 text-red-800',
                 blue: 'bg-blue-100 text-blue-800',
                 yellow: 'bg-yellow-100 text-yellow-800',
-                purple: 'bg-purple-100 text-purple-800'
+                purple: 'bg-purple-100 text-purple-800',
+                green: 'bg-emerald-100 text-emerald-800'
             };
             const safeBadge = (c) => badgeMap[String(c || '').toLowerCase()] || 'bg-green-100 text-green-800';
 
@@ -1639,12 +1779,12 @@
                 return (
                     tipo.includes('anuncio') ||
                     tag.includes('ca-pub')   ||
-                    /^\d+$/.test(slot)
+                    /^\d{5,}$/.test(slot)
                 );
             };
 
             function renderProductCardHTML(p) {
-                const vantagens = toArray(p.vantagens, false);
+                const vantagens = toVantagensLines(p.vantagens);
                 const vHtml = vantagens.map(v => `
                     <li class="flex items-start text-sm sm:text-base">
                         <span class="mr-2 text-green-700 font-bold shrink-0">✓</span><span>${v}</span>
@@ -1717,7 +1857,13 @@
                 return merged;
             }
 
-            // Renderiza a lista e mantém AMBAS as paginações (superior e inferior) sempre visíveis
+            // Rola apenas o Box Predefinido para o topo, NUNCA movendo o scroll geral da página!
+            function resetViewportBoxScroll() {
+                if (viewportBox) {
+                    viewportBox.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
             const renderPaginationBars = (totalPages) => {
                 const total = Math.max(1, totalPages);
                 [pagTop, pagBottom].forEach(c => {
@@ -1735,21 +1881,13 @@
                                 ? 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed'
                                 : 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition');
 
-                        function scrollToProductsTop() {
-                            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
-                            const headerH = header ? header.offsetHeight : 0;
-                            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
-                            const y = window.pageYOffset + rect.top - headerH - 12;
-                            window.scrollTo({ top: y, behavior: 'smooth' });
-                        }
-
                         if (!b.disabled) {
                             b.addEventListener('click', (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 state.page = p;
                                 render();
-                                scrollToProductsTop();
+                                resetViewportBoxScroll();
                             });
                         }
                         return b;
@@ -1796,7 +1934,13 @@
                     }
 
                     return renderProductCardHTML(p);
-                }).join('') : '<p class="text-center text-gray-600 py-10 bg-white rounded-2xl border border-gray-200">Nenhum produto encontrado com estes filtros.</p>';
+                }).join('') : `
+                    <div class="h-72 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-gray-200 p-6">
+                        <p class="text-gray-600 font-semibold mb-3">Nenhum produto encontrado com estes filtros específicos.</p>
+                        <button type="button" onclick="document.getElementById('reset-filters-btn').click()" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition">
+                            Mostrar Todos os Produtos
+                        </button>
+                    </div>`;
 
                 setTimeout(activateAds, 0);
 
@@ -1810,34 +1954,36 @@
                 const fromLS = localStorage.getItem('adEvery');
                 const parsed = Number(fromQS ?? fromLS);
                 window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 2;
-
-                window.setAdEvery = (n) => {
-                    n = Math.max(1, Math.floor(Number(n) || 2));
-                    localStorage.setItem('adEvery', String(n));
-                    window.AD_EVERY = n;
-                    apply();
-                };
             })();
 
             const apply = () => {
-                const type = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
-                const perfisSel = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
-                    .map(e => String(e.value || '').toLowerCase());
+                const selectedTypeRaw = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
+                const selectedTypeNorm = normalizeSlug(selectedTypeRaw);
+
+                const perfisSelNorm = Array.from(document.querySelectorAll('input[data-filter="perfil"]:checked'))
+                    .map(e => normalizeSlug(e.value));
 
                 const all = Array.isArray(state.all) ? state.all : [];
 
-                const matchesType = (p) => type === 'all' || String(p?.tipo || '').toLowerCase().includes(type);
-                const matchesPerfis = (p) => {
-                    if (!perfisSel.length) return true;
-                    const txt = String(p?.perfis || '').toLowerCase();
-                    return perfisSel.every(v => txt.includes(v));
+                const matchesType = (p) => {
+                    if (selectedTypeRaw === 'all') return true;
+                    const pTypes = toArray(p?.tipo, true);
+                    return pTypes.some(t => t === selectedTypeRaw.toLowerCase() || normalizeSlug(t) === selectedTypeNorm);
                 };
 
-                const isFiltered = !(type === 'all' && perfisSel.length === 0);
+                const matchesPerfis = (p) => {
+                    if (!perfisSelNorm.length) return true;
+                    const pPerfis = toArray(p?.perfis, true).map(normalizeSlug);
+                    const rawTxtNorm = normalizeSlug(String(p?.perfis || '') + ' ' + String(p?.tipo || ''));
+                    return perfisSelNorm.every(sel => pPerfis.includes(sel) || rawTxtNorm.includes(sel));
+                };
+
+                const isFiltered = !(selectedTypeRaw === 'all' && perfisSelNorm.length === 0);
                 if (!isFiltered) {
                     state.filtered = [...state.all];
                     state.page = 1;
                     render();
+                    resetViewportBoxScroll();
                     if (window.innerWidth < 1024) closePanel();
                     return;
                 }
@@ -1859,21 +2005,123 @@
                 state.filtered = [...featured, ...mixed];
                 state.page = 1;
                 render();
+                resetViewportBoxScroll();
 
                 if (window.innerWidth < 1024) closePanel();
             };
 
-            filters.forEach(f => f.addEventListener('change', apply));
+            // Sincroniza todas as Categorias e Tags de Perfil criadas/editadas no Admin com a barra lateral do Index
+            function syncDynamicAdminFilters(products) {
+                const typeContainer = document.getElementById('filter-type-list');
+                const perfilContainer = document.getElementById('filter-perfil-list');
+                if (!typeContainer || !perfilContainer) return;
 
+                const existingTypesNorm = new Set(
+                    Array.from(typeContainer.querySelectorAll('input[name="product_type"]')).map(el => normalizeSlug(el.value))
+                );
+                const existingPerfisNorm = new Set(
+                    Array.from(perfilContainer.querySelectorAll('input[data-filter="perfil"]')).map(el => normalizeSlug(el.value))
+                );
+
+                // 1) Lê catálogo customizado salvo pelo Admin no navegador (se existir)
+                let adminSavedCategories = [];
+                let adminSavedProfiles = [];
+                try {
+                    adminSavedCategories = JSON.parse(localStorage.getItem('tirracred_Taxonomy_Categories') || '[]');
+                    adminSavedProfiles = JSON.parse(localStorage.getItem('tirracred_Taxonomy_Profiles') || '[]');
+                } catch (e) {}
+
+                const cleanLabel = (rawLabel, fallbackSlug) => {
+                    const txt = String(rawLabel || fallbackSlug || '')
+                        .replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]\s*/u, '') // Remove emoji inicial se quiser manter padrão limpo ou preserva
+                        .trim();
+                    return txt.charAt(0).toUpperCase() + txt.slice(1).replace(/[-_]/g, ' ');
+                };
+
+                const addTypeOptionIfNew = (slug, labelText) => {
+                    const cleanSlug = String(slug || '').toLowerCase().trim();
+                    const norm = normalizeSlug(cleanSlug);
+                    if (!cleanSlug || cleanSlug === 'all' || cleanSlug === 'anuncio' || existingTypesNorm.has(norm)) return;
+                    existingTypesNorm.add(norm);
+
+                    const lbl = document.createElement('label');
+                    lbl.className = 'flex items-center cursor-pointer';
+                    lbl.innerHTML = `
+                        <input type="radio" name="product_type" value="${esc(cleanSlug)}" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
+                        <span class="ml-2.5 text-gray-700 font-medium">${esc(labelText)}</span>
+                    `;
+                    lbl.querySelector('input').addEventListener('change', apply);
+                    typeContainer.appendChild(lbl);
+                };
+
+                const addPerfilOptionIfNew = (slug, labelText) => {
+                    const cleanSlug = String(slug || '').toLowerCase().trim();
+                    const norm = normalizeSlug(cleanSlug);
+                    if (!cleanSlug || existingPerfisNorm.has(norm)) return;
+                    existingPerfisNorm.add(norm);
+
+                    const lbl = document.createElement('label');
+                    lbl.className = 'flex items-center cursor-pointer';
+                    lbl.innerHTML = `
+                        <input type="checkbox" data-filter="perfil" value="${esc(cleanSlug)}" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="ml-2.5 text-gray-700 font-medium">${esc(labelText)}</span>
+                    `;
+                    lbl.querySelector('input').addEventListener('change', apply);
+                    perfilContainer.appendChild(lbl);
+                };
+
+                // Adiciona tags criadas no Admin Studio
+                if (Array.isArray(adminSavedCategories)) {
+                    adminSavedCategories.forEach(cat => {
+                        if (cat?.slug) addTypeOptionIfNew(cat.slug, cleanLabel(cat.label, cat.slug));
+                    });
+                }
+                if (Array.isArray(adminSavedProfiles)) {
+                    adminSavedProfiles.forEach(prof => {
+                        if (prof?.slug) addPerfilOptionIfNew(prof.slug, cleanLabel(prof.label, prof.slug));
+                    });
+                }
+
+                // 2) Varre todos os produtos carregados do banco (D1 + Supabase) para descobrir novas tags automaticamente
+                products.forEach(p => {
+                    if (isAdItem(p)) return;
+                    toArray(p.tipo, true).forEach(t => {
+                        const matchedAdmin = Array.isArray(adminSavedCategories) ? adminSavedCategories.find(c => c.slug === t) : null;
+                        addTypeOptionIfNew(t, cleanLabel(matchedAdmin?.label, t));
+                    });
+                    toArray(p.perfis, true).forEach(pf => {
+                        const matchedAdmin = Array.isArray(adminSavedProfiles) ? adminSavedProfiles.find(pr => pr.slug === pf) : null;
+                        addPerfilOptionIfNew(pf, cleanLabel(matchedAdmin?.label, pf));
+                    });
+                });
+            }
+
+            // Listeners iniciais dos filtros
+            document.querySelectorAll('input[name="product_type"], input[data-filter="perfil"]').forEach(f => {
+                f.addEventListener('change', apply);
+            });
+
+            // Botão Limpar Filtros
+            document.getElementById('reset-filters-btn')?.addEventListener('click', () => {
+                const allRadio = document.querySelector('input[name="product_type"][value="all"]');
+                if (allRadio) allRadio.checked = true;
+                document.querySelectorAll('input[data-filter="perfil"]:checked').forEach(cb => {
+                    cb.checked = false;
+                });
+                apply();
+            });
+
+            // Carregamento Híbrido Sem Cache (Cloudflare D1 + Supabase)
             (async () => {
-                listEl.innerHTML = '<div class="flex justify-center items-center py-20 bg-white rounded-2xl border border-gray-200"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                listEl.innerHTML = '<div class="flex justify-center items-center h-72 bg-white rounded-2xl border border-gray-200"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
                 async function loadProducts() {
                     let d1Products = [];
                     let supabaseProducts = [];
 
+                    // 1) Busca fresca na Cloudflare D1 (sem cache para refletir edições do Admin na hora)
                     try {
-                        const res = await fetch('/api/products');
+                        const res = await fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' });
                         if (res.ok) {
                             const data = await res.json();
                             if (Array.isArray(data)) d1Products = data;
@@ -1882,13 +2130,27 @@
                         console.warn('D1 falhou:', e);
                     }
 
+                    // 2) Busca no Supabase com fallback REST
                     try {
                         const { data, error } = await _supabase
                             .from('products')
                             .select('*')
-                            .neq('ativo', false)
                             .order('priority_order', { ascending: true });
-                        if (!error && data) supabaseProducts = data;
+                        if (!error && Array.isArray(data) && data.length > 0) {
+                            supabaseProducts = data;
+                        } else {
+                            const restRes = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=priority_order.asc`, {
+                                cache: 'no-store',
+                                headers: {
+                                    'apikey': SUPABASE_ANON_KEY,
+                                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                                }
+                            });
+                            if (restRes.ok) {
+                                const restData = await restRes.json();
+                                if (Array.isArray(restData)) supabaseProducts = restData;
+                            }
+                        }
                     } catch (e) {
                         console.warn('Supabase falhou:', e);
                     }
@@ -1896,12 +2158,20 @@
                     const seen = new Set();
                     const merged = [];
                     for (const p of [...d1Products, ...supabaseProducts]) {
-                        const key = (p.titulo || '').toLowerCase().trim();
-                        if (key && !seen.has(key)) {
-                            seen.add(key);
+                        const isAtivo = p.ativo !== false && p.ativo !== 0 && p.ativo !== '0';
+                        if (!isAtivo) continue;
+
+                        const titleKey = (p.titulo || '').toLowerCase().trim();
+                        const uniqueKey = (titleKey && !isAdItem(p))
+                            ? `title:${titleKey}`
+                            : `ad:${p.id}_${p.link || ''}`;
+
+                        if (!seen.has(uniqueKey)) {
+                            seen.add(uniqueKey);
                             merged.push(p);
                         }
                     }
+                    merged.sort((a, b) => (Number(a.priority_order) ?? 999) - (Number(b.priority_order) ?? 999));
                     return merged;
                 }
 
@@ -1914,63 +2184,19 @@
                 }
 
                 state.all = data.map(p => ({ ...p, logo: fixLogo(p.logo) }));
+                // Sincroniza todas as alterações e novas tags do Admin antes de renderizar!
+                syncDynamicAdminFilters(state.all);
                 apply();
             })();
 
             showPage('page-home');
         });
 
-        // Auto-Sincronizador de Categorias (tipo) e Perfis (perfis) criados no Admin
-function syncDynamicAdminFilters(products) {
-    const typeContainer = document.querySelector('input[name="product_type"]')?.closest('.space-y-2.5, .space-y-2');
-    const perfilContainer = document.querySelector('input[data-filter="perfil"]')?.closest('.space-y-2.5, .space-y-2');
-    if (!typeContainer || !perfilContainer) return;
 
-    const existingTypes = new Set(
-        Array.from(document.querySelectorAll('input[name="product_type"]')).map(el => el.value.toLowerCase())
-    );
-    const existingPerfis = new Set(
-        Array.from(document.querySelectorAll('input[data-filter="perfil"]')).map(el => el.value.toLowerCase())
-    );
 
-    const formatTagLabel = (slug) => slug.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-    products.forEach(p => {
-        if (isAdItem(p)) return;
-
-        // 1. Adiciona novas Categorias (tipo) que não existiam no HTML
-        toArray(p.tipo, true).forEach(t => {
-            if (t && t !== 'all' && t !== 'anuncio' && !existingTypes.has(t)) {
-                existingTypes.add(t);
-                const lbl = document.createElement('label');
-                lbl.className = 'flex items-center cursor-pointer';
-                lbl.innerHTML = `
-                    <input type="radio" name="product_type" value="${t}" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                    <span class="ml-2.5 text-gray-700 font-medium">${formatTagLabel(t)}</span>
-                `;
-                lbl.querySelector('input').addEventListener('change', apply);
-                typeContainer.appendChild(lbl);
-            }
-        });
-
-        // 2. Adiciona novos Perfis (perfis) que não existiam no HTML
-        toArray(p.perfis, true).forEach(pf => {
-            if (pf && !existingPerfis.has(pf)) {
-                existingPerfis.add(pf);
-                const lbl = document.createElement('label');
-                lbl.className = 'flex items-center cursor-pointer';
-                lbl.innerHTML = `
-                    <input type="checkbox" data-filter="perfil" value="${pf}" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    <span class="ml-2.5 text-gray-700 font-medium">${formatTagLabel(pf)}</span>
-                `;
-                lbl.querySelector('input').addEventListener('change', apply);
-                perfilContainer.appendChild(lbl);
-            }
-        });
-    });
-}
     </script>
 
 </body>
 
 </html>
+
