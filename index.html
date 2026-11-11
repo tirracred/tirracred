@@ -3,8 +3,8 @@
 <head>
     <link rel="icon" type="image/png" href="public/favincon.png"/>
     <link rel="preload" href="public/banner-1.png" as="image">
-    <link rel="preload" href="public/banner3.png" as="image">
     <link rel="preload" href="public/banner2.png" as="image">
+    <link rel="preload" href="public/banner3.png" as="image">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -22,13 +22,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0fdf4;
+            overflow-x: hidden;
         }
-
-        #pagination { margin-bottom: 2.5rem; }
-        @media (min-width: 768px) { #pagination { margin-bottom: 4rem; } }
-
-        #pagination-top { margin-top: .5rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { #pagination-top { margin-bottom: 2rem; } }
 
         /* Estilos para o slider */
         input[type=range] {
@@ -44,7 +39,7 @@
             height: 8px;
             cursor: pointer;
             background: #d1fae5;
-            border-radius: 5px;
+            border-radius: 9999px;
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -52,9 +47,10 @@
             width: 24px;
             border-radius: 50%;
             background: #10b981;
+            border: 3px solid #ffffff;
             cursor: pointer;
             margin-top: -8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             transition: transform 0.2s;
         }
         input[type=range]::-webkit-slider-thumb:hover {
@@ -65,7 +61,7 @@
             height: 8px;
             cursor: pointer;
             background: #d1fae5;
-            border-radius: 5px;
+            border-radius: 9999px;
         }
         input[type=range]::-moz-range-thumb {
             height: 24px;
@@ -73,13 +69,14 @@
             border-radius: 50%;
             background: #10b981;
             cursor: pointer;
-            border: none;
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
         }
 
         /* Animações */
-        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        .fade-in { animation: fadeIn 0.45s ease-in-out forwards; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -88,34 +85,80 @@
         }
         .page-container.active {
             display: block;
-            animation: fadeIn 0.4s ease-in-out;
+            animation: fadeIn 0.35s ease-in-out;
         }
 
-        /* Animação do carrossel de logos */
+        /* Banner Hero com proporção e resolução travadas */
+        .hero-bg-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: opacity 0.8s ease-in-out;
+            will-change: opacity;
+            pointer-events: none;
+        }
+
+        /* Carrossel de logos proporcional em qualquer tela */
         .logo-carousel {
             overflow: hidden;
             position: relative;
             width: 100%;
-            height: 100px;
+            height: 88px;
+            display: flex;
+            align-items: center;
+            -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        }
+        @media (min-width: 640px) {
+            .logo-carousel { height: 100px; }
         }
         .logo-carousel-track {
             display: flex;
-            width: calc(200px * 16);
-            animation: scroll 40s linear infinite;
+            align-items: center;
+            width: calc(160px * 16);
+            animation: scrollLogos 36s linear infinite;
+        }
+        @media (min-width: 640px) {
+            .logo-carousel-track { width: calc(200px * 16); }
         }
         .logo-carousel-track:hover {
             animation-play-state: paused;
         }
         .logo-carousel-item {
-            width: 200px;
+            width: 160px;
+            height: 64px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 16px;
         }
-        @keyframes scroll {
+        @media (min-width: 640px) {
+            .logo-carousel-item {
+                width: 200px;
+                height: 72px;
+                padding: 0 24px;
+            }
+        }
+        .logo-carousel-item img {
+            max-height: 38px;
+            max-width: 120px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        @media (min-width: 640px) {
+            .logo-carousel-item img {
+                max-height: 44px;
+                max-width: 145px;
+            }
+        }
+        @keyframes scrollLogos {
             0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-200px * 8)); }
+            100% { transform: translateX(-50%); }
         }
 
         /* === AD CARDS (lista de produtos) === */
@@ -123,9 +166,9 @@
         #results-grid .ad-card {
             background: #fff;
             border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-            padding: 0.75rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            padding: 0.875rem;
         }
         #product-list .ad-card-inner,
         #results-grid .ad-card-inner {
@@ -150,42 +193,46 @@
         }
 
         .product-card {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
         
         .btn-primary {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: 700;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 10px -1px rgba(16, 185, 129, 0.28);
         }
         
         .btn-primary:hover {
             background: linear-gradient(135deg, #059669, #047857);
             transform: translateY(-2px);
-            box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 14px -2px rgba(16, 185, 129, 0.35);
         }
         
         .btn-secondary {
-            background: #f3f4f6;
+            background: #f9fafb;
             color: #374151;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            border: 2px solid #e5e7eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            border: 1.5px solid #e5e7eb;
             font-size: 0.875rem;
         }
         
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: #f3f4f6;
             border-color: #d1d5db;
             transform: translateY(-1px);
         }
@@ -197,16 +244,9 @@
             width: 100%;
         }
         
-        @media (min-width: 640px) {
-            .product-actions {
-                flex-direction: row;
-                width: auto;
-            }
-        }
-        
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 24px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -5px rgba(0, 0, 0, 0.03);
         }
 
         :root { --alert-h: 0px; }
@@ -232,35 +272,17 @@
             #results-grid ins.adsbygoogle { min-height: 140px; }
         }
 
+        /* Carrossel Como Funciona */
         .carousel-track {
-            transition: transform 0.5s ease-in-out;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
         }
         .dot {
-            transition: background-color 0.3s ease, transform 0.3s ease;
+            transition: all 0.3s ease;
         }
         .dot.active {
-            transform: scale(0.50);
-        }
-
-        .whatsapp-outline-button {
-            border: 2px solid #00A86B;
-            color: #00A86B;
-            background: transparent;
-            border-radius: 8px;
-            padding: 12px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            text-decoration: none;
-            transition: .2s;
-        }
-        .whatsapp-outline-button:hover {
-            background: #00A86B;
-            color: #fff;
-        }
-        .whatsapp-icon {
-            width: 22px;
-            height: 22px;
-            margin-right: 8px;
+            width: 1.75rem;
+            border-radius: 9999px;
         }
     </style>
 
@@ -270,45 +292,41 @@
 <body class="bg-green-50 text-gray-800">
 
     <!-- Alerta Topo (fixo) -->
-    <div id="top-alert" class="fixed inset-x-0 top-0 z-[60] bg-yellow-400 text-center p-2 text-sm font-semibold text-yellow-900">
+    <div id="top-alert" class="fixed inset-x-0 top-0 z-[60] bg-yellow-400 text-center px-3 py-2 text-xs sm:text-sm font-semibold text-yellow-950 shadow-sm">
         Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
     </div>
     <div id="top-alert-spacer" aria-hidden="true"></div>
 
     <!-- Header -->
-    <header id="main-header" class="bg-white shadow-md sticky z-50" style="top: var(--alert-h, 0px);">
+    <header id="main-header" class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky z-50" style="top: var(--alert-h, 0px);">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
 
-                <div class="py-1 px-1 flex-shrink-0 rounded bg-white shadow">
+                <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white">
                     <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
-                        <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
+                        <img src="public/logo.png" alt="TirraCred Logo" class="h-8 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
                     </a>
                 </div>
 
                 <!-- Desktop Navigation -->
-                <nav class="hidden md:flex md:space-x-8">
-                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="text-gray-600 hover:text-green-600 font-medium transition-colors">Empréstimos 🤑</a>
-                    <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Cartão de Crédito 💳</a>
-                    <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-medium transition-colors">Limpar Nome 🧹</a>
-                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-medium transition-colors">YouTube 📺</a>
+                <nav class="hidden md:flex md:items-center md:space-x-8">
+                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos 🤑</a>
+                    <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Cartão de Crédito 💳</a>
+                    <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Limpar Nome 🧹</a>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">YouTube 📺</a>
                 </nav>
 
-                <!-- Desktop CTA -->
-                <a id="btn-chat-mobile" href="javascript:void(0)" class="whatsapp-outline-button hidden md:flex items-center justify-center">
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
-                        <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
-                    </svg>
-                    <span>Atendimento</span>
-                </a>
-                
-                <!-- Mobile: WhatsApp Icon + Menu Button -->
-                <div class="md:hidden flex items-center space-x-4">
-                    <a id="btn-chat-footer" href="javascript:void(0)" class="transition-transform transform hover:scale-110">
-                        <img src="public/whatsapp logo.webp" alt="Falar com Isabel" class="h-8 w-auto">
+                <!-- Desktop Action -->
+                <div class="hidden md:flex items-center">
+                    <a href="#home-filters" class="scroll-toggle inline-flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 px-4 py-2 text-sm font-bold text-green-700 hover:bg-green-100 transition">
+                        <span>Ver Todas as Ofertas</span>
+                        <i class="fas fa-arrow-down text-xs"></i>
                     </a>
-
-                    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus:outline-none">
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" type="button" aria-label="Abrir Menu" class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
@@ -318,17 +336,12 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
-            <a href="javascript:void(0)" onclick="showPage('page-home')" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Empréstimos</a>
-            <a href="#home-filters" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Cartão de Crédito</a>
-            <a href="#renegociacao" class="scroll-toggle block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-100">Renegociar Dívidas</a>
-            <div class="px-4 py-3 border-t">
-                <a id="btn-chat-footer-mobile" href="javascript:void(0)" class="whatsapp-outline-button mt-3 inline-flex">
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 448 512" class="whatsapp-icon">
-                        <path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-47.1-157zM223.9 438.6h-.1c-32.7 0-63.2-8.8-89.7-25.5l-6.4-4-66.7 17.5 17.8-65-4.2-6.6c-17.9-28.4-27.4-61.4-27.4-95 0-99.6 81.1-180.6 180.7-180.6 48.3 0 93.7 18.8 127.8 53 34.1 34.1 52.9 79.5 52.9 127.7.1 99.7-81 180.7-180.7 180.7zm97.5-135.5c-5.3-2.7-31.5-15.5-36.4-17.3-4.9-1.8-8.5-2.7-12 2.7-3.6 5.3-13.8 17.3-16.9 20.8-3.1 3.6-6.2 4-11.5 1.3-5.3-2.7-22.4-8.2-42.6-26.3-15.8-14.1-26.5-31.5-29.6-36.8-3.1-5.3-.3-8.2 2.3-10.8 2.4-2.4 5.3-6.2 8-9.3 2.7-3.1 3.6-5.3 5.3-8.8 1.8-3.6.9-6.6-.4-9.3-1.4-2.7-12-28.9-16.4-39.6-4.3-10.4-8.7-9-12-9.1-3.1-.1-6.6-.1-10.1-.1-3.6 0-9.3 1.3-14.2 6.6-4.9 5.3-18.8 18.4-18.8 44.9s19.3 52.1 22 55.8c2.7 3.8 37.9 57.9 91.9 81.2 12.8 5.5 22.8 8.8 30.6 11.3 12.9 4.1 24.6 3.5 33.9 2.1 10.3-1.5 31.5-12.9 35.9-25.3 4.4-12.4 4.4-23 3.1-25.3-1.3-2.3-4.9-3.7-10.2-6.4z"></path>
-                    </svg>
-                    <span>Falar com a Isabel</span>
-                </a>
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg">
+            <div class="px-4 py-3 space-y-1">
+                <a href="javascript:void(0)" onclick="showPage('page-home')" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Empréstimos 🤑</a>
+                <a href="#home-filters" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Cartão de Crédito 💳</a>
+                <a href="#renegociacao" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Renegociar Dívidas 🧹</a>
+                <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">YouTube 📺</a>
             </div>
         </div>
     </header>
@@ -370,210 +383,220 @@
     <!-- ========================================================= -->
     <div id="page-home" class="page-container active">
         <main>
-            <!-- Hero e Simulador -->
-            <section id="hero-section" class="relative text-white py-12 sm:py-20">
-                <div id="hero-background" class="absolute inset-0 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('public/banner-1.png'); z-index: -1;"></div>
+            <!-- Hero e Simulador (Com Proporção e Resolução Estabilizadas) -->
+            <section id="hero-section" class="relative text-white py-8 sm:py-14 lg:py-20 overflow-hidden min-h-[640px] lg:min-h-[600px] flex items-center">
+                <!-- Camadas de Imagem Reais (Sem distorção de aspecto no celular ou PC) -->
+                <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden">
+                    <img src="public/banner-1.png" alt="Banner 1" class="hero-bg-slide opacity-100" data-slide-img="0" decoding="async">
+                    <img src="public/banner2.png" alt="Banner 2" class="hero-bg-slide opacity-0" data-slide-img="1" decoding="async">
+                    <img src="public/banner3.png" alt="Banner 3" class="hero-bg-slide opacity-0" data-slide-img="2" decoding="async">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/75 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/65 lg:to-black/55"></div>
+                </div>
 
-                <div class="relative z-10 container mx-auto px-4 grid lg:grid-cols-2 gap-10 items-center">
-                    <div class="text-center lg:text-left">
-                        <h1 id="hero-title" class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-                            Compare e contrate o produto financeiro certo para você.
+                <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
+                    <!-- Coluna de Texto com Altura Estabilizada (Evita pulos ao trocar slides) -->
+                    <div class="lg:col-span-6 text-center lg:text-left min-h-[140px] sm:min-h-[160px] lg:min-h-[220px] flex flex-col justify-center">
+                        <h1 id="hero-title" class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4 leading-tight tracking-tight drop-shadow-sm">
+                            Crédito para negativados? Temos a solução!
                         </h1>
-                        <p id="hero-subtitle" class="text-lg md:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0">
-                            Soluções prontas para te ajudar a retomar o controle da sua vida financeira.
+                        <p id="hero-subtitle" class="text-sm sm:text-lg lg:text-xl text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                            Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.
                         </p>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
-                        <!-- Indicador de Etapas -->
-                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
-                            <span id="step-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-green-100 text-green-800">
-                                Etapa 1 de 2
-                            </span>
+                    <!-- Coluna do Simulador -->
+                    <div class="lg:col-span-6 w-full">
+                        <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                            <!-- Indicador de Etapas -->
+                            <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                                <h2 class="text-lg sm:text-2xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
+                                <span id="step-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-green-100 text-green-800 shrink-0">
+                                    Etapa 1 de 2
+                                </span>
+                            </div>
+                    
+                            <form id="leadFormHome" novalidate>
+                                <!-- PASSO 1: VALOR, PARCELAS E PERFIL -->
+                                <fieldset id="form-step-1" class="space-y-4 sm:space-y-5">
+                                    <div>
+                                        <div class="flex items-center justify-between">
+                                            <label for="valorHome" class="block text-sm font-semibold text-gray-700">Valor desejado</label>
+                                            <span id="valor-display-home" class="text-2xl font-extrabold text-green-600">R$ 300</span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between text-xs text-gray-400 mt-1 mb-1">
+                                            <span>R$ 100</span>
+                                            <span>R$ 50.000</span>
+                                        </div>
+                                        <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
+
+                                        <!-- Botões de Seleção Rápida de Valor -->
+                                        <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+                                            <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
+                                                ⚡ Até R$ 300 (Facio)
+                                            </button>
+                                            <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                                R$ 1.000
+                                            </button>
+                                            <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                                R$ 5.000
+                                            </button>
+                                        </div>
+
+                                        <!-- Aviso dinâmico quando o valor é compatível com a Facio (<= R$ 300) -->
+                                        <div id="facio-step1-hint" class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
+                                            <span class="text-base shrink-0">🚀</span>
+                                            <span><strong>Faixa de Liberação Rápida:</strong> Valores de até <strong>R$ 300</strong> contam com antecipação salarial Facio (taxas a partir de R$ 9,90).</span>
+                                        </div>
+                                    </div>
+                  
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prazo / Modalidade</label>
+                                        <div class="grid grid-cols-4 gap-2">
+                                            <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-semibold shadow-sm truncate">1x (Rápido)</button>
+                                            <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">12x</button>
+                                            <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">24x</button>
+                                            <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-2.5 px-1.5 rounded-lg text-xs sm:text-sm font-medium">36x</button>
+                                        </div>
+                                        <input type="hidden" name="parcelas" id="parcelasHome" value="1">
+                                    </div>
+                  
+                                    <div class="space-y-2 pt-1">
+                                        <span class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Marque se alguma opção se aplica a você:</span>
+                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                            <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                            <input type="checkbox" name="aposentado_inss" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
+                                            <input type="checkbox" name="bolsafamilia" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                            <span class="ml-3 text-xs sm:text-sm text-gray-700 font-medium">Recebo Bolsa Família</span>
+                                        </label>
+                                    </div>
+                 
+                                    <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-sm sm:text-base font-bold text-white shadow-md transition-transform active:scale-[0.99] sm:hover:scale-[1.01]">
+                                        Continuar para Verificar CPF &rarr;
+                                    </button>
+                                </fieldset>
+                 
+                                <!-- PASSO 2: DADOS PESSOAIS + CONSULTA REAL-TIME DA API FACIO -->
+                                <fieldset id="form-step-2" class="hidden space-y-4">
+                                    <div>
+                                        <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">1. Digite seu CPF para consultar disponibilidade imediata</label>
+                                        <div class="relative">
+                                            <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-lg border-2 border-gray-300 bg-white p-3 text-base font-medium text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="14">
+                                            <span id="cpf-spinner" class="hidden absolute right-3 top-3.5 text-green-600">
+                                                <i class="fas fa-circle-notch fa-spin"></i>
+                                            </span>
+                                        </div>
+                                        <p id="cpf-message" class="text-xs mt-1 min-h-[1.1rem] font-medium"></p>
+                                    </div>
+
+                                    <!-- CARD OFICIAL DA OFERTA FACIO (Exibido quando isAvailable === true) -->
+                                    <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-md fade-in">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white">
+                                                <i class="fas fa-check-circle"></i> CPF Disponível na Facio
+                                            </span>
+                                            <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
+                                        </div>
+
+                                        <p id="facio-offer-desc" class="text-sm sm:text-base font-extrabold text-gray-900 mb-2">
+                                            Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.
+                                        </p>
+
+                                        <!-- Detalhes reais retornados pelo objeto offer da API -->
+                                        <div class="grid grid-cols-3 gap-2 bg-white rounded-lg p-2.5 border border-emerald-200 text-center mb-2">
+                                            <div>
+                                                <span class="block text-[10px] uppercase text-gray-500 font-semibold">Limite Máx.</span>
+                                                <span id="facio-offer-max" class="text-sm font-extrabold text-emerald-700">R$ 300,00</span>
+                                            </div>
+                                            <div class="border-x border-gray-100">
+                                                <span class="block text-[10px] uppercase text-gray-500 font-semibold">Taxa Mínima</span>
+                                                <span id="facio-offer-basefee" class="text-sm font-extrabold text-gray-800">R$ 9,90</span>
+                                            </div>
+                                            <div>
+                                                <span class="block text-[10px] uppercase text-gray-500 font-semibold">Modalidade</span>
+                                                <span id="facio-offer-type" class="text-xs font-bold text-gray-800">Antecipação</span>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-[11px] text-gray-600 leading-tight">
+                                            Complete seus dados abaixo e clique em <strong>Solicitar Agora na Facio</strong> para abrir sua janela de aprovação simplificada, ou clique em <strong>Ver Recomendações e Ofertas</strong>.
+                                        </p>
+                                    </div>
+
+                                    <!-- AVISO QUANDO O CPF NÃO ESTÁ DISPONÍVEL NA FACIO (isAvailable === false) -->
+                                    <div id="facio-unavailable-box" class="hidden rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 fade-in">
+                                        <strong>Nota:</strong> Neste momento seu CPF não possui janela disponível na <strong>Facio</strong>, mas separamos outras instituições parceiras abaixo. Complete seus dados e clique em <strong>Ver Recomendações</strong>!
+                                    </div>
+
+                                    <div>
+                                        <label for="nomeInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">2. Nome Completo</label>
+                                        <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="whatsapp" class="block text-xs font-bold uppercase text-gray-600 mb-1">3. Celular / WhatsApp</label>
+                                            <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="15">
+                                        </div>
+                                        <div>
+                                            <label for="emailInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">4. Seu Melhor E-mail</label>
+                                            <input id="emailInput" name="email" type="email" placeholder="seuemail@exemplo.com" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                                        </div>
+                                    </div>
+                   
+                                    <div class="flex flex-col gap-2.5 pt-2">
+                                        <!-- Botão Direto da Facio (Dispara POST /leadgen/lead na ação real do cliente) -->
+                                        <button id="btn-facio-direct" type="button" class="hidden w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-sm sm:text-base font-extrabold text-white shadow-lg transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
+                                            <span>⚡ Solicitar Até R$ 300 Direto na Facio</span>
+                                        </button>
+
+                                        <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-sm sm:text-base font-bold text-white shadow transition-transform active:scale-[0.99]">
+                                            Ver Recomendações e Ofertas
+                                        </button>
+
+                                        <button id="prev-step-btn" type="button" class="w-full pt-1 text-center text-sm font-semibold text-gray-500 hover:text-gray-900">
+                                            &larr; Voltar para alterar valor
+                                        </button>
+                                    </div>
+                                </fieldset>
+                            </form>
                         </div>
-                
-                        <form id="leadFormHome" novalidate>
-                            <!-- PASSO 1: VALOR, PARCELAS E PERFIL -->
-                            <fieldset id="form-step-1" class="space-y-5">
-                                <div>
-                                    <div class="flex items-center justify-between">
-                                        <label for="valorHome" class="block text-sm font-semibold text-gray-700">Valor desejado</label>
-                                        <span id="valor-display-home" class="text-2xl font-extrabold text-green-600">R$ 300</span>
-                                    </div>
-
-                                    <div class="flex items-center justify-between text-xs text-gray-400 mt-1 mb-1">
-                                        <span>R$ 100</span>
-                                        <span>R$ 50.000</span>
-                                    </div>
-                                    <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
-
-                                    <!-- Botões de Seleção Rápida de Valor -->
-                                    <div class="flex flex-wrap gap-2 mt-3">
-                                        <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
-                                            ⚡ Até R$ 300 (Antecipação Facio)
-                                        </button>
-                                        <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
-                                            R$ 1.000
-                                        </button>
-                                        <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
-                                            R$ 5.000
-                                        </button>
-                                    </div>
-
-                                    <!-- Aviso dinâmico quando o valor é compatível com a Facio (<= R$ 300) -->
-                                    <div id="facio-step1-hint" class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-900">
-                                        <span class="text-base">🚀</span>
-                                        <span><strong>Faixa de Liberação Rápida:</strong> Valores de até <strong>R$ 300</strong> contam com antecipação salarial Facio (taxas a partir de R$ 9,90).</span>
-                                    </div>
-                                </div>
-              
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Prazo / Modalidade</label>
-                                    <div class="grid grid-cols-4 gap-2">
-                                        <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white p-2.5 rounded-lg text-xs sm:text-sm font-semibold shadow-sm">1x (Rápido)</button>
-                                        <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">12x</button>
-                                        <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">24x</button>
-                                        <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 p-2.5 rounded-lg text-xs sm:text-sm font-medium">36x</button>
-                                    </div>
-                                    <input type="hidden" name="parcelas" id="parcelasHome" value="1">
-                                </div>
-              
-                                <div class="space-y-2.5 pt-1">
-                                    <span class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Marque se alguma opção se aplica a você:</span>
-                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                        <input type="checkbox" name="negativado" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                        <span class="ml-3 text-sm text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
-                                    </label>
-                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                        <input type="checkbox" name="aposentado_inss" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                        <span class="ml-3 text-sm text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
-                                    </label>
-                                    <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition">
-                                        <input type="checkbox" name="bolsafamilia" class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                        <span class="ml-3 text-sm text-gray-700 font-medium">Recebo Bolsa Família</span>
-                                    </label>
-                                </div>
-             
-                                <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-base font-bold text-white shadow-md transition-transform hover:scale-[1.01]">
-                                    Continuar para Verificar CPF &rarr;
-                                </button>
-                            </fieldset>
-             
-                            <!-- PASSO 2: DADOS PESSOAIS + CONSULTA REAL-TIME DA API FACIO -->
-                            <fieldset id="form-step-2" class="hidden space-y-4">
-                                <div>
-                                    <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">1. Digite seu CPF para consultar disponibilidade imediata</label>
-                                    <div class="relative">
-                                        <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-lg border-2 border-gray-300 bg-white p-3 text-base font-medium text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="14">
-                                        <span id="cpf-spinner" class="hidden absolute right-3 top-3.5 text-green-600">
-                                            <i class="fas fa-circle-notch fa-spin"></i>
-                                        </span>
-                                    </div>
-                                    <p id="cpf-message" class="text-xs mt-1 min-h-[1.1rem] font-medium"></p>
-                                </div>
-
-                                <!-- CARD OFICIAL DA OFERTA FACIO (Exibido quando isAvailable === true) -->
-                                <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-md fade-in">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white">
-                                            <i class="fas fa-check-circle"></i> CPF Disponível na Facio
-                                        </span>
-                                        <img src="public/facio.png" alt="Facio" class="h-6 object-contain" onerror="this.style.display='none'">
-                                    </div>
-
-                                    <p id="facio-offer-desc" class="text-sm sm:text-base font-extrabold text-gray-900 mb-2">
-                                        Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.
-                                    </p>
-
-                                    <!-- Detalhes reais retornados pelo objeto offer da API -->
-                                    <div class="grid grid-cols-3 gap-2 bg-white rounded-lg p-2.5 border border-emerald-200 text-center mb-2">
-                                        <div>
-                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Limite Máx.</span>
-                                            <span id="facio-offer-max" class="text-sm font-extrabold text-emerald-700">R$ 300,00</span>
-                                        </div>
-                                        <div class="border-x border-gray-100">
-                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Taxa Mínima</span>
-                                            <span id="facio-offer-basefee" class="text-sm font-extrabold text-gray-800">R$ 9,90</span>
-                                        </div>
-                                        <div>
-                                            <span class="block text-[10px] uppercase text-gray-500 font-semibold">Modalidade</span>
-                                            <span id="facio-offer-type" class="text-xs font-bold text-gray-800">Antecipação</span>
-                                        </div>
-                                    </div>
-
-                                    <p class="text-[11px] text-gray-600 leading-tight">
-                                        Complete seus dados abaixo e clique em <strong>Solicitar Agora na Facio</strong> para abrir sua janela de aprovação simplificada, ou clique em <strong>Ver Todas as Recomendações</strong>.
-                                    </p>
-                                </div>
-
-                                <!-- AVISO QUANDO O CPF NÃO ESTÁ DISPONÍVEL NA FACIO (isAvailable === false) -->
-                                <div id="facio-unavailable-box" class="hidden rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 fade-in">
-                                    <strong>Nota:</strong> Neste momento seu CPF não possui janela disponível na <strong>Facio</strong>, mas separamos outras instituições parceiras abaixo. Complete seus dados e clique em <strong>Ver Recomendações</strong>!
-                                </div>
-
-                                <div>
-                                    <label for="nomeInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">2. Nome Completo</label>
-                                    <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label for="whatsapp" class="block text-xs font-bold uppercase text-gray-600 mb-1">3. Celular / WhatsApp</label>
-                                        <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition" maxlength="15">
-                                    </div>
-                                    <div>
-                                        <label for="emailInput" class="block text-xs font-bold uppercase text-gray-600 mb-1">4. Seu Melhor E-mail</label>
-                                        <input id="emailInput" name="email" type="email" placeholder="seuemail@exemplo.com" required class="w-full rounded-lg border border-gray-300 bg-white p-3 text-base text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
-                                    </div>
-                                </div>
-               
-                                <div class="flex flex-col gap-2.5 pt-2">
-                                    <!-- Botão Direto da Facio (Dispara POST /leadgen/lead na ação real do cliente) -->
-                                    <button id="btn-facio-direct" type="button" class="hidden w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-3.5 text-base font-extrabold text-white shadow-lg transition-transform hover:scale-[1.01] flex items-center justify-center gap-2">
-                                        <span>⚡ Solicitar Até R$ 300 Direto na Facio</span>
-                                    </button>
-
-                                    <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-3.5 text-base font-bold text-white shadow transition-transform hover:scale-[1.01]">
-                                        Ver Recomendações e Ofertas
-                                    </button>
-
-                                    <button id="prev-step-btn" type="button" class="w-full pt-1 text-center text-sm font-semibold text-gray-500 hover:text-gray-900">
-                                        &larr; Voltar para alterar valor
-                                    </button>
-                                </div>
-                            </fieldset>
-                        </form>
                     </div>
                 </div>
             </section>
 
-            <!-- Seção de Parceiros -->
-            <section class="py-0 bg-white shadow-2xl">
-                <div class="flex justify-center mt-10 ml-1">
-                    <h2 class="bg-green-0 text-green-500 text-1xl font-bold px-2 py-1 rounded-xl shadow-sm">
-                        Nossos Parceiros
+            <!-- Seção de Parceiros (Proporção padronizada) -->
+            <section class="py-4 bg-white border-b border-gray-200/80 shadow-sm">
+                <div class="flex justify-center pt-2 pb-1">
+                    <h2 class="text-green-600 text-xs sm:text-sm font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-green-50">
+                        Instituições Parceiras
                     </h2>
                 </div>
                 <div class="logo-carousel">
                     <div class="logo-carousel-track">
-                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <!-- Repete -->
-                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="h-8 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="h-12 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
-                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <!-- Repete para loop infinito perfeito -->
+                        <div class="logo-carousel-item"><img src="public/mpago.png" alt="Mercado Pago" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/santanderlogo.png" alt="Santander" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/supersimlogo.png" alt="Supersim" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/picpaylogo.png" alt="PicPay" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bompracredito.png" alt="Bom Pra Crédito" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/itaulogo.png" alt="Itaú" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/bancodobrasillogo.png" alt="Ourocard" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
+                        <div class="logo-carousel-item"><img src="public/facio.png" alt="Facio" class="grayscale opacity-65 hover:grayscale-0 hover:opacity-100 transition-all"></div>
                     </div>
                 </div>
             </section>
@@ -581,98 +604,98 @@
     </div>
 
     <!-- Seção Filtros e Vitrine Geral -->
-    <section id="home-filters" class="py-4 sm:py-8">
-        <div class="container mx-auto px-4">
+    <section id="home-filters" class="py-6 sm:py-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Botão para abrir filtros no Mobile -->
-            <div class="lg:hidden mb-6">
-                <button id="filter-button" class="w-full flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    Filtrar Resultados
+            <div class="lg:hidden mb-4">
+                <button id="filter-button" type="button" class="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm sm:text-base font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    <span>Filtrar Produtos e Perfil</span>
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
                 
-                <!-- Filtros -->
-                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-8 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
+                <!-- Filtros Laterais -->
+                <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out translate-x-full lg:sticky lg:top-24 lg:z-auto lg:h-fit lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:p-0 lg:shadow-sm">
                     <div class="h-full flex flex-col">
                         <div class="flex items-center justify-between border-b p-4 lg:hidden">
-                            <h3 class="text-xl font-semibold text-gray-900">Filtros</h3>
-                            <button id="filter-close" class="text-gray-500 hover:text-gray-800">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <h3 class="text-lg font-bold text-gray-900">Filtros</h3>
+                            <button id="filter-close" type="button" class="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
 
-                        <div class="p-6 overflow-y-auto">
-                            <h3 class="hidden text-xl font-semibold mb-6 text-gray-900 lg:block">Filtre a sua busca</h3>
+                        <div class="p-5 sm:p-6 overflow-y-auto">
+                            <h3 class="hidden text-lg font-extrabold mb-5 text-gray-900 lg:block">Filtre a sua busca</h3>
                             <div class="space-y-6">
                                 <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Tipo de Produto</h4>
-                                    <div class="space-y-2">
+                                    <h4 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-500">Tipo de Produto</h4>
+                                    <div class="space-y-2.5 text-sm">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="all" checked class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Todos</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Todos</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="emprestimo" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Empréstimos</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Empréstimos</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="emprestimocomgarantia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Empréstimos com Garantia</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Empréstimos com Garantia</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="contas" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Contas</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Contas Digitais</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="cartao" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Cartões de Crédito</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Cartões de Crédito</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="seguro" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Seguros</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Seguros</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="fgts" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">FGTS</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">FGTS</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="bolsafamilia" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Bolsa Família</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Bolsa Família</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="radio" name="product_type" value="renegociar" class="h-4 w-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Renegociação de Dívidas</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Renegociação de Dívidas</span>
                                         </label>
                                     </div>
                                 </div>
 
-                                <hr>
+                                <hr class="border-gray-100">
 
                                 <div>
-                                    <h4 class="font-semibold mb-3 text-gray-700">Seu Perfil</h4>
-                                    <div class="space-y-2">
+                                    <h4 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-500">Seu Perfil</h4>
+                                    <div class="space-y-2.5 text-sm">
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Para Negativados</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Para Negativados</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="score-baixo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Score Baixo</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Score Baixo</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="aposentado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Aposentado</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Aposentado</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="score-regular" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Score Regular</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Score Regular</span>
                                         </label>
                                         <label class="flex items-center cursor-pointer">
                                             <input type="checkbox" data-filter="perfil" value="autonomo" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                                            <span class="ml-2 text-gray-600">Autônomo</span>
+                                            <span class="ml-2.5 text-gray-700 font-medium">Autônomo</span>
                                         </label>
                                     </div>
                                 </div>
@@ -681,120 +704,140 @@
                     </div>
                 </aside>
 
-                <div class="lg:col-span-3">
-                    <div id="pagination-top" class="flex justify-center gap-2 mb-2 md:mb-8 md:gap-3 md:items-center md:flex-wrap"></div>
-                    <div id="product-list" class="space-y-6"></div>
+                <!-- Coluna de Produtos com Paginação Superior e Inferior Predefinidas -->
+                <div class="lg:col-span-3 flex flex-col">
+                    <!-- PAGINAÇÃO SUPERIOR (Sempre visível em qualquer filtro) -->
+                    <nav id="pagination-top" aria-label="Paginação Superior" class="flex items-center justify-center flex-wrap gap-2 mb-5 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
+                        <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
+                    </nav>
+
+                    <!-- LISTA DE PRODUTOS -->
+                    <div id="product-list" class="space-y-4 sm:space-y-5"></div>
+
+                    <!-- PAGINAÇÃO INFERIOR (Sempre visível em qualquer filtro) -->
+                    <nav id="pagination" aria-label="Paginação Inferior" class="flex items-center justify-center flex-wrap gap-2 mt-6 mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
+                        <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
+                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
+                    </nav>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PAGINAÇÃO BASE -->
-    <div id="pagination" class="mt-2 md:mb-16 flex items-center justify-center flex-wrap gap-3"></div>
-
     <!-- Bloco da Renegociação -->
-    <section id="renegociacao" class="py-16 bg-gray-800 text-white">
+    <section id="renegociacao" class="py-14 sm:py-16 bg-gray-800 text-white">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-extrabold mb-4">
+            <h2 class="text-2xl sm:text-3xl font-extrabold mb-3">
                 Negocie suas dívidas com até
                 <span class="text-green-400">99% de desconto</span>
             </h2>
-            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p class="text-base sm:text-lg text-gray-300 mb-7 max-w-2xl mx-auto">
                 Consulte seu CPF gratuitamente e veja as ofertas para limpar seu nome.
             </p>
 
             <div class="max-w-md mx-auto">
-                <form class="flex-center flex-col sm:flex-row gap-3" action="https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount" target="_blank">
-                    <button type="submit" class="bg-green-500 text-white font-bold px-6 py-3 rounded-md hover:bg-green-600 transition">
-                        Consultar CPF
+                <form class="flex justify-center" action="https://apretailer.com.br/click/663506d82bfa810ffb6a4c14/182268/307759/subaccount" target="_blank">
+                    <button type="submit" class="w-full sm:w-auto bg-green-500 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-green-600 transition shadow-lg">
+                        Consultar CPF Gratuitamente
                     </button>
                 </form>
             </div>
         </div>
     </section>
 
-    <!-- Seção Como Funciona - Carrossel -->
-    <section class="bg-white py-12 md:py-16 w-full">
+    <!-- Seção Como Funciona - Carrossel Responsivo e Proporcional -->
+    <section class="bg-white py-12 sm:py-16 w-full border-t border-gray-100">
         <div class="container mx-auto px-4 max-w-3xl">
-            <div id="carousel-container" class="relative overflow-hidden rounded-lg bg-gray-100/50 shadow-inner p-8">
-                <div id="carousel-track" class="flex carousel-track">
-                    <div class="w-full flex-shrink-0 px-8">
-                        <div class="text-center">
-                            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">1</div>
-                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Simule e Consulte seu CPF</h3>
-                            <p class="text-gray-600 leading-relaxed">Preencha nosso formulário inteligente e descubra na hora se o seu CPF está elegível para antecipação salarial na Facio e outras ofertas.</p>
+            <div class="text-center mb-6">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-green-700 bg-green-100 px-3 py-1 rounded-full">Passo a Passo</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">Como funciona a TirraCred</h2>
+            </div>
+
+            <div id="carousel-container" class="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200/80 shadow-sm px-3 py-8 sm:px-10 sm:py-10">
+                <div id="carousel-track" class="flex items-center carousel-track">
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">1</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Simule e Consulte seu CPF</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Preencha nosso formulário inteligente e descubra na hora se o seu CPF está elegível para antecipação salarial na Facio e outras ofertas.</p>
                         </div>
                     </div>
-                    <div class="w-full flex-shrink-0 px-8">
-                        <div class="text-center">
-                            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">2</div>
-                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Escolha a Melhor Oferta</h3>
-                            <p class="text-gray-600 leading-relaxed">Compare taxas transparentes a partir de R$ 9,90 na Facio ou linhas de crédito pessoal de até R$ 50.000 nos parceiros.</p>
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">2</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Escolha a Melhor Oferta</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Compare taxas transparentes a partir de R$ 9,90 na Facio ou linhas de crédito pessoal de até R$ 50.000 nos parceiros.</p>
                         </div>
                     </div>
-                    <div class="w-full flex-shrink-0 px-8">
-                        <div class="text-center">
-                            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-5 text-3xl font-bold shadow-md">3</div>
-                            <h3 class="text-2xl font-semibold text-gray-800 mb-2">Receba Rápido na Conta</h3>
-                            <p class="text-gray-600 leading-relaxed">Seja redirecionado com seu cadastro pré-preenchido e receba o dinheiro diretamente na sua conta via Pix.</p>
+                    <div class="w-full flex-shrink-0 px-8 sm:px-12">
+                        <div class="text-center max-w-lg mx-auto">
+                            <div class="flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 text-green-600 mx-auto mb-4 text-2xl sm:text-3xl font-extrabold shadow-sm">3</div>
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 mb-2">Receba Rápido na Conta</h3>
+                            <p class="text-sm sm:text-base text-gray-600 leading-relaxed">Seja redirecionado com seu cadastro pré-preenchido e receba o dinheiro diretamente na sua conta via Pix.</p>
                         </div>
                     </div>
                 </div>
 
-                <button id="prevBtn" aria-label="Slide Anterior" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/50 hover:bg-white rounded-full p-2 text-gray-700 shadow-md transition-colors duration-300">
-                    <i class="fas fa-chevron-left fa-fw"></i>
+                <button id="prevBtn" type="button" aria-label="Slide Anterior" class="absolute top-1/2 left-2 sm:left-3 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-gray-700 shadow-md transition">
+                    <i class="fas fa-chevron-left text-xs sm:text-sm"></i>
                 </button>
-                <button id="nextBtn" aria-label="Próximo Slide" class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/50 hover:bg-white rounded-full p-2 text-gray-700 shadow-md transition-colors duration-300">
-                    <i class="fas fa-chevron-right fa-fw"></i>
+                <button id="nextBtn" type="button" aria-label="Próximo Slide" class="absolute top-1/2 right-2 sm:right-3 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-gray-700 shadow-md transition">
+                    <i class="fas fa-chevron-right text-xs sm:text-sm"></i>
                 </button>
             </div>
 
-            <div id="carousel-dots" class="flex justify-center items-center space-x-3 mt-4"></div>
+            <div id="carousel-dots" class="flex justify-center items-center space-x-2.5 mt-4"></div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="bg-green-900 text-white">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="font-semibold mb-4">Para Você</h3>
-                    <ul>
-                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400">Empréstimo Pessoal</a></li>
-                        <li class="mb-2"><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400">Empréstimo para Negativado</a></li>
-                        <li class="mb-2"><a href="#home-filters" class="scroll-toggle hover:text-green-400">Cartão de Crédito</a></li>
-                        <li class="mb-2"><a href="#renegociacao" class="scroll-toggle hover:text-green-400">Renegociar Dívidas</a></li>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Para Você</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400 transition">Empréstimo Pessoal</a></li>
+                        <li><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400 transition">Empréstimo para Negativado</a></li>
+                        <li><a href="#home-filters" class="scroll-toggle hover:text-green-400 transition">Cartão de Crédito</a></li>
+                        <li><a href="#renegociacao" class="scroll-toggle hover:text-green-400 transition">Renegociar Dívidas</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3 class="font-semibold mb-4">Links Úteis</h3>
-                    <ul>
-                        <li class="mb-2"><a href="#" class="hover:text-green-400">Sobre Nós</a></li>
-                        <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Termos de Uso</a></li>
-                        <li class="mb-2"><a href="pages/termo de consentimento.html" class="hover:text-green-400">Política de Privacidade</a></li>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Links Úteis</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-green-400 transition">Sobre Nós</a></li>
+                        <li><a href="pages/termo de consentimento.html" class="hover:text-green-400 transition">Termos de Uso</a></li>
+                        <li><a href="pages/termo de consentimento.html" class="hover:text-green-400 transition">Política de Privacidade</a></li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3 class="font-semibold mb-4">Fale Conosco</h3> 
-                    <p class="text-white-400">
-                        <a href="mailto:atendimento@tirracred.com.br">atendimento@tirracred.com.br</a>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Fale Conosco</h3> 
+                    <p class="text-sm text-gray-200 break-all">
+                        <a href="mailto:atendimento@tirracred.com.br" class="hover:text-green-400 transition">atendimento@tirracred.com.br</a>
                     </p>
                 </div>
 
                 <div>
-                    <h3 class="font-semibold mb-4">Siga-nos</h3>
-                    <div class="flex space-x-4"></div>
+                    <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Canal Oficial</h3>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-3.5 py-2 rounded-lg transition">
+                        <i class="fab fa-youtube text-red-400 text-lg"></i>
+                        <span>YouTube TirraCred</span>
+                    </a>
                 </div>
             </div>
 
-            <div class="border-t border-gray-700 mt-8 pt-8">
-                <p class="text-xs text-gray-400 text-center">
+            <div class="border-t border-green-800 mt-8 pt-8">
+                <p class="text-xs text-gray-300 text-center leading-relaxed max-w-4xl mx-auto">
                     TirraCred é uma empresa intermediadora do processo de concessão de crédito. Não somos uma instituição financeira. Atuamos como correspondente bancário. CNPJ: 61.811.560/0001-10.
                     <br>As ofertas são simulações e as condições variam conforme a política de crédito da instituição financeira. Prazos de 6 a 60 meses. Taxa de juros de 0,89% a.m. a 19,99% a.m.
                 </p>
-                <p class="text-xs text-gray-500 text-center mt-2">© 2026 TirraCred. Todos os direitos reservados.</p>
+                <p class="text-xs text-gray-400 text-center mt-2">© 2026 TirraCred. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -1062,7 +1105,6 @@
                 }
             }
 
-            // 4.1 Consulta de Disponibilidade: POST /leadgen/availability
             async function checkFacioAvailability(rawCpf) {
                 const cleanCpf = (rawCpf || '').replace(/\D/g, '');
                 if (!validateCPF(cleanCpf)) return false;
@@ -1097,7 +1139,6 @@
                     } else if (res.status === 400) {
                         facioState.isAvailable = false;
                     } else {
-                        // Se a rota /api/facio ainda não estiver publicada no Cloudflare, usa fallback elegante
                         facioState.isAvailable = true;
                     }
                 } catch (e) {
@@ -1168,7 +1209,6 @@
                 });
             }
 
-            // Validação dos campos obrigatórios da API de Cadastro da Facio
             function validateAndExtractLeadData(requireFullPhoneAndEmail = true) {
                 if (!leadForm) return null;
                 const formData = new FormData(leadForm);
@@ -1220,12 +1260,10 @@
                 };
             }
 
-            // 4.2 Função que executa o Cadastro na Facio (POST /leadgen/lead) no momento do clique para redirecionar
             window.triggerFacioRegistration = async (buttonEl) => {
                 const validData = validateAndExtractLeadData(true);
                 if (!validData) return;
 
-                // Pré-requisito obrigatório da Facio: ter consultado a disponibilidade antes do cadastro
                 if (facioState.lastCheckedCpf !== validData.cpf) {
                     const available = await checkFacioAvailability(validData.cpf);
                     if (!available) {
@@ -1281,154 +1319,61 @@
             });
 
             // ===================================================
-            // 5. SUBMISSÃO DO FORMULÁRIO -> EXIBE PÁGINA DE RESULTADOS COM DADOS DA FACIO
+            // 5. SUBMISSÃO DO FORMULÁRIO -> PÁGINA DE RESULTADOS
             // ===================================================
-           leadForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const validData = validateAndExtractLeadData(true);
-    if (!validData) return;
+            leadForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const validData = validateAndExtractLeadData(true);
+                if (!validData) return;
 
-    const submitBtn = document.getElementById('submit-btn-home');
-    const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Recomendações e Ofertas';
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando suas ofertas...';
-    }
-
-    try {
-        // Garante que a consulta na Facio foi feita
-        if (facioState.lastCheckedCpf !== validData.cpf) {
-            await checkFacioAvailability(validData.cpf);
-        }
-
-        // Monta os parâmetros incluindo dados da Facio
-        const params = new URLSearchParams({
-            nome: validData.nome,
-            valor: validData.valor,
-            negativado: validData.negativado,
-            aposentado: validData.aposentado,
-            bolsafamilia: validData.bolsafamilia,
-            facioAvailable: facioState.isAvailable,
-            facioMaxValue: facioState.offer?.maxValue ?? 300,
-            facioBaseFee: facioState.offer?.baseFee ?? 9.9,
-            facioFee: facioState.offer?.fee ?? 72.9,
-            facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
-        });
-
-        window.location.href = `./pages/resultados.html?${params.toString()}`;
-    } finally {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalSubmitText;
-        }
-    }
-});
-
-            // Renderiza a área #resultados-page destacando os dados reais da Facio + produtos recomendados
-            function renderSimulationResultsPage(leadData) {
-                const resumoPill = document.getElementById('resumo-simulacao-pill');
-                const tituloEl = document.getElementById('resultados-titulo');
-                const facioHighlightEl = document.getElementById('facio-results-highlight');
-                const resultsGridEl = document.getElementById('results-grid');
-
-                const primeiroNome = leadData.nome.split(' ')[0] || 'Cliente';
-                if (tituloEl) {
-                    tituloEl.textContent = `${primeiroNome}, confira as ofertas disponíveis para seu CPF`;
-                }
-                if (resumoPill) {
-                    resumoPill.textContent = `Simulação: ${formatCurrencyNoCents(leadData.valor)} • ${leadData.parcelas}x • CPF verificado`;
+                const submitBtn = document.getElementById('submit-btn-home');
+                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Recomendações e Ofertas';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Carregando suas ofertas...';
                 }
 
-                // 1) Monta o Card de Destaque da Facio na página de resultados
-                if (facioHighlightEl) {
-                    if (facioState.isAvailable) {
-                        const offer = facioState.offer || {
-                            maxValue: 300.0,
-                            fee: 72.9,
-                            baseFee: 9.9,
-                            type: 'SalaryAdvance',
-                            description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
-                        };
-
-                        facioHighlightEl.classList.remove('hidden');
-                        facioHighlightEl.innerHTML = `
-                            <div class="rounded-2xl border-2 border-emerald-500 bg-white p-6 shadow-xl relative overflow-hidden">
-                                <div class="bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1.5 inline-flex items-center gap-2 rounded-full mb-4">
-                                    <span>⭐ Destaque Verificado para seu CPF</span>
-                                </div>
-                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                                    <div class="space-y-3 flex-grow">
-                                        <div class="flex items-center gap-4">
-                                            <div class="p-3 border rounded-xl bg-gray-50">
-                                                <img src="public/facio.png" alt="Logo Facio" class="w-28 h-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/120x40/10b981/ffffff?text=Facio';">
-                                            </div>
-                                            <div>
-                                                <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900">Facio — Antecipação Salarial</h3>
-                                                <p class="text-sm font-semibold text-emerald-700">${esc(offer.description)}</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                                                <span class="block text-xs text-gray-500 font-medium">Valor Máximo Liberado</span>
-                                                <span class="text-lg font-extrabold text-emerald-700">${formatBRL(offer.maxValue)}</span>
-                                            </div>
-                                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                                                <span class="block text-xs text-gray-500 font-medium">Taxa Mínima (a partir de)</span>
-                                                <span class="text-lg font-extrabold text-gray-800">${formatBRL(offer.baseFee)}</span>
-                                            </div>
-                                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 col-span-2 sm:col-span-1">
-                                                <span class="block text-xs text-gray-500 font-medium">Taxa na Maior Oferta</span>
-                                                <span class="text-lg font-extrabold text-gray-800">${formatBRL(offer.fee)}</span>
-                                            </div>
-                                        </div>
-
-                                        <ul class="space-y-1.5 text-sm text-gray-600 pt-1">
-                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> CPF consultado e elegível para abertura de janela de atribuição.</li>
-                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> Cadastro simplificado: seus dados já preenchidos são enviados automaticamente.</li>
-                                            <li class="flex items-center gap-2"><span class="text-emerald-600 font-bold">✓</span> Dinheiro rápido na conta via Pix após aprovação na Facio.</li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="flex-shrink-0 lg:w-64 flex flex-col gap-3">
-                                        <button type="button" onclick="window.triggerFacioRegistration(this)" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 px-6 py-4 text-base font-extrabold text-white shadow-lg transition-transform hover:scale-105 text-center">
-                                            ⚡ Contratar na Facio &rarr;
-                                        </button>
-                                        <span class="text-[11px] text-gray-500 text-center">
-                                            Sujeito a análise de crédito pela Facio.
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        facioHighlightEl.classList.remove('hidden');
-                        facioHighlightEl.innerHTML = `
-                            <div class="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600 flex items-center justify-between">
-                                <span><strong>Facio (Até R$ 300):</strong> CPF indisponível para atribuição na Facio neste momento. Confira abaixo outras instituições parceiras liberadas:</span>
-                            </div>
-                        `;
+                try {
+                    if (facioState.lastCheckedCpf !== validData.cpf) {
+                        await checkFacioAvailability(validData.cpf);
                     }
-                }
 
-                // 2) Filtra e exibe os demais parceiros do banco (D1 / Supabase) na página de resultados
-                if (resultsGridEl) {
-                    const allProducts = Array.isArray(state.all) ? state.all.filter(p => !isAdItem(p)) : [];
-                    let recommended = allProducts.filter(p => {
-                        const perfisTxt = String(p?.perfis || '').toLowerCase();
-                        if (leadData.negativado && perfisTxt.includes('negativado')) return true;
-                        if (leadData.aposentado && perfisTxt.includes('aposentado')) return true;
-                        if (leadData.bolsafamilia && String(p?.tipo || '').toLowerCase().includes('bolsafamilia')) return true;
-                        return true;
+                    const leadContextPayload = {
+                        ...validData,
+                        facioAvailable: facioState.isAvailable,
+                        facioMaxValue: facioState.offer?.maxValue ?? 300,
+                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                        facioFee: facioState.offer?.fee ?? 72.9,
+                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                    };
+
+                    try {
+                        sessionStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                        localStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                    } catch (_) {}
+
+                    const params = new URLSearchParams({
+                        nome: validData.nome,
+                        valor: validData.valor,
+                        parcelas: validData.parcelas,
+                        negativado: validData.negativado,
+                        aposentado: validData.aposentado,
+                        bolsafamilia: validData.bolsafamilia,
+                        facioAvailable: facioState.isAvailable,
+                        facioMaxValue: facioState.offer?.maxValue ?? 300,
+                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                        facioFee: facioState.offer?.fee ?? 72.9,
+                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
                     });
 
-                    if (recommended.length === 0) {
-                        recommended = allProducts;
+                    window.location.href = `./pages/resultados.html?${params.toString()}`;
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalSubmitText;
                     }
-
-                    resultsGridEl.innerHTML = recommended.slice(0, 8).map(p => renderProductCardHTML(p)).join('');
                 }
-            }
+            });
 
             // ===================================================
             // 6. CARROSSEL "COMO FUNCIONA" E LINKS DE SCROLL
@@ -1448,7 +1393,8 @@
 
                 for (let i = 0; i < slideCount; i++) {
                     const dot = document.createElement('button');
-                    dot.classList.add('dot', 'w-3', 'h-3', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
+                    dot.type = 'button';
+                    dot.classList.add('dot', 'w-2.5', 'h-2.5', 'rounded-full', 'bg-gray-300', 'hover:bg-gray-400');
                     dot.setAttribute('aria-label', `Ir para o slide ${i + 1}`);
                     dot.addEventListener('click', () => {
                         currentIndex = i;
@@ -1463,11 +1409,11 @@
                     dots.forEach((dot, index) => {
                         const isActive = index === currentIndex;
                         dot.classList.toggle('active', isActive);
-                        dot.classList.toggle('bg-green-500', isActive);
+                        dot.classList.toggle('bg-green-600', isActive);
                         dot.classList.toggle('bg-gray-300', !isActive);
                     });
-                    prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-                    nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'block';
+                    prevButton.style.display = currentIndex === 0 ? 'none' : 'flex';
+                    nextButton.style.display = currentIndex === slideCount - 1 ? 'none' : 'flex';
                 };
 
                 nextButton.addEventListener('click', () => {
@@ -1490,8 +1436,8 @@
                 }, { passive: true });
                 carouselContainer?.addEventListener('touchend', e => {
                     const touchendX = e.changedTouches[0].screenX;
-                    if (touchendX < touchstartX - 50 && currentIndex < slideCount - 1) currentIndex++;
-                    if (touchendX > touchstartX + 50 && currentIndex > 0) currentIndex--;
+                    if (touchendX < touchstartX - 45 && currentIndex < slideCount - 1) currentIndex++;
+                    if (touchendX > touchstartX + 45 && currentIndex > 0) currentIndex--;
                     updateCarousel();
                 });
 
@@ -1500,7 +1446,6 @@
 
             const toggleLinks = document.querySelectorAll('.scroll-toggle');
             const header = document.getElementById('main-header');
-            const headerHeight = header ? header.offsetHeight : 0;
 
             toggleLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
@@ -1514,64 +1459,64 @@
                     }
 
                     if (targetElement) {
-                        const targetPosition = targetElement.offsetTop - headerHeight;
+                        const headerHeight = header ? header.offsetHeight : 0;
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight - 8;
                         window.scrollTo({ top: targetPosition, behavior: 'smooth' });
                     }
                 });
             });
 
             // ===================================================
-            // 7. CARROSSEL DO BANNER HERO
+            // 7. CARROSSEL DO BANNER HERO (CROSSFADE SEM DISTORÇÃO)
             // ===================================================
             const heroSlides = [
                 {
-                    image: 'public/banner-1.png',
                     title: 'Crédito para negativados? Temos a solução!',
                     subtitle: 'Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.'
                 },
                 {
-                    image: 'public/banner2.png',
                     title: 'Antecipe até R$ 300 com a Facio hoje mesmo!',
                     subtitle: 'Consulte seu CPF gratuitamente no simulador ao lado e veja se você tem liberação rápida com taxas a partir de R$ 9,90.'
                 },
                 {
-                    image: 'public/banner3.png',
                     title: 'Compare e contrate o produto financeiro certo para você.',
                     subtitle: 'Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.'
                 }
             ];
 
-            const heroBg = document.getElementById('hero-background');
+            const bgImages = document.querySelectorAll('#hero-background .hero-bg-slide');
             const titleEl = document.getElementById('hero-title');
             const subtitleEl = document.getElementById('hero-subtitle');
             let currentSlideIndex = 0;
 
-            if (heroBg && titleEl && subtitleEl) {
-                titleEl.style.transition = 'opacity 0.5s ease-in-out';
-                subtitleEl.style.transition = 'opacity 0.5s ease-in-out';
+            if (bgImages.length > 0 && titleEl && subtitleEl) {
+                titleEl.style.transition = 'opacity 0.4s ease-in-out';
+                subtitleEl.style.transition = 'opacity 0.4s ease-in-out';
 
                 setInterval(() => {
                     currentSlideIndex = (currentSlideIndex + 1) % heroSlides.length;
                     const nextSlide = heroSlides[currentSlideIndex];
 
+                    // Crossfade suave entre as camadas <img> mantendo a resolução e proporção 100% fixas
+                    bgImages.forEach((img, idx) => {
+                        img.classList.toggle('opacity-100', idx === currentSlideIndex);
+                        img.classList.toggle('opacity-0', idx !== currentSlideIndex);
+                    });
+
                     titleEl.style.opacity = '0';
                     subtitleEl.style.opacity = '0';
 
                     setTimeout(() => {
-                        heroBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${nextSlide.image}')`;
                         titleEl.textContent = nextSlide.title;
+                        subtitleEl.textContent = nextSlide.subtitle;
                         titleEl.style.opacity = '1';
-
-                        setTimeout(() => {
-                            subtitleEl.textContent = nextSlide.subtitle;
-                            subtitleEl.style.opacity = '1';
-                        }, 400);
-                    }, 500);
+                        subtitleEl.style.opacity = '1';
+                    }, 400);
                 }, 8000);
             }
 
             // ===================================================
-            // 8. LISTA DE PRODUTOS (CLOUDFLARE D1 + SUPABASE)
+            // 8. LISTA DE PRODUTOS E PAGINAÇÃO SEMPRE VISÍVEL
             // ===================================================
             const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -1637,36 +1582,36 @@
             function renderProductCardHTML(p) {
                 const vantagens = toArray(p.vantagens, false);
                 const vHtml = vantagens.map(v => `
-                    <li class="flex items-start">
-                        <span class="mr-2 text-green-800">✓</span><span>${v}</span>
+                    <li class="flex items-start text-sm sm:text-base">
+                        <span class="mr-2 text-green-700 font-bold shrink-0">✓</span><span>${v}</span>
                     </li>`
                 ).join('');
 
                 return `
                     <div class="product-card">
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
-                            <div class="flex flex-col lg:flex-row gap-6">
-                                <div class="flex-shrink-0 flex justify-center lg:justify-start">
-                                    <div class="p-3 border rounded-lg bg-gray-50">
-                                        <img src="${fixLogo(p.logo)}" alt="Logo ${esc(p.titulo || '')}" class="w-32 h-auto object-contain"
+                        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm h-full flex flex-col">
+                            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
+                                <div class="flex-shrink-0 flex justify-center">
+                                    <div class="w-32 h-20 p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center">
+                                        <img src="${fixLogo(p.logo)}" alt="Logo ${esc(p.titulo || '')}" class="max-w-full max-h-full w-auto h-auto object-contain"
                                              onerror="this.onerror=null;this.src='https://placehold.co/128x40/e2e8f0/4a5568?text=Logo';">
                                     </div>
                                 </div>
-                                <div class="flex-grow">
-                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                        <div class="flex-grow">
-                                            <span class="inline-block ${safeBadge(p.tagClass)} text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                                                ${esc(p.tag || '')}
+                                <div class="flex-grow w-full">
+                                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                        <div class="flex-grow text-center sm:text-left">
+                                            <span class="inline-block ${safeBadge(p.tagClass)} text-xs font-bold px-3 py-1 rounded-full mb-2.5">
+                                                ${esc(p.tag || 'Recomendado')}
                                             </span>
-                                            <h4 class="text-xl font-bold text-gray-800 mb-3">${esc(p.titulo || '')}</h4>
-                                            <ul class="space-y-2 text-gray-600 mb-4">${vHtml}</ul>
+                                            <h4 class="text-lg sm:text-xl font-extrabold text-gray-900 mb-3">${esc(p.titulo || '')}</h4>
+                                            <ul class="space-y-2 text-gray-600 mb-4 text-left">${vHtml}</ul>
                                         </div>
-                                        <div class="flex-shrink-0 mt-4 sm:mt-0">
-                                            <div class="product-actions flex flex-col gap-2">
-                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-primary text-center">
+                                        <div class="flex-shrink-0 w-full lg:w-44 mt-2 lg:mt-0">
+                                            <div class="product-actions">
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-primary text-center w-full">
                                                     ${esc(p.btnPrimario || 'Acessar')}
                                                 </a>
-                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-secondary text-center">
+                                                <a href="${safeURL(p.link)}" target="_blank" rel="nofollow noopener noreferrer" class="btn-secondary text-center w-full">
                                                     ${esc(p.btnSecundario || 'Detalhes')}
                                                 </a>
                                             </div>
@@ -1708,6 +1653,52 @@
                 return merged;
             }
 
+            // Renderiza a lista e mantém AMBAS as paginações (superior e inferior) sempre visíveis
+            const renderPaginationBars = (totalPages) => {
+                const total = Math.max(1, totalPages);
+                [pagTop, pagBottom].forEach(c => {
+                    if (!c) return;
+                    c.innerHTML = '';
+
+                    const mk = (label, p, dis = false, cur = false) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.textContent = label;
+                        b.disabled = dis || cur;
+                        b.className = cur
+                            ? 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm'
+                            : (dis
+                                ? 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition');
+
+                        function scrollToProductsTop() {
+                            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
+                            const headerH = header ? header.offsetHeight : 0;
+                            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
+                            const y = window.pageYOffset + rect.top - headerH - 12;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+
+                        if (!b.disabled) {
+                            b.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                state.page = p;
+                                render();
+                                scrollToProductsTop();
+                            });
+                        }
+                        return b;
+                    };
+
+                    c.appendChild(mk('Anterior', state.page - 1, state.page <= 1));
+                    for (let i = 1; i <= total; i++) {
+                        c.appendChild(mk(String(i), i, false, i === state.page));
+                    }
+                    c.appendChild(mk('Próximo', state.page + 1, state.page >= total));
+                });
+            };
+
             const render = () => {
                 const start = (state.page - 1) * state.perPage;
                 const end   = start + state.perPage;
@@ -1741,45 +1732,12 @@
                     }
 
                     return renderProductCardHTML(p);
-                }).join('') : '<p class="text-center text-gray-600 py-10 col-span-full">Nenhum produto encontrado com estes filtros.</p>';
+                }).join('') : '<p class="text-center text-gray-600 py-10 bg-white rounded-2xl border border-gray-200">Nenhum produto encontrado com estes filtros.</p>';
 
                 setTimeout(activateAds, 0);
 
-                const total = Math.ceil(state.filtered.length / state.perPage);
-                [pagTop, pagBottom].forEach(c => {
-                    if (!c) return;
-                    c.innerHTML = '';
-                    if (total <= 1) return;
-                    const mk = (label, p, dis = false, cur = false) => {
-                        const b = document.createElement('button');
-                        b.textContent = label;
-                        b.disabled = dis || cur;
-                        b.className = cur
-                            ? 'px-3 py-1 rounded-lg text-sm font-semibold border border-green-600 bg-green-600 text-white'
-                            : (dis ? 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-400 cursor-not-allowed'
-                                   : 'px-3 py-1 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100');
-                        function scrollToProductsTop() {
-                            const anchor = document.getElementById('pagination-top') || document.getElementById('product-list') || document.getElementById('home-filters');
-                            const headerH = header ? header.offsetHeight : 0;
-                            const rect = anchor ? anchor.getBoundingClientRect() : { top: 0 };
-                            const y = window.pageYOffset + rect.top - headerH - 8;
-                            window.scrollTo({ top: y, behavior: 'smooth' });
-                        }
-                        if (!b.disabled) {
-                            b.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                state.page = p;
-                                render();
-                                scrollToProductsTop();
-                            });
-                        }
-                        return b;
-                    };
-                    c.appendChild(mk('Anterior', state.page - 1, state.page === 1));
-                    for (let i = 1; i <= total; i++) c.appendChild(mk(String(i), i, false, i === state.page));
-                    c.appendChild(mk('Próximo', state.page + 1, state.page === total));
-                });
+                const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+                renderPaginationBars(totalPages);
             };
 
             (function () {
@@ -1844,7 +1802,7 @@
             filters.forEach(f => f.addEventListener('change', apply));
 
             (async () => {
-                listEl.innerHTML = '<div class="flex justify-center items-center py-20"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+                listEl.innerHTML = '<div class="flex justify-center items-center py-20 bg-white rounded-2xl border border-gray-200"><svg class="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
                 async function loadProducts() {
                     let d1Products = [];
@@ -1886,7 +1844,8 @@
                 const data = await loadProducts();
 
                 if (!data.length) {
-                    listEl.innerHTML = '<p class="text-center text-red-500 py-10">Erro ao carregar produtos.</p>';
+                    listEl.innerHTML = '<p class="text-center text-red-500 py-10 bg-white rounded-2xl border border-gray-200">Erro ao carregar produtos.</p>';
+                    renderPaginationBars(1);
                     return;
                 }
 
@@ -1898,6 +1857,6 @@
         });
     </script>
 
-    <script src="chat.js" defer></script>
 </body>
+
 </html>
