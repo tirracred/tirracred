@@ -54,7 +54,7 @@
             transition: transform 0.2s;
         }
         input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
+            transform: scale(1.12);
         }
         input[type=range]::-moz-range-track {
             width: 100%;
@@ -80,8 +80,13 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes stageSlideIn {
+            0% { opacity: 0; transform: translateX(12px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
         @keyframes popScale {
-            0% { opacity: 0; transform: scale(0.85); }
+            0% { opacity: 0; transform: scale(0.88); }
             100% { opacity: 1; transform: scale(1); }
         }
         .page-btn-anim {
@@ -97,51 +102,33 @@
         }
 
         /* =====================================================================
-           COMPORTAMENTO DUPLO DO FORMULÁRIO:
-           - NO CELULAR (< 1024px): Estica suavemente para baixo conforme preenche.
-           - NO PC (>= 1024px): Mantém o mesmo quadradinho compacto estático,
-             trocando as etapas dentro do mesmo espaço com animação!
+           CAIXA DO SIMULADOR COM TAMANHO 100% FIXO (PC E CELULAR)
+           As etapas alternam dentro do mesmo quadradinho com animação suave,
+           sem nunca espichar o banner no celular nem no computador!
            ===================================================================== */
-        @media (max-width: 1023px) {
-            .step-panel-mobile-expand {
-                display: grid;
-                grid-template-rows: 0fr;
-                opacity: 0;
-                transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.3s ease;
-                overflow: hidden;
-                margin-top: 0 !important;
-                pointer-events: none;
-            }
-            .step-panel-mobile-expand.mobile-open {
-                grid-template-rows: 1fr;
-                opacity: 1;
-                margin-top: 0.875rem !important;
-                pointer-events: auto;
-            }
-            .step-panel-inner {
-                min-height: 0;
-                overflow: hidden;
-            }
+        .simulator-fixed-card {
+            height: 348px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
-        @media (min-width: 1024px) {
-            .desktop-compact-card {
-                height: 336px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-            .desktop-stage-hidden {
-                display: none !important;
-            }
-            .desktop-stage-active {
-                display: block !important;
-                animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
+        .sim-stage-hidden {
+            display: none !important;
+        }
+
+        .sim-stage-active {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+            animation: stageSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* =====================================================================
-           TRAVA DE PROPORÇÃO E ALTURA DO HERO BANNER
+           TRAVA DE PROPORÇÃO E ALTURA DO HERO BANNER (PC E CELULAR)
            ===================================================================== */
         .hero-bg-slide {
             position: absolute;
@@ -162,6 +149,12 @@
             grid-template-rows: 1fr;
             align-items: center;
             width: 100%;
+            min-height: 108px;
+        }
+        @media (min-width: 1024px) {
+            .hero-slides-stack {
+                min-height: 170px;
+            }
         }
         .hero-slide-item {
             grid-column: 1 / -1;
@@ -171,19 +164,19 @@
             will-change: opacity;
         }
 
-        /* Carrossel de logos limpo (sem título acima) */
+        /* Carrossel de logos limpo */
         .logo-carousel {
             overflow: hidden;
             position: relative;
             width: 100%;
-            height: 76px;
+            height: 74px;
             display: flex;
             align-items: center;
             -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
             mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
         }
         @media (min-width: 640px) {
-            .logo-carousel { height: 84px; }
+            .logo-carousel { height: 82px; }
         }
         .logo-carousel-track {
             display: flex;
@@ -199,7 +192,7 @@
         }
         .logo-carousel-item {
             width: 160px;
-            height: 58px;
+            height: 56px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -209,20 +202,20 @@
         @media (min-width: 640px) {
             .logo-carousel-item {
                 width: 200px;
-                height: 64px;
+                height: 62px;
                 padding: 0 24px;
             }
         }
         .logo-carousel-item img {
-            max-height: 36px;
-            max-width: 120px;
+            max-height: 34px;
+            max-width: 118px;
             width: auto;
             height: auto;
             object-fit: contain;
         }
         @media (min-width: 640px) {
             .logo-carousel-item img {
-                max-height: 42px;
+                max-height: 40px;
                 max-width: 140px;
             }
         }
@@ -319,8 +312,6 @@
             box-shadow: 0 14px 22px -5px rgba(0, 0, 0, 0.08), 0 6px 8px -5px rgba(0, 0, 0, 0.03);
         }
 
-
-
         #product-list ins.adsbygoogle,
         #results-grid ins.adsbygoogle {
             display: block;
@@ -355,7 +346,7 @@
     <!-- TOPO ESTÁTICO INTEGRADO (ZERO PULO DE LINHA AO CARREGAR)  -->
     <!-- ========================================================= -->
     <div id="sticky-top-wrapper" class="sticky top-0 z-50">
-        <!-- Alerta Topo (Já nasce renderizado no lugar exato, nunca desloca a página) -->
+        <!-- Alerta Topo Estático -->
         <div id="top-alert" class="bg-yellow-400 text-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-yellow-950 border-b border-yellow-500/20">
             Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
         </div>
@@ -366,14 +357,14 @@
                 <div class="flex items-center justify-between h-14 sm:h-16">
 
                     <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white">
-                        <a href="javascript:void(0)" onclick="showPage('page-home')" class="flex items-center">
+                        <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="flex items-center">
                             <img src="public/logo.png" alt="TirraCred Logo" class="h-7 sm:h-8 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
                         </a>
                     </div>
 
                     <!-- Desktop Navigation -->
                     <nav class="hidden md:flex md:items-center md:space-x-8">
-                        <a href="javascript:void(0)" onclick="showPage('page-home')" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos 🤑</a>
+                        <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos 🤑</a>
                         <a href="#home-filters" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Cartão de Crédito 💳</a>
                         <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Limpar Nome 🧹</a>
                         <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">YouTube 📺</a>
@@ -401,7 +392,7 @@
             <!-- Mobile Menu -->
             <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg">
                 <div class="px-4 py-3 space-y-1">
-                    <a href="javascript:void(0)" onclick="showPage('page-home')" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Empréstimos 🤑</a>
+                    <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Empréstimos 🤑</a>
                     <a href="#home-filters" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Cartão de Crédito 💳</a>
                     <a href="#renegociacao" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Renegociar Dívidas 🧹</a>
                     <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">YouTube 📺</a>
@@ -416,7 +407,7 @@
     <div id="resultados-page" class="page-container">
         <main class="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
-                <button type="button" onclick="showPage('page-home')" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+                <button type="button" onclick="showPage('page-home', true)" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                     ← Voltar para Simulação
                 </button>
                 <div id="resumo-simulacao-pill" class="text-xs sm:text-sm font-medium text-emerald-900 bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 rounded-full"></div>
@@ -431,10 +422,8 @@
                 </p>
             </div>
 
-            <!-- Destaque Principal da Facio na página de resultados -->
             <div id="facio-results-highlight" class="hidden"></div>
 
-            <!-- Grade com os demais parceiros recomendados -->
             <div>
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Outras opções recomendadas para você</h3>
                 <div id="results-grid" class="space-y-4"></div>
@@ -448,55 +437,55 @@
     <div id="page-home" class="page-container active">
         <main>
             <!-- Hero e Simulador:
-                 No PC (lg:h-[430px]): Cortado exatamente na linha pontilhada vermelha, mantendo o quadradinho compacto estático.
-                 No Celular: Expande suavemente conforme o usuário avança. -->
-            <section id="hero-section" class="relative text-white py-7 sm:py-10 lg:py-0 lg:h-[430px] flex items-center overflow-hidden">
+                 Altura 100% travada tanto no Celular (h-[535px]) quanto no PC (lg:h-[430px]).
+                 Nem o carrossel de frases nem as etapas do simulador alteram o tamanho do banner! -->
+            <section id="hero-section" class="relative text-white h-[535px] sm:h-[515px] lg:h-[430px] flex items-center overflow-hidden">
                 <!-- Camadas de Imagem Isoladas -->
                 <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden pointer-events-none">
                     <img src="public/banner-1.png" alt="Banner 1" class="hero-bg-slide opacity-100" data-bg-slide="0" decoding="async">
                     <img src="public/banner2.png" alt="Banner 2" class="hero-bg-slide opacity-0" data-bg-slide="1" decoding="async">
                     <img src="public/banner3.png" alt="Banner 3" class="hero-bg-slide opacity-0" data-bg-slide="2" decoding="async">
-                    <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/75 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/65 lg:to-black/55"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-black/80 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/65 lg:to-black/55"></div>
                 </div>
 
-                <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
+                <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-10 items-center w-full">
                     
                     <!-- Coluna de Mensagens Empilhadas em CSS Grid (1/1) -->
                     <div class="lg:col-span-6 text-center lg:text-left">
                         <div class="hero-slides-stack">
                             <!-- Mensagem do Banner 1 -->
                             <div class="hero-slide-item opacity-100 z-10" data-text-slide="0">
-                                <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-2.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                <h1 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Crédito para negativados? Temos a solução!
                                 </h1>
-                                <p class="text-sm sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
                                     Mesmo com restrições, oferecemos um caminho para você reorganizar suas finanças e alcançar novos objetivos.
                                 </p>
                             </div>
 
                             <!-- Mensagem do Banner 2 -->
                             <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="1" aria-hidden="true">
-                                <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-2.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Antecipe até R$ 300 com a Facio hoje mesmo!
                                 </h2>
-                                <p class="text-sm sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                                    Consulte seu CPF gratuitamente no simulador ao lado e veja se você tem liberação rápida com taxas a partir de R$ 9,90.
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                                    Consulte seu CPF gratuitamente no simulador e veja se você tem liberação rápida com taxas a partir de R$ 9,90.
                                 </p>
                             </div>
 
                             <!-- Mensagem do Banner 3 -->
                             <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="2" aria-hidden="true">
-                                <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold mb-2.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
+                                <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Compare e contrate o produto financeiro certo para você.
                                 </h2>
-                                <p class="text-sm sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                                <p class="text-xs sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto lg:mx-0 leading-relaxed line-clamp-2 sm:line-clamp-none">
                                     Soluções prontas para te ajudar a retomar o controle da sua vida financeira e planejar seu futuro.
                                 </p>
                             </div>
                         </div>
 
                         <!-- Indicadores discretos do banner -->
-                        <div class="flex items-center justify-center lg:justify-start gap-2 mt-3.5">
+                        <div class="flex items-center justify-center lg:justify-start gap-2 mt-2 sm:mt-3">
                             <button type="button" data-hero-dot="0" aria-label="Banner 1" class="h-1.5 w-6 rounded-full bg-emerald-400 transition-all duration-300"></button>
                             <button type="button" data-hero-dot="1" aria-label="Banner 2" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
                             <button type="button" data-hero-dot="2" aria-label="Banner 3" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
@@ -504,39 +493,48 @@
                     </div>
 
                     <!-- Coluna do Simulador:
-                         No PC: Quadradinho estático (desktop-compact-card) onde as etapas trocam dentro dele sem alongar.
-                         No Celular: Expande suavemente conforme o usuário preenche. -->
+                         Tamanho 100% Fixo (simulator-fixed-card) tanto no Celular quanto no PC! -->
                     <div class="lg:col-span-6 w-full flex items-center justify-center">
-                        <div class="desktop-compact-card bg-white rounded-2xl p-5 sm:p-6 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                        <div class="simulator-fixed-card bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                            
+                            <!-- Barra de Progresso Animada no Topo do Card -->
+                            <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100 overflow-hidden">
+                                <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 25%"></div>
+                            </div>
+
                             <!-- Cabeçalho do Card -->
-                            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-gray-100 shrink-0">
-                                <h2 class="text-base sm:text-xl font-extrabold text-gray-900">Simule seu empréstimo</h2>
-                                <span id="step-badge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 shrink-0">
-                                    Etapa 1 de 3
+                            <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0 mt-0.5">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="text-base sm:text-lg font-extrabold text-gray-900">Simule seu empréstimo</h2>
+                                    <span id="sim-summary-chip" class="hidden text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                        R$ 300 • 1x
+                                    </span>
+                                </div>
+                                <span id="step-badge" class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 shrink-0">
+                                    Passo 1 de 4
                                 </span>
                             </div>
                     
-                            <form id="leadFormHome" class="flex-1 flex flex-col justify-between" novalidate>
+                            <form id="leadFormHome" class="flex-1 flex flex-col justify-between pt-2" novalidate>
+                                
                                 <!-- ===================================================== -->
-                                <!-- PASSO 1 (VALOR + PRAZO/PERFIL)                        -->
+                                <!-- ETAPA 1: ESCOLHA DO VALOR (No mesmo quadradinho fixo) -->
                                 <!-- ===================================================== -->
-                                <fieldset id="form-step-1" class="flex-1 flex flex-col justify-between">
-                                    
-                                    <!-- SUB-ETAPA 1A: ESCOLHA DO VALOR (Aparece primeiro no quadradinho) -->
-                                    <div id="substep-valor" class="desktop-stage-active">
+                                <div id="stage-1-valor" class="sim-stage-active">
+                                    <div class="space-y-2.5 my-auto">
                                         <div class="flex items-center justify-between">
-                                            <label for="valorHome" class="block text-xs sm:text-sm font-semibold text-gray-700">1. Qual valor você precisa?</label>
-                                            <span id="valor-display-home" class="text-xl sm:text-2xl font-extrabold text-green-600">R$ 300</span>
+                                            <label for="valorHome" class="block text-xs sm:text-sm font-bold text-gray-700">1. Qual valor você precisa?</label>
+                                            <span id="valor-display-home" class="text-2xl font-black text-green-600">R$ 300</span>
                                         </div>
 
-                                        <div class="flex items-center justify-between text-[11px] text-gray-400 mt-0.5 mb-1">
+                                        <div class="flex items-center justify-between text-[11px] text-gray-400">
                                             <span>R$ 100</span>
                                             <span>R$ 50.000</span>
                                         </div>
                                         <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
 
                                         <!-- Botões de Seleção Rápida de Valor -->
-                                        <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                        <div class="flex flex-wrap gap-1.5 pt-1">
                                             <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
                                                 ⚡ Até R$ 300 (Facio)
                                             </button>
@@ -549,147 +547,166 @@
                                         </div>
 
                                         <!-- Aviso da faixa Facio -->
-                                        <div id="facio-step1-hint" class="mt-2.5 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-[11px] sm:text-xs text-emerald-900 transition-colors">
+                                        <div id="facio-step1-hint" class="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] sm:text-xs text-emerald-900 transition-colors">
                                             <span class="text-sm shrink-0">🚀</span>
-                                            <span><strong>Faixa de Liberação Rápida:</strong> Valores até <strong>R$ 300</strong> contam com antecipação Facio (a partir de R$ 9,90).</span>
+                                            <span class="leading-tight"><strong>Faixa de Liberação Rápida:</strong> Valores até <strong>R$ 300</strong> contam com antecipação Facio (a partir de R$ 9,90).</span>
                                         </div>
                                     </div>
 
-                                    <!-- SUB-ETAPA 1B: PRAZO E PERFIL
-                                         - No PC: Substitui a Sub-etapa 1A dentro do mesmo quadradinho!
-                                         - No Celular: Expande abaixo da Sub-etapa 1A! -->
-                                    <div id="substep-prazo-perfil" class="step-panel-mobile-expand desktop-stage-hidden">
-                                        <div class="step-panel-inner space-y-2.5">
-                                            <div class="flex items-center justify-between">
-                                                <label class="block text-xs sm:text-sm font-semibold text-gray-700">2. Prazo e Perfil:</label>
-                                                <button type="button" id="back-to-valor-pc" class="hidden lg:inline-flex items-center text-xs font-semibold text-green-700 hover:underline">
-                                                    &larr; Alterar valor (<span id="mini-val-summary">R$ 300</span>)
-                                                </button>
-                                            </div>
+                                    <div class="pt-2 shrink-0">
+                                        <button id="btn-to-stage-2" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 sm:py-3 text-sm font-extrabold text-white shadow-md transition active:scale-[0.99] flex items-center justify-center gap-2">
+                                            <span>Escolher Prazo e Continuar</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
+                                <!-- ===================================================== -->
+                                <!-- ETAPA 2: PRAZO E PERFIL (No mesmo quadradinho fixo)   -->
+                                <!-- ===================================================== -->
+                                <div id="stage-2-perfil" class="sim-stage-hidden">
+                                    <div class="space-y-2.5 my-auto">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-700 mb-1.5">2. Escolha o prazo e seu perfil:</label>
                                             <div class="grid grid-cols-4 gap-1.5">
-                                                <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-1.5 px-1 rounded-lg text-xs font-semibold shadow-sm truncate">1x (Rápido)</button>
+                                                <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-1.5 px-1 rounded-lg text-xs font-semibold shadow-sm truncate">1x (Pix)</button>
                                                 <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">12x</button>
                                                 <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">24x</button>
                                                 <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">36x</button>
                                             </div>
                                             <input type="hidden" name="parcelas" id="parcelasHome" value="1">
+                                        </div>
 
-                                            <div class="space-y-1 pt-0.5">
-                                                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                                                    Marque se alguma opção se aplica a você:
-                                                </span>
-                                                <div class="grid grid-cols-1 gap-1">
-                                                    <label class="flex items-center cursor-pointer px-2.5 py-1 rounded-lg hover:bg-gray-50 border border-gray-100 transition">
-                                                        <input type="checkbox" name="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                        <span class="ml-2 text-xs text-gray-700 font-medium">Estou Negativado / Restrição no CPF</span>
-                                                    </label>
-                                                    <label class="flex items-center cursor-pointer px-2.5 py-1 rounded-lg hover:bg-gray-50 border border-gray-100 transition">
-                                                        <input type="checkbox" name="aposentado_inss" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                        <span class="ml-2 text-xs text-gray-700 font-medium">Sou Aposentado / Pensionista ou CLT</span>
-                                                    </label>
-                                                    <label class="flex items-center cursor-pointer px-2.5 py-1 rounded-lg hover:bg-gray-50 border border-gray-100 transition">
-                                                        <input type="checkbox" name="bolsafamilia" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                        <span class="ml-2 text-xs text-gray-700 font-medium">Recebo Bolsa Família</span>
-                                                    </label>
-                                                </div>
+                                        <div class="space-y-1">
+                                            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                                Marque se alguma opção se aplica a você (opcional):
+                                            </span>
+                                            <div class="grid grid-cols-1 gap-1">
+                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
+                                                    <input type="checkbox" name="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Estou Negativado / Restrição no CPF</span>
+                                                </label>
+                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
+                                                    <input type="checkbox" name="aposentado_inss" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Sou Aposentado / Pensionista ou CLT</span>
+                                                </label>
+                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
+                                                    <input type="checkbox" name="bolsafamilia" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
+                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Recebo Bolsa Família</span>
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Botão Principal da Etapa 1 -->
-                                    <div class="mt-3 pt-1 shrink-0">
-                                        <button id="next-step-btn" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-white shadow-md transition-transform active:scale-[0.99] sm:hover:scale-[1.01]">
-                                            Escolher Prazo e Continuar &rarr;
+                                    <div class="flex items-center gap-2 pt-2 shrink-0">
+                                        <button type="button" onclick="goToStage(1)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                            &larr; Valor
+                                        </button>
+                                        <button id="btn-to-stage-3" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
+                                            <span>Verificar CPF</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
                                         </button>
                                     </div>
-                                </fieldset>
-                 
+                                </div>
+
                                 <!-- ===================================================== -->
-                                <!-- PASSO 2: CPF & DADOS (Compacto no PC / Fluido Mobile) -->
+                                <!-- ETAPA 3: CONSULTA DO CPF (NÃO PULA SOZINHO!)          -->
                                 <!-- ===================================================== -->
-                                <fieldset id="form-step-2" class="hidden flex-1 flex flex-col justify-between">
-                                    
-                                    <!-- SUB-ETAPA 2A: CONSULTA DO CPF -->
-                                    <div id="substep-cpf" class="desktop-stage-active space-y-2">
+                                <div id="stage-3-cpf" class="sim-stage-hidden">
+                                    <div class="space-y-2.5 my-auto">
                                         <div>
-                                            <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">Digite seu CPF para verificar ofertas</label>
+                                            <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">
+                                                3. Digite seu CPF para consultar ofertas pré-aprovadas
+                                            </label>
                                             <div class="relative">
-                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-lg border-2 border-gray-300 bg-white px-3 py-2 text-sm sm:text-base font-bold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
-                                                <span id="cpf-spinner" class="hidden absolute right-3 top-2.5 text-green-600">
+                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3.5 py-2.5 text-base font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
+                                                <span id="cpf-spinner" class="hidden absolute right-3.5 top-3 text-green-600">
                                                     <i class="fas fa-circle-notch fa-spin"></i>
                                                 </span>
                                             </div>
-                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-medium"></p>
+                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500">
+                                                Consulta 100% segura e gratuita, sem afetar seu score.
+                                            </p>
                                         </div>
 
-                                        <!-- Resumo Compacto da Facio -->
-                                        <div id="facio-offer-box" class="hidden rounded-xl border border-emerald-500 bg-emerald-50/90 px-3 py-2 shadow-sm fade-in">
-                                            <div class="flex items-center justify-between">
-                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                                                    <i class="fas fa-check-circle"></i> Pré-Aprovado Facio
+                                        <!-- Box do Resultado da Facio (Permanece na tela para o usuário ler com calma!) -->
+                                        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-3 shadow-sm fade-in">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
+                                                    <i class="fas fa-check-circle"></i> CPF Pré-Aprovado na Facio
                                                 </span>
-                                                <span class="text-xs font-extrabold text-emerald-800">
-                                                    Até <span id="facio-offer-max">R$ 300,00</span> • Taxa <span id="facio-offer-basefee">R$ 9,90</span>
-                                                </span>
+                                                <img src="public/facio.png" alt="Facio" class="h-4 object-contain" onerror="this.style.display='none'">
                                             </div>
+                                            <p class="text-xs font-extrabold text-emerald-950">
+                                                Limite de até <span id="facio-offer-max" class="underline">R$ 300,00</span> via Pix • Taxa a partir de <span id="facio-offer-basefee">R$ 9,90</span>
+                                            </p>
                                             <p id="facio-offer-desc" class="hidden"></p>
                                             <span id="facio-offer-type" class="hidden"></span>
                                         </div>
 
-                                        <div id="facio-unavailable-box" class="hidden rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-900 fade-in">
-                                            <strong>CPF Verificado:</strong> Separamos parceiros alternativos para o seu perfil!
+                                        <div id="facio-unavailable-box" class="hidden rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 fade-in">
+                                            <div class="font-extrabold mb-0.5"><i class="fas fa-check-circle text-amber-600 mr-1"></i> CPF Verificado com Sucesso!</div>
+                                            <span class="text-[11px]">Separamos instituições parceiras com alta aprovação para o seu perfil. Clique em continuar abaixo!</span>
                                         </div>
                                     </div>
 
-                                    <!-- SUB-ETAPA 2B: CONTATO (Nome, WhatsApp e E-mail) -->
-                                    <div id="substep-contact" class="step-panel-mobile-expand desktop-stage-hidden">
-                                        <div class="step-panel-inner space-y-2">
-                                            <div class="flex items-center justify-between">
-                                                <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600">Nome Completo</label>
-                                                <button type="button" id="back-to-cpf-pc" class="hidden lg:inline-flex text-[11px] font-semibold text-green-700 hover:underline">
-                                                    &larr; Alterar CPF
-                                                </button>
-                                            </div>
-                                            <input id="nomeInput" name="nome" placeholder="Nome e sobrenome" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-green-600 transition">
+                                    <div class="flex items-center gap-2 pt-2 shrink-0">
+                                        <button type="button" onclick="goToStage(2)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                            &larr; Prazo
+                                        </button>
+                                        <button id="btn-to-stage-4" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
+                                            <span>Continuar para Seus Dados</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
-                                            <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">WhatsApp</label>
-                                                    <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
-                                                </div>
-                                                <div>
-                                                    <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">E-mail</label>
-                                                    <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-green-600 transition">
-                                                </div>
+                                <!-- ===================================================== -->
+                                <!-- ETAPA 4: DADOS DE CONTATO E LIBERAÇÃO                 -->
+                                <!-- ===================================================== -->
+                                <div id="stage-4-contato" class="sim-stage-hidden">
+                                    <div class="space-y-2.5 my-auto">
+                                        <div>
+                                            <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">4. Seu Nome Completo</label>
+                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">WhatsApp</label>
+                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
+                                            </div>
+                                            <div>
+                                                <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Seu E-mail</label>
+                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
                                             </div>
                                         </div>
                                     </div>
-                   
-                                    <!-- Botões de Ação da Etapa 2 -->
+
                                     <div class="flex flex-col gap-1.5 pt-2 shrink-0">
-                                        <div class="flex gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="goToStage(3)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                                &larr; CPF
+                                            </button>
+
                                             <button id="btn-facio-direct" type="button" class="hidden flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow transition items-center justify-center gap-1">
                                                 <span>⚡ Direto na Facio</span>
                                             </button>
 
-                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-3 py-2.5 text-xs sm:text-sm font-bold text-white shadow transition">
+                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-3 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md transition">
                                                 Ver Ofertas Liberadas &rarr;
                                             </button>
                                         </div>
-
-                                        <button id="prev-step-btn" type="button" class="w-full text-center text-xs font-semibold text-gray-500 hover:text-gray-900">
-                                            &larr; Voltar para etapa anterior
-                                        </button>
                                     </div>
-                                </fieldset>
+                                </div>
+
                             </form>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Faixa de Empresas Parceiras Rolando Logo Abaixo da Linha de Corte (Sem texto "Instituições Parceiras") -->
+            <!-- Faixa de Empresas Parceiras Rolando Logo Abaixo da Linha de Corte -->
             <section class="bg-white border-b border-gray-200/80 shadow-sm">
                 <div class="logo-carousel">
                     <div class="logo-carousel-track">
@@ -733,7 +750,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
                 
-                <!-- Filtros Laterais (Sem scroll interno travado no PC) -->
+                <!-- Filtros Laterais -->
                 <aside id="filter-panel" class="fixed inset-y-0 right-0 z-50 h-full w-80 max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out translate-x-full lg:static lg:z-auto lg:h-auto lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-2xl lg:border lg:border-gray-200 lg:shadow-sm">
                     <div class="h-full lg:h-auto flex flex-col">
                         <div class="flex items-center justify-between border-b p-4 lg:hidden">
@@ -826,7 +843,7 @@
                     </div>
                 </aside>
 
-                <!-- Coluna Direita: Paginação Flexível Animada + Container de Proporção Predefinida (Sem scroll preso) -->
+                <!-- Coluna Direita: Paginação Flexível Animada + Container de Proporção Predefinida -->
                 <div class="lg:col-span-3 flex flex-col">
                     <!-- PAGINAÇÃO SUPERIOR FLEXÍVEL -->
                     <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
@@ -927,8 +944,8 @@
                 <div>
                     <h3 class="font-bold mb-4 text-green-300 uppercase text-xs tracking-wider">Para Você</h3>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400 transition">Empréstimo Pessoal</a></li>
-                        <li><a href="javascript:void(0)" onclick="showPage('page-home')" class="hover:text-green-400 transition">Empréstimo para Negativado</a></li>
+                        <li><a href="javascript:void(0)" onclick="showPage('page-home', true)" class="hover:text-green-400 transition">Empréstimo Pessoal</a></li>
+                        <li><a href="javascript:void(0)" onclick="showPage('page-home', true)" class="hover:text-green-400 transition">Empréstimo para Negativado</a></li>
                         <li><a href="#home-filters" class="scroll-toggle hover:text-green-400 transition">Cartão de Crédito</a></li>
                         <li><a href="#renegociacao" class="scroll-toggle hover:text-green-400 transition">Renegociar Dívidas</a></li>
                     </ul>
@@ -1059,17 +1076,22 @@
             overlay.addEventListener('click', closePanel);
 
             // ===================================================
-            // 2. NAVEGAÇÃO SPA (ENTRE HOME E RESULTADOS)
+            // 2. NAVEGAÇÃO SPA (SEM RESETAR O SCROLL INDEVIDAMENTE)
             // ===================================================
             const pageContainers = document.querySelectorAll('.page-container');
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
 
-            window.showPage = (pageId) => {
-                pageContainers.forEach(container => container.classList.remove('active'));
+            window.showPage = (pageId, shouldScrollTop = true) => {
                 const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
+                const isAlreadyActive = targetPage?.classList.contains('active');
+
+                if (!isAlreadyActive) {
+                    pageContainers.forEach(container => container.classList.remove('active'));
+                    if (targetPage) targetPage.classList.add('active');
+                }
+
+                if (shouldScrollTop) {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
                 mobileMenu?.classList.add('hidden');
@@ -1078,33 +1100,25 @@
             mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
             // ===================================================
-            // 3. SIMULADOR MULTI-ETAPAS:
-            //    - NO PC: Troca etapas dentro do mesmo quadradinho compacto estático.
-            //    - NO CELULAR: Expande suavemente para baixo conforme preenche.
+            // 3. SIMULADOR DE TAMANHO FIXO (4 ETAPAS NO MESMO QUADRADINHO)
             // ===================================================
             const leadForm = document.getElementById('leadFormHome');
             const valorSlider = document.getElementById('valorHome');
             const valorDisplay = document.getElementById('valor-display-home');
-            const miniValSummary = document.getElementById('mini-val-summary');
+            const summaryChip = document.getElementById('sim-summary-chip');
+            const progressBar = document.getElementById('sim-progress-bar');
             const quickValBtns = document.querySelectorAll('.quick-val-btn');
             const facioStep1Hint = document.getElementById('facio-step1-hint');
             const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
             const parcelasInput = document.getElementById('parcelasHome');
 
-            const step1 = document.getElementById('form-step-1');
-            const step2 = document.getElementById('form-step-2');
-            const substepValor = document.getElementById('substep-valor');
-            const substepPrazoPerfil = document.getElementById('substep-prazo-perfil');
-            const substepCpf = document.getElementById('substep-cpf');
-            const substepContact = document.getElementById('substep-contact');
-
+            const stage1 = document.getElementById('stage-1-valor');
+            const stage2 = document.getElementById('stage-2-perfil');
+            const stage3 = document.getElementById('stage-3-cpf');
+            const stage4 = document.getElementById('stage-4-contato');
             const stepBadge = document.getElementById('step-badge');
-            const nextBtn = document.getElementById('next-step-btn');
-            const prevBtn = document.getElementById('prev-step-btn');
-            const backToValorPcBtn = document.getElementById('back-to-valor-pc');
-            const backToCpfPcBtn = document.getElementById('back-to-cpf-pc');
 
-            let currentSubStage = 1; // 1 = Valor, 2 = Prazo/Perfil, 3 = CPF, 4 = Contato
+            let currentSubStage = 1;
 
             const formatCurrencyNoCents = (value) => new Intl.NumberFormat('pt-BR', { 
                 style: 'currency', 
@@ -1113,73 +1127,67 @@
                 maximumFractionDigits: 0
             }).format(value);
 
-            function goToStage(stageNum) {
-                currentSubStage = stageNum;
-
-                if (stageNum === 1) {
-                    step2.classList.add('hidden');
-                    step1.classList.remove('hidden');
-                    substepValor.className = 'desktop-stage-active';
-                    substepPrazoPerfil.classList.remove('mobile-open', 'desktop-stage-active');
-                    substepPrazoPerfil.classList.add('desktop-stage-hidden');
-                    if (stepBadge) stepBadge.textContent = 'Etapa 1 de 3';
-                    if (nextBtn) nextBtn.innerHTML = 'Escolher Prazo e Continuar &rarr;';
-                } else if (stageNum === 2) {
-                    step2.classList.add('hidden');
-                    step1.classList.remove('hidden');
-                    // No PC: esconde o Valor e mostra o Prazo/Perfil no mesmo quadradinho.
-                    // No Celular: mantém o Valor e expande o Prazo/Perfil abaixo.
-                    substepValor.className = 'desktop-stage-hidden';
-                    substepPrazoPerfil.classList.remove('desktop-stage-hidden');
-                    substepPrazoPerfil.classList.add('mobile-open', 'desktop-stage-active');
-                    if (stepBadge) stepBadge.textContent = 'Etapa 2 de 3';
-                    if (nextBtn) nextBtn.innerHTML = 'Continuar para Verificar CPF &rarr;';
-                } else if (stageNum === 3) {
-                    step1.classList.add('hidden');
-                    step2.classList.remove('hidden');
-                    substepCpf.className = 'desktop-stage-active space-y-2';
-                    substepContact.classList.remove('mobile-open', 'desktop-stage-active');
-                    substepContact.classList.add('desktop-stage-hidden');
-                    if (stepBadge) stepBadge.textContent = 'Etapa 3 de 3';
-                    setTimeout(() => document.getElementById('cpf')?.focus(), 50);
-                } else if (stageNum === 4) {
-                    step1.classList.add('hidden');
-                    step2.classList.remove('hidden');
-                    substepCpf.className = 'desktop-stage-hidden space-y-2';
-                    substepContact.classList.remove('desktop-stage-hidden');
-                    substepContact.classList.add('mobile-open', 'desktop-stage-active');
-                    if (stepBadge) stepBadge.textContent = 'Finalizar';
-                    setTimeout(() => document.getElementById('nomeInput')?.focus(), 50);
-                }
+            function updateSummaryChip() {
+                if (!summaryChip) return;
+                const val = formatCurrencyNoCents(valorSlider?.value || 300);
+                const parc = parcelasInput?.value || 1;
+                summaryChip.textContent = `${val} • ${parc}x`;
             }
 
-            function updateSliderUI(val, fromUserInteraction = false) {
+            window.goToStage = function(stageNum) {
+                currentSubStage = stageNum;
+                const stages = [stage1, stage2, stage3, stage4];
+
+                stages.forEach((el, idx) => {
+                    if (!el) return;
+                    if (idx + 1 === stageNum) {
+                        el.classList.remove('sim-stage-hidden');
+                        el.classList.add('sim-stage-active');
+                    } else {
+                        el.classList.remove('sim-stage-active');
+                        el.classList.add('sim-stage-hidden');
+                    }
+                });
+
+                updateSummaryChip();
+                if (summaryChip) {
+                    summaryChip.classList.toggle('hidden', stageNum === 1);
+                }
+
+                if (progressBar) {
+                    progressBar.style.width = `${stageNum * 25}%`;
+                }
+
+                if (stepBadge) {
+                    stepBadge.textContent = `Passo ${stageNum} de 4`;
+                }
+
+                if (stageNum === 3) {
+                    setTimeout(() => document.getElementById('cpf')?.focus(), 60);
+                } else if (stageNum === 4) {
+                    setTimeout(() => document.getElementById('nomeInput')?.focus(), 60);
+                }
+            };
+
+            function updateSliderUI(val) {
                 const numVal = Number(val) || 300;
                 const formatted = formatCurrencyNoCents(numVal);
                 if (valorDisplay) valorDisplay.textContent = formatted;
-                if (miniValSummary) miniValSummary.textContent = formatted;
+                updateSummaryChip();
 
                 if (facioStep1Hint) {
                     if (numVal <= 300) {
-                        facioStep1Hint.className = 'mt-2.5 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-300 px-3 py-1.5 text-[11px] sm:text-xs text-emerald-950 transition-colors';
+                        facioStep1Hint.className = 'flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 px-3 py-2 text-[11px] sm:text-xs text-emerald-950 transition-colors';
                     } else {
-                        facioStep1Hint.className = 'mt-2.5 flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-1.5 text-[11px] sm:text-xs text-gray-600 transition-colors';
+                        facioStep1Hint.className = 'flex items-center gap-2 rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[11px] sm:text-xs text-gray-600 transition-colors';
                     }
-                }
-
-                // No celular, mexer no valor já expande a seção de prazo suavemente
-                if (fromUserInteraction && window.innerWidth < 1024 && currentSubStage === 1) {
-                    goToStage(2);
                 }
             }
 
             if (valorSlider) {
-                updateSliderUI(valorSlider.value, false);
+                updateSliderUI(valorSlider.value);
                 valorSlider.addEventListener('input', (e) => {
-                    updateSliderUI(e.target.value, false);
-                });
-                valorSlider.addEventListener('change', (e) => {
-                    updateSliderUI(e.target.value, true);
+                    updateSliderUI(e.target.value);
                 });
             }
 
@@ -1188,7 +1196,7 @@
                     const targetVal = btn.getAttribute('data-quick-val');
                     if (valorSlider && targetVal) {
                         valorSlider.value = targetVal;
-                        updateSliderUI(targetVal, true);
+                        updateSliderUI(targetVal);
                     }
                 });
             });
@@ -1203,31 +1211,29 @@
                         btn.classList.add('bg-green-600', 'text-white', 'font-semibold', 'shadow-sm');
                         btn.classList.remove('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'font-medium');
                         parcelasInput.value = btn.dataset.parcelas;
+                        updateSummaryChip();
                     });
                 });
             }
 
-            nextBtn?.addEventListener('click', () => {
-                if (currentSubStage === 1) {
-                    goToStage(2);
-                } else {
-                    goToStage(3);
+            document.getElementById('btn-to-stage-2')?.addEventListener('click', () => goToStage(2));
+            document.getElementById('btn-to-stage-3')?.addEventListener('click', () => goToStage(3));
+            document.getElementById('btn-to-stage-4')?.addEventListener('click', () => {
+                const rawCpf = document.getElementById('cpf')?.value || '';
+                if (!validateCPF(rawCpf)) {
+                    const cpfMsg = document.getElementById('cpf-message');
+                    if (cpfMsg) {
+                        cpfMsg.textContent = '✕ Digite um CPF válido de 11 dígitos antes de continuar.';
+                        cpfMsg.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                    }
+                    document.getElementById('cpf')?.focus();
+                    return;
                 }
-            });
-
-            backToValorPcBtn?.addEventListener('click', () => goToStage(1));
-            backToCpfPcBtn?.addEventListener('click', () => goToStage(3));
-
-            prevBtn?.addEventListener('click', () => {
-                if (currentSubStage === 4 && window.innerWidth >= 1024) {
-                    goToStage(3);
-                } else {
-                    goToStage(2);
-                }
+                goToStage(4);
             });
 
             // ===================================================
-            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO
+            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO (SEM PULO AUTOMÁTICO)
             // ===================================================
             const FACIO_FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
             const cpfInput = document.getElementById('cpf');
@@ -1277,7 +1283,6 @@
                 if (!validateCPF(cleanCpf)) return false;
 
                 if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking) {
-                    goToStage(4);
                     return facioState.isAvailable;
                 }
 
@@ -1287,7 +1292,7 @@
                 cpfSpinner?.classList.remove('hidden');
                 if (cpfMessage) {
                     cpfMessage.textContent = 'Consultando elegibilidade do CPF na Facio...';
-                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-medium animate-pulse';
+                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-semibold animate-pulse';
                 }
 
                 try {
@@ -1323,7 +1328,7 @@
                     btnFacioDirect?.classList.remove('hidden');
                     btnFacioDirect?.classList.add('flex');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF válido! Complete seu contato para liberar:';
+                        cpfMessage.textContent = '✓ CPF verificado! Clique em Continuar abaixo:';
                         cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold';
                     }
                 } else {
@@ -1332,13 +1337,12 @@
                     btnFacioDirect?.classList.remove('flex');
                     facioUnavailableBox?.classList.remove('hidden');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF válido. Preencha seu contato para ver as ofertas:';
+                        cpfMessage.textContent = '✓ CPF válido. Clique em Continuar abaixo:';
                         cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-amber-700 font-semibold';
                     }
                 }
 
-                // Avança para o preenchimento de Nome/WhatsApp/E-mail (no mesmo quadradinho no PC ou expandindo no celular)
-                setTimeout(() => goToStage(4), 350);
+                // Permanece na Etapa 3 para o usuário ver o resultado da consulta e clicar quando quiser!
                 return facioState.isAvailable;
             }
 
@@ -1353,8 +1357,8 @@
                         btnFacioDirect?.classList.add('hidden');
                         facioState.lastCheckedCpf = null;
                         if (cpfMessage) {
-                            cpfMessage.textContent = '';
-                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem]';
+                            cpfMessage.textContent = 'Consulta 100% segura e gratuita, sem afetar seu score.';
+                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500';
                         }
                         return;
                     }
@@ -1554,7 +1558,7 @@
             });
 
             // ===================================================
-            // 6. CARROSSEL "COMO FUNCIONA" E LINKS DE SCROLL
+            // 6. CARROSSEL "COMO FUNCIONA" E LINKS DE SCROLL CORRIGIDOS
             // ===================================================
             const track = document.getElementById('carousel-track');
             const nextButton = document.getElementById('nextBtn');
@@ -1625,10 +1629,12 @@
             const toggleLinks = document.querySelectorAll('.scroll-toggle');
             const stickyWrapper = document.getElementById('sticky-top-wrapper');
 
+            // Corrige o clique repetido em "Ver Todas as Ofertas":
+            // Passa shouldScrollTop = false para nunca puxar a tela de volta para o formulário!
             toggleLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
                     event.preventDefault();
-                    showPage('page-home');
+                    showPage('page-home', false);
                     const targetHref = this.getAttribute('href');
                     const targetElement = document.querySelector(targetHref);
 
@@ -1639,13 +1645,13 @@
                     if (targetElement) {
                         const topH = stickyWrapper ? stickyWrapper.offsetHeight : 0;
                         const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - topH - 8;
-                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                        window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
                     }
                 });
             });
 
             // ===================================================
-            // 7. CARROSSEL DO BANNER HERO (SEM REFLOW / SEM MOVER FORMULÁRIO)
+            // 7. CARROSSEL DO BANNER HERO (ESTÁTICO NO PC E CELULAR)
             // ===================================================
             const bgSlides = document.querySelectorAll('#hero-background [data-bg-slide]');
             const textSlides = document.querySelectorAll('[data-text-slide]');
@@ -1700,7 +1706,7 @@
             }
 
             // ===================================================
-            // 8. LISTA DE PRODUTOS E PAGINAÇÃO FLEXÍVEL ANIMADA (SEM SCROLL PRESO)
+            // 8. LISTA DE PRODUTOS E PAGINAÇÃO FLEXÍVEL ANIMADA
             // ===================================================
             const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -1711,7 +1717,6 @@
             const pagBottom = document.getElementById('pagination');
             const resultsSummaryEl = document.getElementById('filter-results-summary');
 
-            // 4 ofertas por página para gerar paginação flexível (ex: 4 a 6 páginas que aumentam/diminuem com animação)
             const state = { all: [], filtered: [], page: 1, perPage: 4 };
 
             const toVantagensLines = (v) => {
@@ -1863,7 +1868,6 @@
                 return merged;
             }
 
-            // Renderiza as barras de paginação flexíveis com animação suave ao aumentar/diminuir páginas
             const renderPaginationBars = (totalPages, totalItemsCount) => {
                 const total = Math.max(1, totalPages);
 
@@ -1893,13 +1897,12 @@
                                 e.stopPropagation();
                                 state.page = p;
                                 render();
-                                // Só ajusta o scroll se o usuário clicou na paginação inferior
                                 if (barIdx === 1) {
                                     const anchor = document.getElementById('home-filters');
                                     const topH = stickyWrapper ? stickyWrapper.offsetHeight : 0;
                                     if (anchor) {
                                         const y = anchor.getBoundingClientRect().top + window.pageYOffset - topH - 8;
-                                        window.scrollTo({ top: y, behavior: 'smooth' });
+                                        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
                                     }
                                 }
                             });
@@ -1971,9 +1974,6 @@
                 window.AD_EVERY = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 3;
             })();
 
-            // Filtro Inteligente:
-            // Se a pessoa selecionar múltiplos perfis (ex: Negativado + Aposentado + Autônomo),
-            // usa união (OR) entre os perfis marcados para somar as ofertas correspondentes e aumentar as páginas!
             const apply = () => {
                 const selectedTypeRaw = document.querySelector('input[name="product_type"]:checked')?.value || 'all';
                 const selectedTypeNorm = normalizeSlug(selectedTypeRaw);
@@ -1993,7 +1993,6 @@
                     if (!perfisSelNorm.length) return true;
                     const pPerfis = toArray(p?.perfis, true).map(normalizeSlug);
                     const rawTxtNorm = normalizeSlug(String(p?.perfis || '') + ' ' + String(p?.tipo || ''));
-                    //dd União (some): quanto mais perfis selecionados, mais ofertas e páginas aparecem!
                     return perfisSelNorm.some(sel => pPerfis.includes(sel) || rawTxtNorm.includes(sel));
                 };
 
@@ -2002,7 +2001,6 @@
                     state.filtered = [...state.all];
                     state.page = 1;
                     render();
-
                     if (window.innerWidth < 1024) closePanel();
                     return;
                 }
@@ -2197,15 +2195,13 @@
                 apply();
             })();
 
-            showPage('page-home');
+            showPage('page-home', false);
         });
 
+        
     </script>
 
 </body>
-
-
-
 
 
 </html>
