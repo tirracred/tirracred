@@ -258,6 +258,19 @@
         .product-card {
             transition: all 0.25s ease;
         }
+
+        /* Blank Box sutil para manter exatamente a mesma altura nas páginas com menos produtos */
+        .product-blank-slot {
+            min-height: 204px;
+            border-radius: 1rem;
+            border: 1px dashed rgba(209, 213, 219, 0.55);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(240, 253, 244, 0.35) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            user-select: none;
+        }
         
         .btn-primary {
             background: linear-gradient(135deg, #10b981, #059669);
@@ -354,25 +367,28 @@
         <!-- Header -->
         <header id="main-header" class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-14 sm:h-16">
+                <div class="relative flex items-center justify-between h-14 sm:h-16">
 
-                    <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white">
+                    <!-- Logo à Esquerda -->
+                    <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white z-10">
                         <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="flex items-center">
                             <img src="public/logo.png" alt="TirraCred Logo" class="h-7 sm:h-8 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
                         </a>
                     </div>
 
-                    <!-- Desktop Navigation -->
-                    <nav class="hidden md:flex md:items-center md:space-x-8">
+                    <!-- Desktop Navigation (100% Centralizado) -->
+                    <nav class="hidden md:flex md:items-center md:justify-center md:space-x-8 md:absolute md:left-1/2 md:-translate-x-1/2">
                         <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos</a>
                         <a href="cartoes.html" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Cartão de Crédito</a>
                         <a href="#renegociacao" class="scroll-toggle text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Limpar Nome</a>
                         <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">YouTube</a>
                     </nav>
 
-                    
+                    <!-- Espaçador Desktop para equilíbrio simétrico -->
+                    <div class="hidden md:block w-28 flex-shrink-0" aria-hidden="true"></div>
+
                     <!-- Mobile Menu Button -->
-                    <div class="md:hidden flex items-center">
+                    <div class="md:hidden flex items-center z-10">
                         <button id="mobile-menu-button" type="button" aria-label="Abrir Menu" class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -382,13 +398,13 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu -->
+            <!-- Mobile Menu (Com aspas corrigidas em cartoes.html e alinhamento uniforme) -->
             <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg">
-                <div class="px-4 py-3 space-y-1">
-                    <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Empréstimos</a>
-                    <a href="cartoes.html class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Cartão de Crédito</a>
-                    <a href="#renegociacao" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">Renegociar Dívidas</a>
-                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700">YouTube</a>
+                <div class="px-4 py-3 space-y-1 text-center sm:text-left">
+                    <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">Empréstimos</a>
+                    <a href="cartoes.html" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">Cartão de Crédito</a>
+                    <a href="#renegociacao" class="scroll-toggle block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">Renegociar Dívidas</a>
+                    <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">YouTube</a>
                 </div>
             </div>
         </header>
@@ -526,15 +542,15 @@
                                         </div>
                                         <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
 
-                                        <!-- Botões de Seleção Rápida de Valor -->
+                                        <!-- Botões de Seleção Rápida de Valor (Com alternância automática de seleção!) -->
                                         <div class="flex flex-wrap gap-1.5 pt-1">
-                                            <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 hover:bg-emerald-200 transition">
+                                            <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none">
                                                 ⚡ Até R$ 300 (Facio)
                                             </button>
-                                            <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                            <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none">
                                                 R$ 1.000
                                             </button>
-                                            <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition">
+                                            <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none">
                                                 R$ 5.000
                                             </button>
                                         </div>
@@ -727,8 +743,8 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- SEÇÃO FILTROS E VITRINE (SEM MINI-SCROLL TRAVADO,         -->
-    <!-- COM PAGINAÇÃO FLEXÍVEL ANIMADA E PROPORÇÃO PREDEFINIDA)   -->
+    <!-- SEÇÃO FILTROS E VITRINE (ALTURA CONSTANTE + PAGINAÇÃO     -->
+    <!-- CENTRALIZADA NO TOPO E NA BASE)                           -->
     <!-- ========================================================= -->
     <section id="home-filters" class="py-6 sm:py-10">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -836,29 +852,31 @@
                     </div>
                 </aside>
 
-                <!-- Coluna Direita: Paginação Flexível Animada + Container de Proporção Predefinida -->
+                <!-- Coluna Direita: Paginação Centralizada + Container de Altura Constante -->
                 <div class="lg:col-span-3 flex flex-col">
-                    <!-- PAGINAÇÃO SUPERIOR FLEXÍVEL -->
-                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <span id="filter-results-summary" class="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    <!-- PAGINAÇÃO SUPERIOR CENTRALIZADA -->
+                    <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm mb-4 flex flex-col items-center justify-center gap-2.5 text-center">
+                        <span id="filter-results-summary" class="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3.5 py-1 rounded-full">
                             Carregando ofertas...
                         </span>
-                        <nav id="pagination-top" aria-label="Paginação Superior" class="flex items-center justify-center flex-wrap gap-1.5">
+                        <nav id="pagination-top" aria-label="Paginação Superior" class="w-full flex items-center justify-center flex-wrap gap-1.5">
                             <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
                             <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
                             <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
                         </nav>
                     </div>
 
-                    <!-- LISTA DE PRODUTOS (Sem scroll interno travado, com min-h-[720px] para manter a proporção fixa da página) -->
-                    <div id="product-list" class="space-y-4 sm:space-y-5 min-h-[720px] transition-opacity duration-200"></div>
+                    <!-- LISTA DE PRODUTOS (Mantém a mesma altura mesmo com apenas 1 ou 2 itens na última página) -->
+                    <div id="product-list" class="space-y-4 sm:space-y-5 min-h-[880px] transition-opacity duration-200"></div>
 
-                    <!-- PAGINAÇÃO INFERIOR FLEXÍVEL -->
-                    <nav id="pagination" aria-label="Paginação Inferior" class="flex items-center justify-center flex-wrap gap-1.5 mt-5 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
-                        <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
-                        <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
-                    </nav>
+                    <!-- PAGINAÇÃO INFERIOR CENTRALIZADA -->
+                    <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm mt-5 flex items-center justify-center">
+                        <nav id="pagination" aria-label="Paginação Inferior" class="w-full flex items-center justify-center flex-wrap gap-1.5">
+                            <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Anterior</button>
+                            <button type="button" disabled class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-green-600 bg-green-600 text-white shadow-sm">1</button>
+                            <button type="button" disabled class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed">Próximo</button>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -939,7 +957,7 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="javascript:void(0)" onclick="showPage('page-home', true)" class="hover:text-green-400 transition">Empréstimo Pessoal</a></li>
                         <li><a href="javascript:void(0)" onclick="showPage('page-home', true)" class="hover:text-green-400 transition">Empréstimo para Negativado</a></li>
-                        <li><a href="#home-filters" class="scroll-toggle hover:text-green-400 transition">Cartão de Crédito</a></li>
+                        <li><a href="cartoes.html" class="hover:text-green-400 transition">Cartão de Crédito</a></li>
                         <li><a href="#renegociacao" class="scroll-toggle hover:text-green-400 transition">Renegociar Dívidas</a></li>
                     </ul>
                 </div>
@@ -1169,6 +1187,17 @@
                 const formatted = formatCurrencyNoCents(numVal);
                 if (valorDisplay) valorDisplay.textContent = formatted;
                 updateSummaryChip();
+
+                // Atualiza o botão rápido ativo e desmarca os demais
+                quickValBtns.forEach(btn => {
+                    const btnVal = Number(btn.getAttribute('data-quick-val'));
+                    const isSelected = btnVal === numVal;
+                    if (isSelected) {
+                        btn.className = 'quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none';
+                    } else {
+                        btn.className = 'quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none';
+                    }
+                });
 
                 if (facioStep1Hint) {
                     if (numVal <= 300) {
@@ -1625,9 +1654,11 @@
 
             toggleLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
+                    const targetHref = this.getAttribute('href');
+                    if (!targetHref || !targetHref.startsWith('#')) return;
+
                     event.preventDefault();
                     showPage('page-home', false);
-                    const targetHref = this.getAttribute('href');
                     const targetElement = document.querySelector(targetHref);
 
                     if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
@@ -1698,7 +1729,7 @@
             }
 
             // ===================================================
-            // 8. LISTA DE PRODUTOS E PAGINAÇÃO FLEXÍVEL ANIMADA
+            // 8. LISTA DE PRODUTOS E PAGINAÇÃO CENTRALIZADA COM ALTURA FIXA
             // ===================================================
             const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -1709,7 +1740,7 @@
             const pagBottom = document.getElementById('pagination');
             const resultsSummaryEl = document.getElementById('filter-results-summary');
 
-            const state = { all: [], filtered: [], page: 1, perPage: 4 };
+            const state = { all: [], filtered: [], page: 1, perPage: 4, lockedFullPageHeight: 0 };
 
             const toVantagensLines = (v) => {
                 if (Array.isArray(v)) return v.map(s => String(s).trim()).filter(Boolean);
@@ -1830,6 +1861,10 @@
                     </div>`;
             }
 
+            function renderBlankSlotHTML() {
+                return `<div class="product-blank-slot" aria-hidden="true"></div>`;
+            }
+
             function buildFeed(products, ads, opts = {}) {
                 const EVERY = opts.every ?? 3;
                 const FIRST_INDEX = opts.first ?? 2;
@@ -1915,41 +1950,67 @@
                 const end   = start + state.perPage;
                 const items = state.filtered.slice(start, end);
 
-                listEl.innerHTML = items.length ? items.map((p, idx) => {
-                    if (isAdItem(p)) {
-                        const adClient  = p.tag;
-                        const adSlot    = (p.slot || p.link || '').toString().trim();
-                        const layoutKey = (p.tagClass || '').trim();
+                if (items.length > 0) {
+                    const cardsHTML = items.map((p, idx) => {
+                        if (isAdItem(p)) {
+                            const adClient  = p.tag;
+                            const adSlot    = (p.slot || p.link || '').toString().trim();
+                            const layoutKey = (p.tagClass || '').trim();
 
-                        if (!adClient || !/^\d+$/.test(adSlot)) return '';
+                            if (!adClient || !/^\d+$/.test(adSlot)) return '';
 
-                        const formatAttrs = layoutKey
-                            ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
-                            : `data-ad-format="auto" data-full-width-responsive="true"`;
+                            const formatAttrs = layoutKey
+                                ? `data-ad-format="fluid" data-ad-layout-key="${layoutKey}"`
+                                : `data-ad-format="auto" data-full-width-responsive="true"`;
 
-                        return `
-                            <div class="product-card fade-in w-full bg-transparent p-0 border-0 shadow-none col-span-full" style="animation-delay: ${idx * 45}ms">
-                                <div class="ad-card">
-                                    <span class="ad-badge">Anúncio</span>
-                                    <div class="ad-card-inner">
-                                        <ins class="adsbygoogle"
-                                             style="display:block"
-                                             data-ad-client="${adClient}"
-                                             data-ad-slot="${adSlot}"
-                                             ${formatAttrs}></ins>
+                            return `
+                                <div class="product-card fade-in w-full bg-transparent p-0 border-0 shadow-none col-span-full" style="animation-delay: ${idx * 45}ms">
+                                    <div class="ad-card">
+                                        <span class="ad-badge">Anúncio</span>
+                                        <div class="ad-card-inner">
+                                            <ins class="adsbygoogle"
+                                                 style="display:block"
+                                                 data-ad-client="${adClient}"
+                                                 data-ad-slot="${adSlot}"
+                                                 ${formatAttrs}></ins>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>`;
+                                </div>`;
+                        }
+
+                        return renderProductCardHTML(p, idx);
+                    }).join('');
+
+                    // Preenche com Blank Boxes sutis se a página tiver menos de 4 itens (Ex: Página 5 com 2 itens)
+                    const missingCount = Math.max(0, state.perPage - items.length);
+                    let blankSlotsHTML = '';
+                    for (let m = 0; m < missingCount; m++) {
+                        blankSlotsHTML += renderBlankSlotHTML();
                     }
 
-                    return renderProductCardHTML(p, idx);
-                }).join('') : `
-                    <div class="h-80 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-gray-200 p-6 fade-in">
-                        <p class="text-gray-600 font-semibold mb-3">Nenhum produto encontrado com estes filtros combinados.</p>
-                        <button type="button" onclick="document.getElementById('reset-filters-btn').click()" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition">
-                            Mostrar Todos os Produtos
-                        </button>
-                    </div>`;
+                    listEl.innerHTML = cardsHTML + blankSlotsHTML;
+
+                    // Memoriza a altura exata de uma página cheia (4 itens) para travar a proporção da vitrine
+                    requestAnimationFrame(() => {
+                        if (items.length === state.perPage) {
+                            const measured = listEl.offsetHeight;
+                            if (measured > 600) {
+                                state.lockedFullPageHeight = measured;
+                                listEl.style.minHeight = `${measured}px`;
+                            }
+                        } else if (state.lockedFullPageHeight > 600) {
+                            listEl.style.minHeight = `${state.lockedFullPageHeight}px`;
+                        }
+                    });
+                } else {
+                    listEl.innerHTML = `
+                        <div class="h-80 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-gray-200 p-6 fade-in">
+                            <p class="text-gray-600 font-semibold mb-3">Nenhum produto encontrado com estes filtros combinados.</p>
+                            <button type="button" onclick="document.getElementById('reset-filters-btn').click()" class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition">
+                                Mostrar Todos os Produtos
+                            </button>
+                        </div>`;
+                }
 
                 setTimeout(activateAds, 0);
 
@@ -2190,7 +2251,7 @@
             showPage('page-home', false);
         });
 
-
+        
     </script>
 
 </body>
