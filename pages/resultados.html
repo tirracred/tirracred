@@ -100,6 +100,43 @@
             animation: pulseGlow 2.2s infinite;
         }
 
+        /* Botão Mega Destacado da Facio */
+        @keyframes facioMegaPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65), 0 12px 28px -4px rgba(5, 150, 105, 0.55);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 14px rgba(16, 185, 129, 0), 0 16px 34px -4px rgba(5, 150, 105, 0.7);
+            }
+        }
+
+        .btn-facio-mega {
+            background: linear-gradient(135deg, #047857 0%, #10b981 50%, #059669 100%);
+            background-size: 200% auto;
+            color: #ffffff;
+            border: 2px solid #a7f3d0;
+            border-radius: 16px;
+            padding: 16px 24px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+            animation: facioMegaPulse 2s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-facio-mega:hover {
+            background-position: right center;
+            transform: translateY(-2px) scale(1.01);
+            border-color: #fde68a;
+        }
+
         /* Sliders customizados */
         input[type=range].custom-slider {
             -webkit-appearance: none;
@@ -881,6 +918,29 @@
         // ========================================================================
         // 2. LEITURA E PERSISTÊNCIA INTELIGENTE DO CONTEXTO DO LEAD
         // ========================================================================
+        function isFacioProduct(p) {
+            return /facio/i.test(String(p?.titulo || '')) || /facio\.com\.br/i.test(String(p?.link || ''));
+        }
+
+        function hasCompleteFacioLeadData(ctx) {
+            if (!ctx) return false;
+            const cleanCpf = String(ctx.cpf || '').replace(/\D/g, '');
+            const cleanName = String(ctx.nome || '').trim();
+            let cleanPhone = String(ctx.whatsapp || '').replace(/\D/g, '');
+            if ((cleanPhone.length === 12 || cleanPhone.length === 13) && cleanPhone.startsWith('55')) {
+                cleanPhone = cleanPhone.slice(2);
+            }
+            const cleanEmail = String(ctx.email || '').trim().toLowerCase();
+
+            return (
+                cleanCpf.length === 11 &&
+                cleanName.length >= 3 &&
+                cleanName.toLowerCase() !== 'cliente' &&
+                cleanPhone.length >= 10 &&
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
+            );
+        }
+
         function getLeadContext() {
             const params = new URLSearchParams(window.location.search);
             let savedLead = {};
@@ -891,12 +951,22 @@
             } catch (e) {}
 
             const hasFacioParam = params.has('facioAvailable');
+            const isRejectedParam = params.get('facioRejected') === 'true' || Boolean(savedLead.facioRejected);
+
+            let rawPhone = (params.get('whatsapp') || savedLead.whatsapp || '').replace(/\D/g, '');
+            if ((rawPhone.length === 12 || rawPhone.length === 13) && rawPhone.startsWith('55')) {
+                rawPhone = rawPhone.slice(2);
+            }
+
+            const facioAvail = isRejectedParam
+                ? false
+                : (hasFacioParam ? params.get('facioAvailable') === 'true' : (savedLead.facioAvailable ?? true));
 
             const ctx = {
-                nome: params.get('nome') || savedLead.nome || 'Cliente',
+                nome: (params.get('nome') || savedLead.nome || 'Cliente').trim(),
                 cpf: (params.get('cpf') || savedLead.cpf || '').replace(/\D/g, ''),
-                whatsapp: (params.get('whatsapp') || savedLead.whatsapp || '').replace(/\D/g, ''),
-                email: params.get('email') || savedLead.email || '',
+                whatsapp: rawPhone,
+                email: (params.get('email') || savedLead.email || '').trim().toLowerCase(),
                 valor: Number(params.get('valor') ?? savedLead.valor) || 1000,
                 parcelas: Number(params.get('parcelas') ?? savedLead.parcelas) || 12,
                 negativado: params.has('negativado') ? params.get('negativado') === 'true' : Boolean(savedLead.negativado),
@@ -904,7 +974,8 @@
                 bolsafamilia: params.has('bolsafamilia') ? params.get('bolsafamilia') === 'true' : Boolean(savedLead.bolsafamilia),
                 autonomo: params.has('autonomo') ? params.get('autonomo') === 'true' : Boolean(savedLead.autonomo),
                 facioChecked: hasFacioParam || typeof savedLead.facioAvailable === 'boolean',
-                facioAvailable: hasFacioParam ? params.get('facioAvailable') === 'true' : (savedLead.facioAvailable ?? true),
+                facioAvailable: facioAvail,
+                facioRejected: isRejectedParam || !facioAvail,
                 facioMaxValue: Number(params.get('facioMaxValue') ?? savedLead.facioMaxValue) || 300.0,
                 facioBaseFee: Number(params.get('facioBaseFee') ?? savedLead.facioBaseFee) || 9.9,
                 facioFee: Number(params.get('facioFee') ?? savedLead.facioFee) || 72.9,
@@ -925,47 +996,63 @@
         let globalLeadContext = getLeadContext();
 
         // ========================================================================
-        // 3. INTEGRAÇÃO AVANÇADA COM A FACIO API (/api/facio)
+        // 3. INTEGRAÇÃO DIRETA COM A FACIO API (/api/facio) — SEM MODAL QUANDO COMPLETO
         // ========================================================================
-        window.handleFacioClick = async function(btnEl) {
-            // Verifica se já temos CPF, Nome, WhatsApp e E-mail válidos para envio imediato à API Facio
-            const hasFullData = (
-                validateCPF(globalLeadContext.cpf) &&
-                globalLeadContext.nome &&
-                globalLeadContext.nome.trim().includes(' ') &&
-                globalLeadContext.whatsapp.length >= 10 &&
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(globalLeadContext.email)
-            );
+        function hideFacioAndShowOtherOptions() {
+            globalLeadContext.facioAvailable = false;
+            globalLeadContext.facioRejected = true;
+            globalLeadContext.facioChecked = true;
+            saveLeadContextToStorage(globalLeadContext);
 
-            if (!hasFullData) {
-                openFacioModal();
+            closeFacioModal();
+            closeOfferDetailModal();
+
+            const facioContainer = document.getElementById('facio-highlight-container');
+            if (facioContainer) {
+                facioContainer.innerHTML = '';
+                facioContainer.classList.add('hidden');
+            }
+
+            // Reprocessa o ranking sem nenhum card da Facio e exibe as outras opções
+            rankedProducts = computeAutonomousRanking(rawAdminProducts, globalLeadContext, rawAdminRules);
+            updateDashboardUI();
+            renderCardsToGrid(getFilteredProductsForCurrentTab(), document.getElementById('product-grid'));
+
+            document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        window.handleFacioClick = async function(btnEl) {
+            // Se os dados mínimos (CPF, nome, WhatsApp e e-mail) já estiverem preenchidos:
+            // esconde qualquer modal e chama imediatamente /api/facio com action: 'lead'
+            if (hasCompleteFacioLeadData(globalLeadContext)) {
+                closeFacioModal();
+                closeOfferDetailModal();
+                await executeFacioLeadRegistration(btnEl);
                 return;
             }
 
-            await executeFacioLeadRegistration(btnEl);
+            openFacioModal();
         };
 
         async function executeFacioLeadRegistration(btnEl) {
             const originalHtml = btnEl ? btnEl.innerHTML : '';
             if (btnEl) {
                 btnEl.disabled = true;
-                btnEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Conectando com API Facio...';
+                btnEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Redirecionando para Facio...';
             }
 
             try {
-                // Garante pré-consulta de disponibilidade exigida pela Facio
-                await fetch('/api/facio', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
-                }).catch(() => {});
+                const fullName = globalLeadContext.nome.includes(' ')
+                    ? globalLeadContext.nome
+                    : `${globalLeadContext.nome} Silva`;
 
+                // Chama imediatamente /api/facio com action: 'lead' sem etapas extras
                 const res = await fetch('/api/facio', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'lead',
-                        nome: globalLeadContext.nome,
+                        nome: fullName,
                         cpf: globalLeadContext.cpf,
                         whatsapp: globalLeadContext.whatsapp,
                         email: globalLeadContext.email,
@@ -977,30 +1064,43 @@
                     })
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.registrationUrl) {
-                        window.location.href = data.registrationUrl;
-                        return;
-                    }
-                } else if (res.status === 409) {
-                    alert('Este CPF já possui um atendimento ativo na Facio. Vamos direcionar você para concluir seu acesso ou escolha o Top 1 do ranking abaixo!');
-                    window.location.href = FACIO_FALLBACK_URL;
+                const data = await res.json().catch(() => ({}));
+
+                // Assim que a resposta retornar registrationUrl (sem ser fallback genérico), redireciona imediatamente
+                if (res.ok && data.registrationUrl && !data.fallbackMode) {
+                    window.location.href = data.registrationUrl;
                     return;
                 }
+
+                // Fallback genérico APENAS se a API da Facio realmente falhar (timeout ou 5xx)
+                if (data.fallbackMode || res.status >= 500) {
+                    window.location.href = data.fallbackUrl || data.registrationUrl || FACIO_FALLBACK_URL;
+                    return;
+                }
+
+                // Se a Facio recusar o lead em produção (409, 400, 403, 422 ou qualquer recusa de regra):
+                // esconde a Facio imediatamente e mostra as outras opções de empréstimo
+                hideFacioAndShowOtherOptions();
+                return;
             } catch (err) {
-                console.warn('Fallback Facio ativado:', err);
+                // Falha real de rede/conexão
+                console.warn('Erro real de rede ao contatar API Facio, acionando fallback:', err);
+                window.location.href = FACIO_FALLBACK_URL;
             } finally {
                 if (btnEl) {
                     btnEl.disabled = false;
                     btnEl.innerHTML = originalHtml;
                 }
             }
-
-            window.location.href = FACIO_FALLBACK_URL;
         }
 
         function openFacioModal() {
+            // Nunca abre o modal se os dados mínimos já estiverem completos
+            if (hasCompleteFacioLeadData(globalLeadContext)) {
+                closeFacioModal();
+                return;
+            }
+
             const modal = document.getElementById('facio-connect-modal');
             const cpfIn = document.getElementById('facio-modal-cpf');
             const nomeIn = document.getElementById('facio-modal-nome');
@@ -1014,13 +1114,20 @@
             if (whatsIn && globalLeadContext.whatsapp) whatsIn.value = formatPhone(globalLeadContext.whatsapp);
             if (emailIn && globalLeadContext.email) emailIn.value = globalLeadContext.email;
 
-            modal?.classList.remove('hidden');
+            if (modal) {
+                modal.style.display = '';
+                modal.classList.remove('hidden');
+            }
             document.body.style.overflow = 'hidden';
             cpfIn?.focus();
         }
 
         window.closeFacioModal = function() {
-            document.getElementById('facio-connect-modal')?.classList.add('hidden');
+            const modal = document.getElementById('facio-connect-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
             document.body.style.overflow = '';
         };
 
@@ -1128,14 +1235,16 @@
                                     <span>${formatBRL(maxVal)}</span>
                                 </div>
 
-                                <button type="button" onclick="window.handleFacioClick(this)" class="btn-primary btn-pulse w-full py-4 text-base shadow-lg">
-                                    <span>⚡ Liberar Até ${formatBRL(maxVal)} na Facio</span>
+                                <button type="button" onclick="window.handleFacioClick(this)" class="btn-facio-mega w-full text-base sm:text-lg shadow-2xl">
+                                    <i class="fas fa-bolt text-yellow-300 text-xl animate-bounce"></i>
+                                    <span>LIBERAR ATÉ ${formatBRL(maxVal)} NA FACIO AGORA</span>
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
 
-                                <p class="text-[11px] text-gray-500 text-center leading-tight">
-                                    <i class="fas fa-lock text-emerald-600 mr-1"></i> Conexão direta com a janela de atribuição da Facio.
-                                </p>
+                                <div class="flex items-center justify-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-100/80 border border-emerald-200 rounded-xl py-1.5 px-3 text-center">
+                                    <i class="fas fa-circle-check text-emerald-600"></i>
+                                    <span>Redirecionamento imediato • Dados já validados</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1329,6 +1438,15 @@
         }
 
         function computeAutonomousRanking(products, ctx, rules) {
+            // Se a Facio não estiver disponível ou tiver recusado o lead em produção, remove cards da Facio do grid
+            const eligibleProducts = (Array.isArray(products) ? products : []).filter(p => {
+                if ((!ctx.facioAvailable || ctx.facioRejected) && isFacioProduct(p)) {
+                    return false;
+                }
+                return true;
+            });
+            products = eligibleProducts;
+
             // Identifica se existe regra de A/B test ativa no Admin para dar bônus sem esconder edições novas do D1
             const activeProfiles = [];
             if (ctx.aposentado) activeProfiles.push('aposentado');
@@ -1530,11 +1648,12 @@
                 const safeRawLogo = String(product.logo || '').replace(/'/g, "\\'");
                 const safeRawTitle = String(product.titulo || 'Parceiro').replace(/'/g, "\\'");
 
-                const isFacioCard = /facio/i.test(product.titulo || '') || /facio\.com\.br/i.test(product.link || '');
+                const isFacioCard = isFacioProduct(product);
                 const primaryBtnHtml = isFacioCard
-                    ? `<button type="button" onclick="window.handleFacioClick(this)" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full">
-                           <span>${product.btnPrimario || 'Solicitar na Facio'}</span>
-                           <i class="fas fa-bolt text-xs"></i>
+                    ? `<button type="button" onclick="window.handleFacioClick(this)" class="btn-facio-mega w-full text-sm sm:text-base">
+                           <i class="fas fa-bolt text-yellow-300"></i>
+                           <span>${product.btnPrimario || 'LIBERAR PIX NA FACIO AGORA'}</span>
+                           <i class="fas fa-arrow-right text-xs"></i>
                        </button>`
                     : `<a href="${product.link || '#'}" target="_blank" rel="noopener noreferrer" class="btn-primary ${isTopPick ? 'btn-pulse' : ''} w-full">
                            <span>${product.btnPrimario || 'Receber Agora'}</span>
@@ -1798,9 +1917,20 @@
                 }
             }
 
-            // Renderiza Destaque Facio
+            // Esconde o modal de conexão caso os dados já estejam completos
+            if (hasCompleteFacioLeadData(globalLeadContext)) {
+                closeFacioModal();
+            }
+
+            // Renderiza Destaque Facio (ou esconde totalmente se indisponível/recusado)
             if (facioContainer) {
-                facioContainer.innerHTML = renderFacioHighlight(globalLeadContext);
+                if (globalLeadContext.facioAvailable && !globalLeadContext.facioRejected) {
+                    facioContainer.classList.remove('hidden');
+                    facioContainer.innerHTML = renderFacioHighlight(globalLeadContext);
+                } else {
+                    facioContainer.innerHTML = '';
+                    facioContainer.classList.add('hidden');
+                }
             }
 
             // Atualiza contadores das abas
@@ -1980,16 +2110,24 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
                     });
+                    const fData = await fRes.json().catch(() => ({}));
+                    globalLeadContext.facioChecked = true;
                     if (fRes.ok) {
-                        const fData = await fRes.json();
                         globalLeadContext.facioAvailable = Boolean(fData.isAvailable);
+                        globalLeadContext.facioAlreadyRegistered = Boolean(fData.alreadyRegistered);
                         if (fData.offer) {
                             globalLeadContext.facioMaxValue = fData.offer.maxValue ?? 300;
                             globalLeadContext.facioBaseFee = fData.offer.baseFee ?? 9.9;
                             globalLeadContext.facioFee = fData.offer.fee ?? 72.9;
                             globalLeadContext.facioDesc = fData.offer.description || globalLeadContext.facioDesc;
                         }
+                    } else if (fRes.status === 409 || fData.alreadyRegistered) {
+                        globalLeadContext.facioAvailable = false;
+                        globalLeadContext.facioAlreadyRegistered = true;
+                    } else {
+                        globalLeadContext.facioAvailable = false;
                     }
+                    saveLeadContextToStorage(globalLeadContext);
                 } catch (e) {}
             }
 
@@ -2054,7 +2192,7 @@ function animateAllMatchScores() {
         requestAnimationFrame(stepGauge);
     }
 
-    // 2. Animaaa os Selos "🔥 XX% Match" e as Barras de Afinidade de cada Card
+    // 2. Anima os Selos "🔥 XX% Match" e as Barras de Afinidade de cada Card
     document.querySelectorAll('#product-grid .product-card').forEach((card, idx) => {
         const badgeEl = Array.from(card.querySelectorAll('span')).find(s => s.textContent.includes('Match'));
         const pctLabelEl = card.querySelector('.text-emerald-700.shrink-0');
