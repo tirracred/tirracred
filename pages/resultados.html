@@ -2054,7 +2054,7 @@ function animateAllMatchScores() {
         requestAnimationFrame(stepGauge);
     }
 
-    // 2. Anima os Selos "🔥 XX% Match" e as Barras de Afinidade de cada Card
+    // 2. Animaaa os Selos "🔥 XX% Match" e as Barras de Afinidade de cada Card
     document.querySelectorAll('#product-grid .product-card').forEach((card, idx) => {
         const badgeEl = Array.from(card.querySelectorAll('span')).find(s => s.textContent.includes('Match'));
         const pctLabelEl = card.querySelector('.text-emerald-700.shrink-0');
