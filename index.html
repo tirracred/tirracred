@@ -107,7 +107,7 @@
            sem nunca espichar o banner no celular nem no computador!
            ===================================================================== */
         .simulator-fixed-card {
-            height: 348px;
+            height: 372px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -349,19 +349,27 @@
             border-radius: 9999px;
         }
 
-        /* Botão Mega Destacado da Facio */
+        /* Botão Mega Destacado e Agressivo da Facio no Topo do Card */
         @keyframes facioPulseGlow {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6), 0 8px 20px -2px rgba(5, 150, 105, 0.45); }
-            50% { transform: scale(1.015); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0), 0 12px 24px -2px rgba(5, 150, 105, 0.6); }
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75), 0 10px 24px -3px rgba(5, 150, 105, 0.6);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0), 0 14px 28px -3px rgba(5, 150, 105, 0.8);
+            }
         }
         .btn-facio-highlight {
-            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
-            border: 2px solid #a7f3d0;
-            animation: facioPulseGlow 2s infinite;
+            background: linear-gradient(135deg, #047857 0%, #10b981 50%, #059669 100%);
+            border: 2px solid #fde047;
+            animation: facioPulseGlow 1.7s infinite;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
         .btn-facio-highlight:hover {
-            background: linear-gradient(135deg, #047857 0%, #059669 100%);
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+            border-color: #fef08a;
+            transform: translateY(-1px) scale(1.01);
         }
     </style>
 
@@ -519,211 +527,159 @@
                     <!-- Coluna do Simulador:
                          Tamanho 100% Fixo (simulator-fixed-card) tanto no Celular quanto no PC! -->
                     <div class="lg:col-span-6 w-full flex items-center justify-center">
-                        <div class="simulator-fixed-card bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
+                        <div class="simulator-fixed-card bg-white rounded-2xl p-3.5 sm:p-4 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
                             
-                            <!-- Barra de Progresso Animada no Topo do Card (Inicia em 0% antes de clicar!) -->
+                            <!-- Barra de Progresso Animada no Topo do Card -->
                             <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100 overflow-hidden">
                                 <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 0%"></div>
                             </div>
 
                             <!-- Cabeçalho do Card -->
-                            <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0 mt-0.5">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 shrink-0 mt-0.5">
                                 <div class="flex items-center gap-2">
-                                    <h2 class="text-base sm:text-lg font-extrabold text-gray-900">Simule seu empréstimo</h2>
-                                    <span id="sim-summary-chip" class="hidden text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                                        R$ 300 • 1x
+                                    <h2 class="text-sm sm:text-base font-extrabold text-gray-900">Consulta Rápida de Crédito</h2>
+                                    <span id="sim-summary-chip" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                        ⚡ Pix Rápido
                                     </span>
                                 </div>
-                                <span id="step-badge" class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 shrink-0">
-                                    Passo 1 de 4
-                                </span>
+                                <button type="button" id="toggle-options-btn" onclick="goToStage(currentSubStage === 1 ? 2 : 1)" class="text-[11px] font-extrabold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full transition shrink-0">
+                                    <i class="fas fa-sliders mr-1"></i><span id="step-badge">Valor: R$ 300</span>
+                                </button>
                             </div>
-                    
-                            <form id="leadFormHome" class="flex-1 flex flex-col justify-between pt-2" novalidate>
+
+                            <!-- =============================================================== -->
+                            <!-- BOTÃO MEGA DESTACADO DA FACIO NO TOPO DO CARD (ASSIM QUE ELEGÍVEL) -->
+                            <!-- =============================================================== -->
+                            <div id="facio-offer-box" class="hidden pt-1.5 shrink-0 fade-in">
+                                <button id="btn-facio-direct" type="button" class="btn-facio-highlight w-full rounded-xl px-3 py-2 text-xs sm:text-sm font-black text-white transition flex flex-col items-center justify-center leading-tight">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <i class="fas fa-bolt text-yellow-300 animate-bounce"></i>
+                                        <span>LIBERAR PIX NA FACIO AGORA</span>
+                                        <i class="fas fa-arrow-right text-xs"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-emerald-100 mt-0.5">
+                                        Pré-aprovado até <span id="facio-offer-max" class="underline">R$ 300,00</span> • Taxa a partir de <span id="facio-offer-basefee">R$ 9,90</span>
+                                    </span>
+                                </button>
+                                <p id="facio-offer-desc" class="hidden"></p>
+                                <span id="facio-offer-type" class="hidden"></span>
+                            </div>
+
+                            <!-- Alerta de Erro ou Indisponibilidade da API -->
+                            <div id="facio-error-box" class="hidden mt-1.5 rounded-lg border border-red-300 bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 flex items-center justify-between shrink-0 fade-in">
+                                <span id="facio-error-text">Serviço temporariamente indisponível. Tente novamente em alguns segundos.</span>
+                                <button type="button" onclick="hideFormError()" class="ml-2 text-red-500 hover:text-red-800">&times;</button>
+                            </div>
+
+                            <form id="leadFormHome" class="flex-1 flex flex-col justify-between pt-1.5 min-h-0" novalidate>
                                 
                                 <!-- ===================================================== -->
-                                <!-- ETAPA 1: ESCOLHA DO VALOR (No mesmo quadradinho fixo) -->
+                                <!-- TELA PRINCIPAL DIRETA: CPF + NOME + WHATSAPP + EMAIL  -->
+                                <!-- (Sem forçar etapas de valor/prazo antes da Facio!)    -->
                                 <!-- ===================================================== -->
-                                <div id="stage-1-valor" class="sim-stage-active">
-                                    <div class="space-y-2.5 my-auto">
-                                        <div class="flex items-center justify-between">
-                                            <label for="valorHome" class="block text-xs sm:text-sm font-bold text-gray-700">1. Qual valor você precisa?</label>
-                                            <span id="valor-display-home" class="text-2xl font-black text-green-600">R$ 300</span>
+                                <div id="stage-1-essencial" class="sim-stage-active">
+                                    <div class="space-y-1.5 my-auto">
+                                        <!-- 1. CPF com Consulta Automática Instantânea -->
+                                        <div>
+                                            <div class="flex items-center justify-between mb-0.5">
+                                                <label for="cpf" class="block text-[11px] font-extrabold uppercase text-gray-700">
+                                                    1. Seu CPF <span class="text-emerald-600 font-bold">(Verifica Facio na hora)</span>
+                                                </label>
+                                                <span id="cpf-message" class="text-[10px] font-bold text-gray-500 truncate max-w-[210px]">
+                                                    Sem afetar seu score
+                                                </span>
+                                            </div>
+                                            <div class="relative">
+                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3 py-1.5 text-sm font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
+                                                <span id="cpf-spinner" class="hidden absolute right-3 top-2 text-green-600 text-xs">
+                                                    <i class="fas fa-circle-notch fa-spin"></i>
+                                                </span>
+                                            </div>
+                                            <div id="facio-unavailable-box" class="hidden text-[10px] font-bold text-amber-700 mt-0.5">
+                                                ✓ CPF validado! Preencha abaixo para liberar ofertas parceiras.
+                                            </div>
                                         </div>
 
-                                        <div class="flex items-center justify-between text-[11px] text-gray-400">
-                                            <span>R$ 100</span>
-                                            <span>R$ 50.000</span>
+                                        <!-- 2. Nome Completo -->
+                                        <div>
+                                            <label for="nomeInput" class="block text-[11px] font-extrabold uppercase text-gray-700 mb-0.5">2. Nome Completo</label>
+                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                        </div>
+
+                                        <!-- 3. WhatsApp (11 dígitos) e E-mail -->
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label for="whatsapp" class="block text-[11px] font-extrabold uppercase text-gray-700 mb-0.5">3. WhatsApp (DDD+9)</label>
+                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
+                                            </div>
+                                            <div>
+                                                <label for="emailInput" class="block text-[11px] font-extrabold uppercase text-gray-700 mb-0.5">4. Seu E-mail</label>
+                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rodapé de Ação Direta -->
+                                    <div class="pt-1.5 shrink-0 flex items-center gap-2">
+                                        <button id="submit-btn-home" type="submit" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2 text-xs sm:text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-1.5">
+                                            <span>Ver Ofertas Liberadas</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- ===================================================== -->
+                                <!-- TELA SECUNDÁRIA OPCIONAL: AJUSTE DE VALOR E PERFIL    -->
+                                <!-- ===================================================== -->
+                                <div id="stage-2-opcoes" class="sim-stage-hidden">
+                                    <div class="space-y-2 my-auto">
+                                        <div class="flex items-center justify-between">
+                                            <label for="valorHome" class="block text-xs font-bold text-gray-700">Valor desejado:</label>
+                                            <span id="valor-display-home" class="text-lg font-black text-green-600">R$ 300</span>
                                         </div>
                                         <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
 
-                                        <!-- Botões de Seleção Rápida de Valor (Com alternância automática de seleção!) -->
-                                        <div class="flex flex-wrap gap-1.5 pt-1">
-                                            <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none">
-                                                ⚡ Até R$ 300 (Facio)
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <button type="button" data-quick-val="300" class="quick-val-btn text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400">
+                                                ⚡ R$ 300 (Facio)
                                             </button>
-                                            <button type="button" data-quick-val="1000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none">
+                                            <button type="button" data-quick-val="1000" class="quick-val-btn text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
                                                 R$ 1.000
                                             </button>
-                                            <button type="button" data-quick-val="5000" class="quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none">
+                                            <button type="button" data-quick-val="5000" class="quick-val-btn text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
                                                 R$ 5.000
                                             </button>
                                         </div>
 
-                                        <!-- Aviso da faixa Facio -->
-                                        <div id="facio-step1-hint" class="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] sm:text-xs text-emerald-900 transition-colors">
-                                            <span class="text-sm shrink-0">🚀</span>
-                                            <span class="leading-tight"><strong>Faixa de Liberação Rápida:</strong> Valores até <strong>R$ 300</strong> contam com antecipação Facio (a partir de R$ 9,90).</span>
+                                        <div class="grid grid-cols-4 gap-1">
+                                            <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-1 px-1 rounded-lg text-[11px] font-semibold shadow-sm">1x (Pix)</button>
+                                            <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1 px-1 rounded-lg text-[11px] font-medium">12x</button>
+                                            <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1 px-1 rounded-lg text-[11px] font-medium">24x</button>
+                                            <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1 px-1 rounded-lg text-[11px] font-medium">36x</button>
                                         </div>
-                                    </div>
+                                        <input type="hidden" name="parcelas" id="parcelasHome" value="1">
 
-                                    <div class="pt-2 shrink-0">
-                                        <button id="btn-to-stage-2" type="button" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 sm:py-3 text-sm font-extrabold text-white shadow-md transition active:scale-[0.99] flex items-center justify-center gap-2">
-                                            <span>Escolher Prazo e Continuar</span>
-                                            <i class="fas fa-arrow-right text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- ===================================================== -->
-                                <!-- ETAPA 2: PRAZO E PERFIL (No mesmo quadradinho fixo)   -->
-                                <!-- ===================================================== -->
-                                <div id="stage-2-perfil" class="sim-stage-hidden">
-                                    <div class="space-y-2.5 my-auto">
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-700 mb-1.5">2. Escolha o prazo e seu perfil:</label>
-                                            <div class="grid grid-cols-4 gap-1.5">
-                                                <button type="button" data-parcelas="1" class="parcela-btn-home bg-green-600 text-white py-1.5 px-1 rounded-lg text-xs font-semibold shadow-sm truncate">1x (Pix)</button>
-                                                <button type="button" data-parcelas="12" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">12x</button>
-                                                <button type="button" data-parcelas="24" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">24x</button>
-                                                <button type="button" data-parcelas="36" class="parcela-btn-home bg-gray-100 text-gray-700 border border-gray-200 py-1.5 px-1 rounded-lg text-xs font-medium hover:border-green-500 transition">36x</button>
-                                            </div>
-                                            <input type="hidden" name="parcelas" id="parcelasHome" value="1">
-                                        </div>
-
-                                        <div class="space-y-1">
-                                            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                                                Marque se alguma opção se aplica a você (opcional):
-                                            </span>
-                                            <div class="grid grid-cols-1 gap-1">
-                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
-                                                    <input type="checkbox" name="negativado" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Estou Negativado / Restrição no CPF</span>
-                                                </label>
-                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
-                                                    <input type="checkbox" name="aposentado_inss" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Sou Aposentado / Pensionista ou CLT</span>
-                                                </label>
-                                                <label class="flex items-center cursor-pointer px-2.5 py-1.5 rounded-lg bg-gray-50/70 hover:bg-emerald-50/50 border border-gray-200/80 transition">
-                                                    <input type="checkbox" name="bolsafamilia" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 shrink-0">
-                                                    <span class="ml-2 text-xs text-gray-700 font-semibold">Recebo Bolsa Família</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center gap-2 pt-2 shrink-0">
-                                        <button type="button" onclick="goToStage(1)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
-                                            &larr; Valor
-                                        </button>
-                                        <button id="btn-to-stage-3" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
-                                            <span>Verificar CPF</span>
-                                            <i class="fas fa-arrow-right text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- ===================================================== -->
-                                <!-- ETAPA 3: CONSULTA DO CPF (NÃO PULA SOZINHO!)          -->
-                                <!-- ===================================================== -->
-                                <div id="stage-3-cpf" class="sim-stage-hidden">
-                                    <div class="space-y-2.5 my-auto">
-                                        <div>
-                                            <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">
-                                                3. Digite seu CPF para consultar ofertas pré-aprovadas
+                                        <div class="grid grid-cols-3 gap-1 pt-0.5">
+                                            <label class="flex items-center cursor-pointer px-2 py-1 rounded-lg bg-gray-50 border border-gray-200 text-[10px] font-semibold text-gray-700">
+                                                <input type="checkbox" name="negativado" class="h-3.5 w-3.5 rounded border-gray-300 text-green-600 mr-1.5 shrink-0">
+                                                <span>Negativado</span>
                                             </label>
-                                            <div class="relative">
-                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3.5 py-2.5 text-base font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
-                                                <span id="cpf-spinner" class="hidden absolute right-3.5 top-3 text-green-600">
-                                                    <i class="fas fa-circle-notch fa-spin"></i>
-                                                </span>
-                                            </div>
-                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500">
-                                                Consulta 100% segura e gratuita, sem afetar seu score.
-                                            </p>
+                                            <label class="flex items-center cursor-pointer px-2 py-1 rounded-lg bg-gray-50 border border-gray-200 text-[10px] font-semibold text-gray-700">
+                                                <input type="checkbox" name="aposentado_inss" class="h-3.5 w-3.5 rounded border-gray-300 text-green-600 mr-1.5 shrink-0">
+                                                <span>CLT / INSS</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer px-2 py-1 rounded-lg bg-gray-50 border border-gray-200 text-[10px] font-semibold text-gray-700">
+                                                <input type="checkbox" name="bolsafamilia" class="h-3.5 w-3.5 rounded border-gray-300 text-green-600 mr-1.5 shrink-0">
+                                                <span>Bolsa Fam.</span>
+                                            </label>
                                         </div>
-
-                                        <!-- Box do Resultado da Facio -->
-                                        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-3 shadow-sm fade-in">
-                                            <div class="flex items-center justify-between mb-1">
-                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
-                                                    <i class="fas fa-check-circle"></i> CPF Pré-Aprovado na Facio
-                                                </span>
-                                                <img src="public/facio.png" alt="Facio" class="h-4 object-contain" onerror="this.style.display='none'">
-                                            </div>
-                                            <p class="text-xs font-extrabold text-emerald-950">
-                                                Limite de até <span id="facio-offer-max" class="underline">R$ 300,00</span> via Pix • Taxa a partir de <span id="facio-offer-basefee">R$ 9,90</span>
-                                            </p>
-                                            <p id="facio-offer-desc" class="hidden"></p>
-                                            <span id="facio-offer-type" class="hidden"></span>
-                                        </div>
-
-                                        <div id="facio-unavailable-box" class="hidden rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 fade-in">
-                                            <div class="font-extrabold mb-0.5"><i class="fas fa-check-circle text-amber-600 mr-1"></i> CPF Verificado com Sucesso!</div>
-                                            <span class="text-[11px]">Separamos instituições parceiras com alta aprovação para o seu perfil. Clique em continuar abaixo!</span>
-                                        </div>
+                                        <div id="facio-step1-hint" class="hidden"></div>
                                     </div>
 
-                                    <div class="flex items-center gap-2 pt-2 shrink-0">
-                                        <button type="button" onclick="goToStage(2)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
-                                            &larr; Prazo
+                                    <div class="pt-1.5 shrink-0">
+                                        <button type="button" onclick="goToStage(1)" class="w-full rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2 text-xs sm:text-sm font-extrabold text-white shadow-md transition">
+                                            Confirmar e Voltar para Dados &rarr;
                                         </button>
-                                        <button id="btn-to-stage-4" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2">
-                                            <span>Continuar para Seus Dados</span>
-                                            <i class="fas fa-arrow-right text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- ===================================================== -->
-                                <!-- ETAPA 4: DADOS DE CONTATO E LIBERAÇÃO                 -->
-                                <!-- ===================================================== -->
-                                <div id="stage-4-contato" class="sim-stage-hidden">
-                                    <div class="space-y-2 my-auto">
-                                        <div>
-                                            <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">4. Seu Nome Completo</label>
-                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
-                                        </div>
-
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">WhatsApp</label>
-                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
-                                            </div>
-                                            <div>
-                                                <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">Seu E-mail</label>
-                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col gap-1.5 pt-1.5 shrink-0">
-                                        <!-- Botão Principal Destacado da Facio (quando pré-aprovado) -->
-                                        <button id="btn-facio-direct" type="button" class="hidden btn-facio-highlight w-full rounded-xl px-4 py-2.5 text-xs sm:text-sm font-black text-white transition items-center justify-center gap-2 tracking-wide">
-                                            <i class="fas fa-bolt text-yellow-300 animate-bounce"></i>
-                                            <span>LIBERAR PIX NA FACIO AGORA</span>
-                                            <i class="fas fa-arrow-right text-xs"></i>
-                                        </button>
-
-                                        <div class="flex items-center gap-2">
-                                            <button type="button" onclick="goToStage(3)" class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
-                                                &larr; CPF
-                                            </button>
-
-                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-3 py-2 text-xs sm:text-sm font-extrabold text-white shadow-md transition">
-                                                Ver Todas as Ofertas &rarr;
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -1129,7 +1085,7 @@
             mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
             // ===================================================
-            // 3. SIMULADOR DE TAMANHO FIXO (BARRA 0% -> 33% -> 66% -> 100%)
+            // 3. SIMULADOR EXPRESSO DIRETO (ESSENCIAL PRIMEIRO + FACIO NO TOPO)
             // ===================================================
             const leadForm = document.getElementById('leadFormHome');
             const valorSlider = document.getElementById('valorHome');
@@ -1141,13 +1097,22 @@
             const parcelaBtns = document.querySelectorAll('.parcela-btn-home');
             const parcelasInput = document.getElementById('parcelasHome');
 
-            const stage1 = document.getElementById('stage-1-valor');
-            const stage2 = document.getElementById('stage-2-perfil');
-            const stage3 = document.getElementById('stage-3-cpf');
-            const stage4 = document.getElementById('stage-4-contato');
+            const stage1 = document.getElementById('stage-1-essencial');
+            const stage2 = document.getElementById('stage-2-opcoes');
             const stepBadge = document.getElementById('step-badge');
+            const facioErrorBox = document.getElementById('facio-error-box');
+            const facioErrorText = document.getElementById('facio-error-text');
 
-            let currentSubStage = 1;
+            window.currentSubStage = 1;
+
+            window.showFormError = function(msg) {
+                if (facioErrorText) facioErrorText.textContent = msg;
+                facioErrorBox?.classList.remove('hidden');
+            };
+
+            window.hideFormError = function() {
+                facioErrorBox?.classList.add('hidden');
+            };
 
             const formatCurrencyNoCents = (value) => new Intl.NumberFormat('pt-BR', { 
                 style: 'currency', 
@@ -1157,15 +1122,16 @@
             }).format(value);
 
             function updateSummaryChip() {
-                if (!summaryChip) return;
                 const val = formatCurrencyNoCents(valorSlider?.value || 300);
                 const parc = parcelasInput?.value || 1;
-                summaryChip.textContent = `${val} • ${parc}x`;
+                if (stepBadge) {
+                    stepBadge.textContent = window.currentSubStage === 2 ? 'Voltar aos Dados' : `${val} • ${parc}x`;
+                }
             }
 
             window.goToStage = function(stageNum) {
-                currentSubStage = stageNum;
-                const stages = [stage1, stage2, stage3, stage4];
+                window.currentSubStage = stageNum;
+                const stages = [stage1, stage2];
 
                 stages.forEach((el, idx) => {
                     if (!el) return;
@@ -1179,25 +1145,6 @@
                 });
 
                 updateSummaryChip();
-                if (summaryChip) {
-                    summaryChip.classList.toggle('hidden', stageNum === 1);
-                }
-
-                // Inicia em 0% no Passo 1; avança ao clicar em continuar e volta se o usuário clicar em voltar!
-                if (progressBar) {
-                    const progressByStage = { 1: 0, 2: 33, 3: 66, 4: 100 };
-                    progressBar.style.width = `${progressByStage[stageNum] ?? 0}%`;
-                }
-
-                if (stepBadge) {
-                    stepBadge.textContent = `Passo ${stageNum} de 4`;
-                }
-
-                if (stageNum === 3) {
-                    setTimeout(() => document.getElementById('cpf')?.focus(), 60);
-                } else if (stageNum === 4) {
-                    setTimeout(() => document.getElementById('nomeInput')?.focus(), 60);
-                }
             };
 
             function updateSliderUI(val) {
@@ -1206,24 +1153,15 @@
                 if (valorDisplay) valorDisplay.textContent = formatted;
                 updateSummaryChip();
 
-                // Atualiza o botão rápido ativo e desmarca os demais
                 quickValBtns.forEach(btn => {
                     const btnVal = Number(btn.getAttribute('data-quick-val'));
                     const isSelected = btnVal === numVal;
                     if (isSelected) {
-                        btn.className = 'quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none';
+                        btn.className = 'quick-val-btn text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none';
                     } else {
-                        btn.className = 'quick-val-btn text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none';
+                        btn.className = 'quick-val-btn text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition focus:outline-none';
                     }
                 });
-
-                if (facioStep1Hint) {
-                    if (numVal <= 300) {
-                        facioStep1Hint.className = 'flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 px-3 py-2 text-[11px] sm:text-xs text-emerald-950 transition-colors';
-                    } else {
-                        facioStep1Hint.className = 'flex items-center gap-2 rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-[11px] sm:text-xs text-gray-600 transition-colors';
-                    }
-                }
             }
 
             if (valorSlider) {
@@ -1258,27 +1196,13 @@
                 });
             }
 
-            document.getElementById('btn-to-stage-2')?.addEventListener('click', () => goToStage(2));
-            document.getElementById('btn-to-stage-3')?.addEventListener('click', () => goToStage(3));
-            document.getElementById('btn-to-stage-4')?.addEventListener('click', () => {
-                const rawCpf = document.getElementById('cpf')?.value || '';
-                if (!validateCPF(rawCpf)) {
-                    const cpfMsg = document.getElementById('cpf-message');
-                    if (cpfMsg) {
-                        cpfMsg.textContent = '✕ Digite um CPF válido de 11 dígitos antes de continuar.';
-                        cpfMsg.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
-                    }
-                    document.getElementById('cpf')?.focus();
-                    return;
-                }
-                goToStage(4);
-            });
-
             // ===================================================
-            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO (SEM PULO AUTOMÁTICO)
+            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO (BOTÃO NO TOPO + VALIDAÇÃO RÍGIDA)
             // ===================================================
             const FACIO_FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
             const cpfInput = document.getElementById('cpf');
+            const nomeInput = document.getElementById('nomeInput');
+            const emailInput = document.getElementById('emailInput');
             const cpfSpinner = document.getElementById('cpf-spinner');
             const whatsappInput = document.getElementById('whatsapp');
             const cpfMessage = document.getElementById('cpf-message');
@@ -1295,6 +1219,7 @@
                 isAvailable: false,
                 alreadyRegistered: false,
                 fallbackMode: false,
+                apiUnavailable: false,
                 checking: false,
                 requestId: null,
                 offer: {
@@ -1305,6 +1230,19 @@
                     description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
                 }
             };
+
+            function updateDynamicProgress() {
+                if (!progressBar) return;
+                let filled = 0;
+                if (validateCPF(cpfInput?.value || '')) filled += 25;
+                const cleanName = String(nomeInput?.value || '').trim();
+                if (cleanName.length >= 5 && cleanName.includes(' ')) filled += 25;
+                const cleanPhone = String(whatsappInput?.value || '').replace(/\D/g, '');
+                if (/^[1-9]{2}9\d{8}$/.test(cleanPhone)) filled += 25;
+                const cleanMail = String(emailInput?.value || '').trim();
+                if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanMail)) filled += 25;
+                progressBar.style.width = `${filled}%`;
+            }
 
             function renderFacioOfferDetails(offer) {
                 if (!offer) return;
@@ -1326,7 +1264,7 @@
                 const cleanCpf = (rawCpf || '').replace(/\D/g, '');
                 if (!validateCPF(cleanCpf)) return false;
 
-                if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking) {
+                if (facioState.lastCheckedCpf === cleanCpf && !facioState.checking && !facioState.apiUnavailable) {
                     return facioState.isAvailable;
                 }
 
@@ -1334,11 +1272,13 @@
                 facioState.lastCheckedCpf = cleanCpf;
                 facioState.alreadyRegistered = false;
                 facioState.fallbackMode = false;
+                facioState.apiUnavailable = false;
+                hideFormError();
 
                 cpfSpinner?.classList.remove('hidden');
                 if (cpfMessage) {
-                    cpfMessage.textContent = 'Consultando elegibilidade do CPF na Facio...';
-                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-semibold animate-pulse';
+                    cpfMessage.textContent = 'Consultando Facio...';
+                    cpfMessage.className = 'text-[10px] font-bold text-blue-600 animate-pulse truncate max-w-[210px]';
                 }
 
                 try {
@@ -1347,6 +1287,20 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
                     });
+
+                    // Tratamento explícito para 404 ou falha de servidor (5xx)
+                    if (res.status === 404 || res.status >= 500) {
+                        facioState.isAvailable = false;
+                        facioState.apiUnavailable = true;
+                        showFormError('Serviço temporariamente indisponível. Tente novamente em alguns segundos.');
+                        if (cpfMessage) {
+                            cpfMessage.textContent = '⚠ Serviço indisponível no momento';
+                            cpfMessage.className = 'text-[10px] font-bold text-red-600 truncate max-w-[210px]';
+                        }
+                        facioOfferBox?.classList.add('hidden');
+                        facioUnavailableBox?.classList.add('hidden');
+                        return false;
+                    }
 
                     const data = await res.json().catch(() => ({}));
 
@@ -1365,34 +1319,39 @@
                         facioState.isAvailable = false;
                     }
                 } catch (e) {
-                    // Falha de rede real do navegador: permite fallback de contingência
-                    facioState.isAvailable = true;
-                    facioState.fallbackMode = true;
+                    facioState.isAvailable = false;
+                    facioState.apiUnavailable = true;
+                    showFormError('Serviço temporariamente indisponível. Tente novamente em alguns segundos.');
+                    if (cpfMessage) {
+                        cpfMessage.textContent = '⚠ Erro de conexão com o servidor';
+                        cpfMessage.className = 'text-[10px] font-bold text-red-600 truncate max-w-[210px]';
+                    }
+                    facioOfferBox?.classList.add('hidden');
+                    facioUnavailableBox?.classList.add('hidden');
+                    return false;
                 } finally {
                     facioState.checking = false;
                     cpfSpinner?.classList.add('hidden');
                 }
 
+                // Se elegível, exibe imediatamente o botão "LIBERAR PIX NA FACIO AGORA" no topo do card!
                 if (facioState.isAvailable) {
                     renderFacioOfferDetails(facioState.offer);
                     facioOfferBox?.classList.remove('hidden');
                     facioUnavailableBox?.classList.add('hidden');
                     btnFacioDirect?.classList.remove('hidden');
-                    btnFacioDirect?.classList.add('flex');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF verificado! Clique em Continuar abaixo:';
-                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold';
+                        cpfMessage.textContent = '✓ Pré-Aprovado na Facio!';
+                        cpfMessage.className = 'text-[10px] font-extrabold text-emerald-700 truncate max-w-[210px]';
                     }
                 } else {
                     facioOfferBox?.classList.add('hidden');
-                    btnFacioDirect?.classList.add('hidden');
-                    btnFacioDirect?.classList.remove('flex');
                     facioUnavailableBox?.classList.remove('hidden');
                     if (cpfMessage) {
                         cpfMessage.textContent = facioState.alreadyRegistered
-                            ? '✓ CPF já possui cadastro na Facio. Clique em Continuar para ver outras ofertas:'
-                            : '✓ CPF válido. Clique em Continuar abaixo:';
-                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-amber-700 font-semibold';
+                            ? '✓ CPF já cadastrado na Facio'
+                            : '✓ CPF verificado com sucesso';
+                        cpfMessage.className = 'text-[10px] font-bold text-amber-700 truncate max-w-[210px]';
                     }
                 }
 
@@ -1403,15 +1362,16 @@
                 cpfInput.addEventListener('input', (e) => {
                     e.target.value = formatCPF(e.target.value);
                     const clean = e.target.value.replace(/\D/g, '');
+                    hideFormError();
+                    updateDynamicProgress();
 
                     if (clean.length < 11) {
                         facioOfferBox?.classList.add('hidden');
                         facioUnavailableBox?.classList.add('hidden');
-                        btnFacioDirect?.classList.add('hidden');
                         facioState.lastCheckedCpf = null;
                         if (cpfMessage) {
-                            cpfMessage.textContent = 'Consulta 100% segura e gratuita, sem afetar seu score.';
-                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500';
+                            cpfMessage.textContent = 'Sem afetar seu score';
+                            cpfMessage.className = 'text-[10px] font-bold text-gray-500 truncate max-w-[210px]';
                         }
                         return;
                     }
@@ -1422,10 +1382,9 @@
                         } else {
                             facioOfferBox?.classList.add('hidden');
                             facioUnavailableBox?.classList.add('hidden');
-                            btnFacioDirect?.classList.add('hidden');
                             if (cpfMessage) {
-                                cpfMessage.textContent = '✕ CPF inválido. Verifique os números digitados.';
-                                cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                                cpfMessage.textContent = '✕ CPF inválido';
+                                cpfMessage.className = 'text-[10px] font-extrabold text-red-600 truncate max-w-[210px]';
                             }
                         }
                     }
@@ -1435,48 +1394,77 @@
             if (whatsappInput) {
                 whatsappInput.addEventListener('input', (e) => {
                     e.target.value = formatPhone(e.target.value);
+                    hideFormError();
+                    updateDynamicProgress();
                 });
             }
 
+            nomeInput?.addEventListener('input', () => {
+                hideFormError();
+                updateDynamicProgress();
+            });
+
+            emailInput?.addEventListener('input', () => {
+                hideFormError();
+                updateDynamicProgress();
+            });
+
+            // Pré-validação rígida de CPF, Nome Completo, WhatsApp (11 dígitos com DDD + 9) e E-mail válido
             function validateAndExtractLeadData(requireFullPhoneAndEmail = true) {
                 if (!leadForm) return null;
+                hideFormError();
+
+                if (window.currentSubStage !== 1) {
+                    goToStage(1);
+                }
+
                 const formData = new FormData(leadForm);
-                const nome = String(formData.get('nome') || '').trim();
+                const nome = String(formData.get('nome') || '').replace(/\s+/g, ' ').trim();
                 const cpf = String(formData.get('cpf') || '').replace(/\D/g, '');
                 const email = String(formData.get('email') || '').trim().toLowerCase();
                 let whatsapp = String(formData.get('whatsapp') || '').replace(/\D/g, '');
 
-                if (whatsapp.length === 13 && whatsapp.startsWith('55')) {
+                if ((whatsapp.length === 12 || whatsapp.length === 13) && whatsapp.startsWith('55')) {
                     whatsapp = whatsapp.slice(2);
                 }
 
+                // 1. Validação matemática do CPF (11 dígitos)
                 if (!validateCPF(cpf)) {
-                    goToStage(3);
-                    alert('Por favor, insira um CPF válido de 11 dígitos.');
+                    const msg = 'Por favor, digite um CPF válido de 11 dígitos.';
+                    showFormError(msg);
+                    alert(msg);
                     cpfInput?.focus();
                     return null;
                 }
 
-                if (currentSubStage < 4) {
-                    goToStage(4);
-                    return null;
-                }
-
-                if (!nome || !nome.includes(' ')) {
-                    alert('Por favor, informe seu nome completo (nome e sobrenome).');
-                    document.getElementById('nomeInput')?.focus();
+                // 2. Validação rígida de Nome e Sobrenome
+                const nameParts = nome.split(' ').filter(part => part.length >= 2);
+                if (nome.length < 5 || nameParts.length < 2) {
+                    const msg = 'Por favor, informe seu nome completo (nome e sobrenome).';
+                    showFormError(msg);
+                    alert(msg);
+                    nomeInput?.focus();
                     return null;
                 }
 
                 if (requireFullPhoneAndEmail) {
-                    if (whatsapp.length !== 11 || whatsapp.charAt(2) !== '9') {
-                        alert('Por favor, informe um celular válido com DDD + 9 (Ex: 11 99999-9999).');
+                    // 3. Validação rígida de Telefone: exatamente 11 dígitos (DDD de 11 a 99 + 9º dígito + número não repetido)
+                    const isValidMobile11 = /^[1-9]{2}9\d{8}$/.test(whatsapp) && !/^(\d)\1+$/.test(whatsapp.slice(2));
+                    if (whatsapp.length !== 11 || !isValidMobile11) {
+                        const msg = 'Informe um WhatsApp válido com 11 dígitos (DDD + 9 + número). Ex: (11) 99999-9999.';
+                        showFormError(msg);
+                        alert(msg);
                         whatsappInput?.focus();
                         return null;
                     }
-                    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                        alert('Por favor, informe um endereço de e-mail válido.');
-                        document.getElementById('emailInput')?.focus();
+
+                    // 4. Validação rígida de E-mail
+                    const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (!email || !strictEmailRegex.test(email) || email.includes('..')) {
+                        const msg = 'Por favor, informe um endereço de e-mail válido (ex: seuemail@dominio.com).';
+                        showFormError(msg);
+                        alert(msg);
+                        emailInput?.focus();
                         return null;
                     }
                 }
@@ -1540,11 +1528,10 @@
                 const originalHtml = buttonEl ? buttonEl.innerHTML : '';
                 if (buttonEl) {
                     buttonEl.disabled = true;
-                    buttonEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Redirecionando para Facio...';
+                    buttonEl.innerHTML = '<div class="flex items-center justify-center gap-2 py-1"><i class="fas fa-circle-notch fa-spin"></i><span>CONECTANDO COM A FACIO...</span></div>';
                 }
 
                 try {
-                    // Chama imediatamente /api/facio com action: 'lead' sem etapas extras
                     const res = await fetch('/api/facio', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1554,32 +1541,42 @@
                         })
                     });
 
+                    // Tratamento explícito para erro 404 ou erro de servidor (5xx)
+                    if (res.status === 404 || res.status >= 500) {
+                        const unavailMsg = 'Serviço temporariamente indisponível. Tente novamente em alguns segundos.';
+                        showFormError(unavailMsg);
+                        alert(unavailMsg);
+                        return;
+                    }
+
                     const data = await res.json().catch(() => ({}));
 
-                    // Assim que registrationUrl chegar (sem ser fallback genérico), redireciona imediatamente
+                    // Assim que registrationUrl chegar, redireciona imediatamente sem modal e sem etapas extras
                     if (res.ok && data.registrationUrl && !data.fallbackMode) {
                         window.location.href = data.registrationUrl;
                         return;
                     }
 
-                    // Fallback genérico APENAS se a API da Facio realmente falhar (5xx ou timeout/rede)
-                    if (data.fallbackMode || res.status >= 500) {
-                        window.location.href = data.fallbackUrl || data.registrationUrl || FACIO_FALLBACK_URL;
+                    // Se houver erro de validação retornado pela API (400/422)
+                    if (res.status === 400 || res.status === 422 || data.validationError) {
+                        const detailMsg = 'Verifique se seu Nome Completo, WhatsApp (11 dígitos com DDD) e E-mail estão corretos.';
+                        showFormError(detailMsg);
+                        alert(detailMsg);
                         return;
                     }
 
-                    // Se a Facio recusar o lead em produção (409, 400, 403, 422 ou sem registrationUrl):
-                    // esconde a Facio e leva imediatamente para as outras opções em resultados.html
+                    // Se a Facio recusar o lead em produção (ex: 409 já cadastrado ou inelegível):
+                    // esconde a Facio e redireciona para mostrar as outras opções de crédito
                     facioState.isAvailable = false;
                     facioState.alreadyRegistered = Boolean(res.status === 409 || data.alreadyRegistered);
                     facioOfferBox?.classList.add('hidden');
-                    btnFacioDirect?.classList.add('hidden');
-                    btnFacioDirect?.classList.remove('flex');
                     redirectToResultsPage(validData, false, true);
                     return;
                 } catch (err) {
-                    // Erro real de conexão/rede
-                    window.location.href = FACIO_FALLBACK_URL;
+                    // Erro real de rede: exibe mensagem clara ao usuário em vez de falhar silenciosamente
+                    const netMsg = 'Serviço temporariamente indisponível. Tente novamente em alguns segundos.';
+                    showFormError(netMsg);
+                    alert(netMsg);
                 } finally {
                     if (buttonEl) {
                         buttonEl.disabled = false;
@@ -1601,7 +1598,7 @@
                 if (!validData) return;
 
                 const submitBtn = document.getElementById('submit-btn-home');
-                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Todas as Ofertas &rarr;';
+                const originalSubmitText = submitBtn ? submitBtn.innerHTML : '<span>Ver Ofertas Liberadas</span><i class="fas fa-arrow-right text-xs"></i>';
                 if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Carregando...';
