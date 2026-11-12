@@ -103,8 +103,6 @@
 
         /* =====================================================================
            CAIXA DO SIMULADOR COM TAMANHO 100% FIXO (PC E CELULAR)
-           As etapas alternam dentro do mesmo quadradinho com animação suave,
-           sem nunca espichar o banner no celular nem no computador!
            ===================================================================== */
         .simulator-fixed-card {
             height: 348px;
@@ -259,7 +257,6 @@
             transition: all 0.25s ease;
         }
 
-        /* Blank Box sutil para manter exatamente a mesma altura nas páginas com menos produtos */
         .product-blank-slot {
             min-height: 204px;
             border-radius: 1rem;
@@ -371,27 +368,23 @@
 <body class="bg-green-50 text-gray-800">
 
     <!-- ========================================================= -->
-    <!-- TOPO ESTÁTICO INTEGRADO (ZERO PULO DE LINHA AO CARREGAR)  -->
+    <!-- TOPO ESTÁTICO INTEGRADO                                   -->
     <!-- ========================================================= -->
     <div id="sticky-top-wrapper" class="sticky top-0 z-50">
-        <!-- Alerta Topo Estático -->
         <div id="top-alert" class="bg-yellow-400 text-center px-3 py-1.5 text-xs sm:text-sm font-semibold text-yellow-950 border-b border-yellow-500/20">
             Atenção! A TirraCred não cobra nenhum depósito antecipado para a liberação de produtos financeiros.
         </div>
 
-        <!-- Header -->
         <header id="main-header" class="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="relative flex items-center justify-between h-14 sm:h-16">
 
-                    <!-- Logo à Esquerda -->
                     <div class="py-1 px-1.5 flex-shrink-0 rounded-lg bg-white z-10">
                         <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="flex items-center">
                             <img src="public/logo.png" alt="TirraCred Logo" class="h-7 sm:h-8 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=TirraCred';">
                         </a>
                     </div>
 
-                    <!-- Desktop Navigation (100% Centralizado) -->
                     <nav class="hidden md:flex md:items-center md:justify-center md:space-x-8 md:absolute md:left-1/2 md:-translate-x-1/2">
                         <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Empréstimos</a>
                         <a href="cartoes.html" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">Cartão de Crédito</a>
@@ -399,10 +392,8 @@
                         <a href="https://www.youtube.com/@tirracred" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-green-600 font-semibold text-sm transition-colors">YouTube</a>
                     </nav>
 
-                    <!-- Espaçador Desktop para equilíbrio simétrico -->
                     <div class="hidden md:block w-28 flex-shrink-0" aria-hidden="true"></div>
 
-                    <!-- Mobile Menu Button -->
                     <div class="md:hidden flex items-center z-10">
                         <button id="mobile-menu-button" type="button" aria-label="Abrir Menu" class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -413,7 +404,6 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu -->
             <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg">
                 <div class="px-4 py-3 space-y-1 text-center sm:text-left">
                     <a href="javascript:void(0)" onclick="showPage('page-home', true)" class="block px-3 py-2.5 rounded-lg text-base font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">Empréstimos</a>
@@ -426,7 +416,7 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- PÁGINA DE RESULTADOS DA SIMULAÇÃO (INTEGRADA COM A FACIO) -->
+    <!-- PÁGINA DE RESULTADOS DA SIMULAÇÃO                         -->
     <!-- ========================================================= -->
     <div id="resultados-page" class="page-container">
         <main class="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
@@ -460,9 +450,7 @@
     <!-- ========================================================= -->
     <div id="page-home" class="page-container active">
         <main>
-            <!-- Hero e Simulador -->
             <section id="hero-section" class="relative text-white h-[535px] sm:h-[515px] lg:h-[430px] flex items-center overflow-hidden">
-                <!-- Camadas de Imagem Isoladas -->
                 <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden pointer-events-none">
                     <img src="public/banner-1.png" alt="Banner 1" class="hero-bg-slide opacity-100" data-bg-slide="0" decoding="async">
                     <img src="public/banner2.png" alt="Banner 2" class="hero-bg-slide opacity-0" data-bg-slide="1" decoding="async">
@@ -472,10 +460,8 @@
 
                 <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:gap-10 items-center w-full">
                     
-                    <!-- Coluna de Mensagens Empilhadas em CSS Grid (1/1) -->
                     <div class="lg:col-span-6 text-center lg:text-left">
                         <div class="hero-slides-stack">
-                            <!-- Mensagem do Banner 1 -->
                             <div class="hero-slide-item opacity-100 z-10" data-text-slide="0">
                                 <h1 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Crédito para negativados? Temos a solução!
@@ -485,7 +471,6 @@
                                 </p>
                             </div>
 
-                            <!-- Mensagem do Banner 2 -->
                             <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="1" aria-hidden="true">
                                 <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Antecipe até R$ 300 com a Facio hoje mesmo!
@@ -495,7 +480,6 @@
                                 </p>
                             </div>
 
-                            <!-- Mensagem do Banner 3 -->
                             <div class="hero-slide-item opacity-0 pointer-events-none z-0" data-text-slide="2" aria-hidden="true">
                                 <h2 class="text-xl sm:text-3xl lg:text-5xl font-extrabold mb-1.5 sm:mb-3 leading-tight tracking-tight drop-shadow-sm">
                                     Compare e contrate o produto financeiro certo para você.
@@ -506,7 +490,6 @@
                             </div>
                         </div>
 
-                        <!-- Indicadores discretos do banner -->
                         <div class="flex items-center justify-center lg:justify-start gap-2 mt-2 sm:mt-3">
                             <button type="button" data-hero-dot="0" aria-label="Banner 1" class="h-1.5 w-6 rounded-full bg-emerald-400 transition-all duration-300"></button>
                             <button type="button" data-hero-dot="1" aria-label="Banner 2" class="h-1.5 w-2 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"></button>
@@ -514,16 +497,13 @@
                         </div>
                     </div>
 
-                    <!-- Coluna do Simulador -->
                     <div class="lg:col-span-6 w-full flex items-center justify-center">
                         <div class="simulator-fixed-card bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-gray-800 w-full max-w-lg mx-auto border border-gray-100">
                             
-                            <!-- Barra de Progresso Animada no Topo do Card -->
                             <div class="absolute top-0 inset-x-0 h-1.5 bg-gray-100 overflow-hidden">
                                 <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 0%"></div>
                             </div>
 
-                            <!-- Cabeçalho do Card -->
                             <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0 mt-0.5">
                                 <div class="flex items-center gap-2">
                                     <h2 class="text-base sm:text-lg font-extrabold text-gray-900">Simule seu empréstimo</h2>
@@ -538,9 +518,7 @@
                     
                             <form id="leadFormHome" class="flex-1 flex flex-col justify-between pt-2" novalidate>
                                 
-                                <!-- ===================================================== -->
-                                <!-- ETAPA 1: ESCOLHA DO VALOR                             -->
-                                <!-- ===================================================== -->
+                                <!-- ETAPA 1: ESCOLHA DO VALOR -->
                                 <div id="stage-1-valor" class="sim-stage-active">
                                     <div class="space-y-2.5 my-auto">
                                         <div class="flex items-center justify-between">
@@ -554,7 +532,6 @@
                                         </div>
                                         <input id="valorHome" name="valor" type="range" min="100" max="50000" value="300" step="50" class="w-full">
 
-                                        <!-- Botões de Seleção Rápida de Valor -->
                                         <div class="flex flex-wrap gap-1.5 pt-1">
                                             <button type="button" data-quick-val="300" class="quick-val-btn text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-400 shadow-sm transition focus:outline-none">
                                                 ⚡ Até R$ 300 (Facio)
@@ -567,7 +544,6 @@
                                             </button>
                                         </div>
 
-                                        <!-- Aviso da faixa Facio -->
                                         <div id="facio-step1-hint" class="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] sm:text-xs text-emerald-900 transition-colors">
                                             <span class="text-sm shrink-0">🚀</span>
                                             <span class="leading-tight"><strong>Faixa de Liberação Rápida:</strong> Até <strong>R$ 300</strong> com oferta personalizada após análise na Facio (a partir de R$ 9,90).</span>
@@ -582,9 +558,7 @@
                                     </div>
                                 </div>
 
-                                <!-- ===================================================== -->
-                                <!-- ETAPA 2: PRAZO E PERFIL                               -->
-                                <!-- ===================================================== -->
+                                <!-- ETAPA 2: PRAZO E PERFIL -->
                                 <div id="stage-2-perfil" class="sim-stage-hidden">
                                     <div class="space-y-2.5 my-auto">
                                         <div>
@@ -1130,7 +1104,7 @@
             mobileMenuButton?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
 
             // ===================================================
-            // 3. SIMULADOR DE TAMANHO FIXO (BARRA 0% -> 33% -> 66% -> 100%)
+            // 3. SIMULADOR DE TAMANHO FIXO
             // ===================================================
             const leadForm = document.getElementById('leadFormHome');
             const valorSlider = document.getElementById('valorHome');
@@ -1261,18 +1235,12 @@
             document.getElementById('btn-to-stage-3')?.addEventListener('click', () => goToStage(3));
 
             // ===================================================
-            // 4. INTEGRAÇÃO COMPLETA LEADGEN API DA FACIO
-            //    (COM PONTE MULTI-ENDPOINT CONTRA ERRO 404)
+            // 4. INTEGRAÇÃO PRODUÇÃO COM A API DA FACIO
             // ===================================================
             const FACIO_FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
 
-            // Lista ordenada de endpoints para garantir que nunca falhe por 404 caso o domínio principal
-            // esteja apontando para assets estáticos enquanto o Worker responde no subdomínio Cloudflare
-            const FACIO_API_ENDPOINTS = [
-                '/api/facio',
-                'https://sandbox-tirracred.tirradigital.workers.dev/api/facio',
-                'https://tirracred.pages.dev/api/facio'
-            ];
+            // Endpoint exclusivo de Produção em tirracred.com
+            const FACIO_API_ENDPOINT = '/api/facio';
 
             const cpfInput = document.getElementById('cpf');
             const cpfSpinner = document.getElementById('cpf-spinner');
@@ -1324,38 +1292,19 @@
                 }
             }
 
-            /**
-             * Chama a API backend da Facio testando os endpoints disponíveis caso o primeiro retorne 404/405
-             */
             async function callFacioBackend(payload) {
-                let lastResponse = null;
-                let lastData = {};
-                let allNotFound = true;
-
-                for (const endpoint of FACIO_API_ENDPOINTS) {
-                    try {
-                        const res = await fetch(endpoint, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        // Se a rota não existir nesse host (404 ou 405), tenta imediatamente o próximo endpoint da lista
-                        if (res.status === 404 || res.status === 405) {
-                            console.warn(`[Facio] Rota não encontrada em ${endpoint} (HTTP ${res.status}). Tentando próximo endpoint...`);
-                            lastResponse = res;
-                            continue;
-                        }
-
-                        allNotFound = false;
-                        const data = await res.json().catch(() => ({}));
-                        return { res, data, allNotFound: false, endpoint };
-                    } catch (networkErr) {
-                        console.warn(`[Facio] Erro de conexão em ${endpoint}:`, networkErr?.message || networkErr);
-                    }
+                try {
+                    const res = await fetch(FACIO_API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    return { res, data };
+                } catch (networkErr) {
+                    console.error('[Facio] Erro de conexão com /api/facio:', networkErr);
+                    return { res: null, data: {} };
                 }
-
-                return { res: lastResponse, data: lastData, allNotFound, endpoint: null };
             }
 
             async function checkFacioAvailability(rawCpf) {
@@ -1389,7 +1338,7 @@
 
                 activeCheckPromise = (async () => {
                     try {
-                        const { res, data, allNotFound } = await callFacioBackend({
+                        const { res, data } = await callFacioBackend({
                             action: 'availability',
                             cpf: cleanCpf
                         });
@@ -1405,18 +1354,11 @@
                         } else if (res && (res.status === 409 || data.alreadyRegistered)) {
                             facioState.isAvailable = false;
                             facioState.alreadyRegistered = true;
-                        } else if (allNotFound || !res || res.status >= 500) {
-                            // Se nenhuma rota backend respondeu (404 em todas ou erro 5xx),
-                            // ativa modo de contingência para não negar o cliente injustamente
-                            console.warn('[Facio] Nenhum endpoint backend respondeu (404/5xx). Ativando contingência para não bloquear o usuário.');
-                            facioState.isAvailable = true;
-                            facioState.fallbackMode = true;
                         } else {
                             facioState.isAvailable = false;
                         }
                     } catch (e) {
-                        facioState.isAvailable = true;
-                        facioState.fallbackMode = true;
+                        facioState.isAvailable = false;
                     } finally {
                         facioState.checking = false;
                         activeCheckPromise = null;
@@ -1508,7 +1450,6 @@
                     return;
                 }
 
-                // Garante que a verificação na Facio foi concluída antes de ir para a Etapa 4
                 if (facioState.lastCheckedCpf !== cleanCpf || facioState.checking) {
                     await checkFacioAvailability(cleanCpf);
                 }
@@ -1627,27 +1568,18 @@
                 }
 
                 try {
-                    const { res, data, allNotFound } = await callFacioBackend({
+                    const { res, data } = await callFacioBackend({
                         action: 'lead',
                         ...validData
                     });
 
-                    // Redirecionamento imediato para a registrationUrl oficial da Facio
-                    if (res && res.ok && data.registrationUrl && !data.fallbackMode) {
+                    if (res && res.ok && data.registrationUrl) {
                         window.location.href = data.registrationUrl;
                         return;
                     }
 
-                    // Fallback apenas se a rota/API estiver indisponível (404 de rota ou 5xx)
-                    if (allNotFound || !res || data.fallbackMode || res.status >= 500) {
-                        window.location.href = data.fallbackUrl || data.registrationUrl || FACIO_FALLBACK_URL;
-                        return;
-                    }
-
-                    // Se a Facio recusar o lead em produção (409, 400, 403, 422):
-                    // oculta o botão da Facio e envia para resultados.html com os demais parceiros
                     facioState.isAvailable = false;
-                    facioState.alreadyRegistered = Boolean(res.status === 409 || data.alreadyRegistered);
+                    facioState.alreadyRegistered = Boolean(res && res.status === 409 || data.alreadyRegistered);
                     facioOfferBox?.classList.add('hidden');
                     btnFacioDirect?.classList.add('hidden');
                     btnFacioDirect?.classList.remove('flex');
@@ -2364,10 +2296,12 @@
             showPage('page-home', false);
         });
 
-        
+
     </script>
 
+
 </body>
+
 
 
 
