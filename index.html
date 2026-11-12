@@ -1275,6 +1275,8 @@
             let facioState = {
                 lastCheckedCpf: null,
                 isAvailable: false,
+                alreadyRegistered: false,
+                fallbackMode: false,
                 checking: false,
                 requestId: null,
                 offer: {
@@ -1312,6 +1314,8 @@
 
                 facioState.checking = true;
                 facioState.lastCheckedCpf = cleanCpf;
+                facioState.alreadyRegistered = false;
+                facioState.fallbackMode = false;
 
                 cpfSpinner?.classList.remove('hidden');
                 if (cpfMessage) {
@@ -1326,20 +1330,26 @@
                         body: JSON.stringify({ action: 'availability', cpf: cleanCpf })
                     });
 
+                    const data = await res.json().catch(() => ({}));
+
                     if (res.ok) {
-                        const data = await res.json();
-                        facioState.isAvailable = typeof data.isAvailable === 'boolean' ? data.isAvailable : true;
+                        facioState.isAvailable = Boolean(data.isAvailable);
+                        facioState.alreadyRegistered = Boolean(data.alreadyRegistered);
+                        facioState.fallbackMode = Boolean(data.fallbackMode);
                         facioState.requestId = data.requestId || null;
                         if (data.offer) {
                             facioState.offer = data.offer;
                         }
-                    } else if (res.status === 400) {
+                    } else if (res.status === 409 || data.alreadyRegistered) {
                         facioState.isAvailable = false;
+                        facioState.alreadyRegistered = true;
                     } else {
-                        facioState.isAvailable = true;
+                        facioState.isAvailable = false;
                     }
                 } catch (e) {
+                    // Falha de rede real do navegador: permite fallback de contingência
                     facioState.isAvailable = true;
+                    facioState.fallbackMode = true;
                 } finally {
                     facioState.checking = false;
                     cpfSpinner?.classList.add('hidden');
@@ -1361,7 +1371,9 @@
                     btnFacioDirect?.classList.remove('flex');
                     facioUnavailableBox?.classList.remove('hidden');
                     if (cpfMessage) {
-                        cpfMessage.textContent = '✓ CPF válido. Clique em Continuar abaixo:';
+                        cpfMessage.textContent = facioState.alreadyRegistered
+                            ? '✓ CPF já possui cadastro na Facio. Clique em Continuar para ver outras ofertas:'
+                            : '✓ CPF válido. Clique em Continuar abaixo:';
                         cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-amber-700 font-semibold';
                     }
                 }
@@ -1493,22 +1505,36 @@
                         })
                     });
 
-                    const data = await res.json();
+                    const data = await res.json().catch(() => ({}));
 
                     if (res.ok && data.registrationUrl) {
                         window.location.href = data.registrationUrl;
                         return;
                     }
 
-                    if (res.status === 409) {
-                        alert('Seu CPF já possui um atendimento ativo na Facio por outro canal. Vamos exibir outras opções de empréstimo para você!');
+                    if (res.status === 409 || data.alreadyRegistered) {
+                        alert('Seu CPF já possui um cadastro ativo na Facio. Vamos exibir outras instituições parceiras com alta aprovação para o seu perfil!');
                         facioState.isAvailable = false;
+                        facioState.alreadyRegistered = true;
                         facioOfferBox?.classList.add('hidden');
                         btnFacioDirect?.classList.add('hidden');
+                        btnFacioDirect?.classList.remove('flex');
+                        document.getElementById('submit-btn-home')?.click();
                         return;
                     }
 
-                    window.location.href = data.fallbackUrl || FACIO_FALLBACK_URL;
+                    if (res.status === 400 || res.status === 422 || data.validationError) {
+                        const errDetail = Array.isArray(data.errors) ? data.errors.join(', ') : 'Verifique seu nome completo, WhatsApp e e-mail.';
+                        alert(`Não foi possível validar os dados informados na Facio (${errDetail}). Por favor, revise os campos e tente novamente.`);
+                        return;
+                    }
+
+                    if (data.fallbackMode || res.status >= 500) {
+                        window.location.href = data.fallbackUrl || FACIO_FALLBACK_URL;
+                        return;
+                    }
+
+                    alert('Não foi possível concluir a pré-aprovação na Facio neste momento. Confira as outras ofertas disponíveis para o seu perfil!');
                 } catch (err) {
                     window.location.href = FACIO_FALLBACK_URL;
                 } finally {

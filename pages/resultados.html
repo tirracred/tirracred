@@ -953,12 +953,27 @@
             }
 
             try {
-                // Garante pré-consulta de disponibilidade exigida pela Facio
-                await fetch('/api/facio', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
-                }).catch(() => {});
+                // Garante pré-consulta de disponibilidade exigida pela Facio caso ainda não tenha sido verificada
+                if (!globalLeadContext.facioChecked) {
+                    const availRes = await fetch('/api/facio', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
+                    });
+                    const availData = await availRes.json().catch(() => ({}));
+                    globalLeadContext.facioChecked = true;
+
+                    if (availRes.status === 409 || availData.alreadyRegistered) {
+                        globalLeadContext.facioAvailable = false;
+                        globalLeadContext.facioAlreadyRegistered = true;
+                        saveLeadContextToStorage(globalLeadContext);
+                        closeFacioModal();
+                        updateDashboardUI();
+                        alert('Este CPF já possui um cadastro ativo na Facio. Confira abaixo o Top 1 do nosso Ranking Autônomo para solicitar seu crédito!');
+                        document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                }
 
                 const res = await fetch('/api/facio', {
                     method: 'POST',
@@ -977,27 +992,48 @@
                     })
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.registrationUrl) {
-                        window.location.href = data.registrationUrl;
-                        return;
-                    }
-                } else if (res.status === 409) {
-                    alert('Este CPF já possui um atendimento ativo na Facio. Vamos direcionar você para concluir seu acesso ou escolha o Top 1 do ranking abaixo!');
-                    window.location.href = FACIO_FALLBACK_URL;
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.registrationUrl) {
+                    window.location.href = data.registrationUrl;
                     return;
                 }
+
+                // 409: Usuário já cadastrado na Facio (alreadyRegistered: true)
+                if (res.status === 409 || data.alreadyRegistered) {
+                    globalLeadContext.facioAvailable = false;
+                    globalLeadContext.facioAlreadyRegistered = true;
+                    saveLeadContextToStorage(globalLeadContext);
+                    closeFacioModal();
+                    updateDashboardUI();
+                    alert('Seu CPF já possui um cadastro ativo na Facio. Atualizamos seu painel para focar no Top 1 do Ranking abaixo!');
+                    document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+
+                // 400/422: Erro de validação nos dados do lead (abre o modal para correção sem mandar para fallback)
+                if (res.status === 400 || res.status === 422 || data.validationError) {
+                    alert('Algum dado informado (Nome completo, CPF, Celular ou E-mail) foi recusado pela validação da Facio. Por favor, revise os dados na janela a seguir.');
+                    openFacioModal();
+                    return;
+                }
+
+                // Fallback apenas se a API da Facio estiver indisponível (5xx / fallbackMode)
+                if (data.fallbackMode || res.status >= 500) {
+                    window.location.href = data.fallbackUrl || FACIO_FALLBACK_URL;
+                    return;
+                }
+
+                alert('Não foi possível gerar o link na Facio neste momento. Recomendamos solicitar na 1ª opção do Ranking abaixo!');
             } catch (err) {
-                console.warn('Fallback Facio ativado:', err);
+                console.warn('Erro de rede ao contatar API Facio, acionando fallback:', err);
+                window.location.href = FACIO_FALLBACK_URL;
             } finally {
                 if (btnEl) {
                     btnEl.disabled = false;
                     btnEl.innerHTML = originalHtml;
                 }
             }
-
-            window.location.href = FACIO_FALLBACK_URL;
         }
 
         function openFacioModal() {
@@ -1980,16 +2016,24 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'availability', cpf: globalLeadContext.cpf })
                     });
+                    const fData = await fRes.json().catch(() => ({}));
+                    globalLeadContext.facioChecked = true;
                     if (fRes.ok) {
-                        const fData = await fRes.json();
                         globalLeadContext.facioAvailable = Boolean(fData.isAvailable);
+                        globalLeadContext.facioAlreadyRegistered = Boolean(fData.alreadyRegistered);
                         if (fData.offer) {
                             globalLeadContext.facioMaxValue = fData.offer.maxValue ?? 300;
                             globalLeadContext.facioBaseFee = fData.offer.baseFee ?? 9.9;
                             globalLeadContext.facioFee = fData.offer.fee ?? 72.9;
                             globalLeadContext.facioDesc = fData.offer.description || globalLeadContext.facioDesc;
                         }
+                    } else if (fRes.status === 409 || fData.alreadyRegistered) {
+                        globalLeadContext.facioAvailable = false;
+                        globalLeadContext.facioAlreadyRegistered = true;
+                    } else {
+                        globalLeadContext.facioAvailable = false;
                     }
+                    saveLeadContextToStorage(globalLeadContext);
                 } catch (e) {}
             }
 
