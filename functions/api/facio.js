@@ -1,3 +1,7 @@
+// Caminho obrigatório no GitHub: functions/api/facio.js
+// URL em Produção: https://tirracred.com/api/facio
+// URL em Sandbox:  https://sandbox-tirracred.tirradigital.workers.dev/api/facio
+
 const FALLBACK_URL = 'https://facio.com.br/?amigo=1ef87c93-f96d-48f5-baf3-607fb183dcbe&utm_source=app&utm_campaign=ds_banner';
 
 const DEFAULT_OFFER = {
@@ -5,10 +9,49 @@ const DEFAULT_OFFER = {
   fee: 72.9,
   baseFee: 9.9,
   type: 'SalaryAdvance',
-  description: 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+  description: 'Até R$ 300, oferta personalizada após análise.'
 };
 
-const FACIO_TIMEOUT_MS = 10000;
+// Timeout de 15 segundos recomendado no Guia Rápido de Integração da Facio
+const FACIO_TIMEOUT_MS = 15000;
+
+const CORS_JSON_HEADERS = {
+  'Content-Type': 'application/json;charset=UTF-8',
+  'Cache-Control': 'no-store',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
+
+/**
+ * Responde preflight CORS (OPTIONS) para permitir chamadas entre tirracred.com e *.workers.dev / *.pages.dev
+ */
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_JSON_HEADERS
+  });
+}
+
+/**
+ * Responde GET para verificação rápida no navegador (https://tirracred.com/api/facio)
+ */
+export async function onRequestGet(context) {
+  const { env } = context;
+  const rawEnv = String(env?.FACIO_ENV || 'production').trim().toLowerCase();
+  const facioEnv = rawEnv === 'sandbox' ? 'sandbox' : 'production';
+  const hasCredentials = Boolean(env?.FACIO_API_USER && env?.FACIO_API_PASSWORD);
+
+  return new Response(JSON.stringify({
+    ok: true,
+    service: 'tirracred-facio-leadgen',
+    environment: facioEnv,
+    credentialsConfigured: hasCredentials
+  }), {
+    status: 200,
+    headers: CORS_JSON_HEADERS
+  });
+}
 
 /**
  * Valida matematicamente os 11 dígitos e verificadores do CPF
@@ -35,14 +78,14 @@ function isValidCPF(cpf) {
 }
 
 /**
- * Sanitiza e valida o payload do Lead antes de enviar para a Facio
+ * Sanitiza e valida o payload do Lead exatamente no formato oficial da LeadGen API da Facio
  */
 function validateAndFormatLeadPayload(body) {
   const errors = [];
 
   const cleanCpf = String(body.cpf || '').replace(/\D/g, '');
   if (!isValidCPF(cleanCpf)) {
-    errors.push('cpf must have 11 valid digits');
+    errors.push('personalInfo.cpf must have 11 valid digits');
   }
 
   const cleanName = String(body.nome || '')
@@ -56,19 +99,14 @@ function validateAndFormatLeadPayload(body) {
   if ((cleanPhone.length === 12 || cleanPhone.length === 13) && cleanPhone.startsWith('55')) {
     cleanPhone = cleanPhone.slice(2);
   }
-  if (!/^[1-9]{2}9?\d{8}$/.test(cleanPhone)) {
-    errors.push('contactInfo.phone must be a valid Brazilian phone with DDD (10 or 11 digits)');
+  if (!/^[1-9]{2}9\d{8}$/.test(cleanPhone)) {
+    errors.push('contactInfo.phone must be a valid Brazilian mobile phone with DDD (XX9XXXXXXXX)');
   }
 
   const cleanEmail = String(body.email || '').trim().toLowerCase();
   if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
     errors.push('contactInfo.email must be a valid email address');
   }
-
-  const rawValor = Number(body.valor);
-  const loanAmount = Number.isFinite(rawValor) && rawValor > 0
-    ? Math.min(Math.max(rawValor, 50.0), 300.0)
-    : 300.0;
 
   return {
     isValid: errors.length === 0,
@@ -83,19 +121,13 @@ function validateAndFormatLeadPayload(body) {
         email: cleanEmail,
         phone: cleanPhone
       },
-      campaign: String(body.campaign || 'ds_banner').trim(),
-      financialInfo: {
-        loanAmount
-      },
-      otherInfo: {
-        hasCreditRestrictions: Boolean(body.negativado)
-      }
+      campaign: String(body.campaign || 'ds_banner').trim()
     }
   };
 }
 
 /**
- * Realiza chamada à API da Facio com timeout, retry em erro 5xx/rede e logs detalhados para o Cloudflare
+ * Realiza chamada à API da Facio com timeout de 15s, retry em erro 5xx/rede e logs detalhados
  */
 async function callFacioAPI(baseUrl, endpoint, payload, authHeader, facioEnv, retries = 1) {
   const controller = new AbortController();
@@ -165,11 +197,6 @@ async function callFacioAPI(baseUrl, endpoint, payload, authHeader, facioEnv, re
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const jsonHeaders = {
-    'Content-Type': 'application/json;charset=UTF-8',
-    'Cache-Control': 'no-store'
-  };
-
   let action = null;
 
   try {
@@ -185,7 +212,6 @@ export async function onRequestPost(context) {
     const facioUser = env?.FACIO_API_USER ? String(env.FACIO_API_USER).trim() : '';
     const facioPass = env?.FACIO_API_PASSWORD ? String(env.FACIO_API_PASSWORD).trim() : '';
 
-    // Sem credenciais configuradas no ambiente: falha explícita (não finge disponibilidade)
     if (!facioUser || !facioPass) {
       console.error(
         `[FACIO_CONFIG_ERROR] Missing FACIO_API_USER or FACIO_API_PASSWORD in environment (${facioEnv}).`
@@ -196,14 +222,14 @@ export async function onRequestPost(context) {
         isAvailable: false
       }), {
         status: 500,
-        headers: jsonHeaders
+        headers: CORS_JSON_HEADERS
       });
     }
 
     const authHeader = 'Basic ' + btoa(`${facioUser}:${facioPass}`);
 
     // =========================================================================
-    // 1. CONSULTA DE ELEGIBILIDADE (/availability)
+    // 1. CONSULTA DE ELEGIBILIDADE (POST /leadgen/availability)
     // =========================================================================
     if (action === 'availability') {
       const cleanCpf = String(body.cpf || '').replace(/\D/g, '');
@@ -214,7 +240,7 @@ export async function onRequestPost(context) {
           errors: ['cpf is not valid']
         }), {
           status: 400,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
@@ -236,11 +262,10 @@ export async function onRequestPost(context) {
           requestId: 'fallback-availability-upstream-error'
         }), {
           status: 200,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
-      // Se a Facio retornar 409 já na consulta de disponibilidade
       if (result.status === 409) {
         return new Response(JSON.stringify({
           isAvailable: false,
@@ -249,21 +274,24 @@ export async function onRequestPost(context) {
           details: result.data
         }), {
           status: 409,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
+      const isAvailable = Boolean(result.data?.isAvailable);
       return new Response(JSON.stringify({
         ...(result.data || {}),
+        isAvailable,
+        offer: result.data?.offer || (isAvailable ? DEFAULT_OFFER : null),
         alreadyRegistered: false
       }), {
         status: result.status,
-        headers: jsonHeaders
+        headers: CORS_JSON_HEADERS
       });
     }
 
     // =========================================================================
-    // 2. CRIAÇÃO E REGISTRO DE LEAD (/lead)
+    // 2. CRIAÇÃO E REGISTRO DE LEAD (POST /leadgen/lead)
     // =========================================================================
     if (action === 'lead') {
       const validation = validateAndFormatLeadPayload(body);
@@ -278,7 +306,7 @@ export async function onRequestPost(context) {
           errors: validation.errors
         }), {
           status: 400,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
@@ -290,7 +318,7 @@ export async function onRequestPost(context) {
         facioEnv
       );
 
-      // Sucesso: retorna registrationUrl oficial da Facio
+      // Sucesso (200 OK): retorna registrationUrl e partnerCustomerId oficiais da Facio
       if ((result.status === 200 || result.status === 201) && result.data?.registrationUrl) {
         return new Response(JSON.stringify({
           ...result.data,
@@ -298,11 +326,11 @@ export async function onRequestPost(context) {
           fallbackMode: false
         }), {
           status: 200,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
-      // 409 Conflict: Usuário já possui cadastro/atendimento ativo na Facio
+      // 409 Conflict: user already registered (janela ativa de outro canal ou cliente já convertido)
       if (result.status === 409) {
         return new Response(JSON.stringify({
           alreadyRegistered: true,
@@ -311,11 +339,11 @@ export async function onRequestPost(context) {
           details: result.data
         }), {
           status: 409,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
-      // Fallback restrito apenas a erro real da API da Facio (5xx ou timeout/rede)
+      // Fallback restrito apenas a erro real de servidor da Facio (5xx ou timeout/rede)
       if (result.isServerOrNetworkError) {
         console.warn(`[FACIO_FALLBACK] Lead fallback triggered due to upstream status ${result.status}`);
         return new Response(JSON.stringify({
@@ -326,11 +354,11 @@ export async function onRequestPost(context) {
           upstreamStatus: result.status
         }), {
           status: 200,
-          headers: jsonHeaders
+          headers: CORS_JSON_HEADERS
         });
       }
 
-      // Erros 4xx da Facio (400, 401, 403, 422): devolve o erro real para o frontend tratar
+      // Erros 4xx da Facio (400, 401, 403, 422)
       return new Response(JSON.stringify({
         error: 'facio_api_rejected',
         validationError: result.status === 400 || result.status === 422,
@@ -338,13 +366,13 @@ export async function onRequestPost(context) {
         details: result.data
       }), {
         status: result.status,
-        headers: jsonHeaders
+        headers: CORS_JSON_HEADERS
       });
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
       status: 400,
-      headers: jsonHeaders
+      headers: CORS_JSON_HEADERS
     });
   } catch (err) {
     console.error(`[FACIO_UNHANDLED_EXCEPTION] action=${action} error=${err?.stack || err?.message || err}`);
@@ -353,7 +381,7 @@ export async function onRequestPost(context) {
       message: 'Erro interno ao processar requisição para a Facio.'
     }), {
       status: 500,
-      headers: jsonHeaders
+      headers: CORS_JSON_HEADERS
     });
   }
 }

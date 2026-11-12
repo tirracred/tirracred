@@ -1,4 +1,4 @@
-// Caminho no GitHub: functions/api/facio-webhook.js
+// Caminho obrigatório no GitHub: functions/api/facio-webhook.js
 // URL em Produção: https://tirracred.com/api/facio-webhook
 // URL em Sandbox:  https://sandbox-tirracred.tirradigital.workers.dev/api/facio-webhook
 
@@ -8,7 +8,7 @@ const JSON_HEADERS = {
 };
 
 /**
- * Responde a verificações de saúde (GET/HEAD) caso a plataforma da Facio teste a URL
+ * Responde a verificações de saúde (GET)
  */
 export async function onRequestGet(context) {
   const { env } = context;
@@ -26,24 +26,24 @@ export async function onRequestGet(context) {
 
 /**
  * Processa eventos de Webhook enviados pela Facio (POST)
- * Ex: aceite de política, conexão Open Finance, aprovação de limite, depósito Pix realizado
+ * Eventos oficiais: privacyPolicyAccepted, openFinanceDataShared, deposited
  */
 export async function onRequestPost(context) {
   const { request, env } = context;
   const facioEnv = String(env?.FACIO_ENV || 'production').trim().toLowerCase();
 
   try {
-    // Validação opcional de secret via header caso configurado no Cloudflare (FACIO_WEBHOOK_SECRET)
+    // Validação do token Bearer caso FACIO_WEBHOOK_SECRET esteja configurado no Cloudflare
     if (env?.FACIO_WEBHOOK_SECRET) {
       const incomingToken =
+        request.headers.get('authorization') ||
         request.headers.get('x-facio-signature') ||
-        request.headers.get('x-webhook-secret') ||
-        request.headers.get('authorization');
+        request.headers.get('x-webhook-secret');
 
       const expectedSecret = String(env.FACIO_WEBHOOK_SECRET).trim();
-      if (incomingToken && !incomingToken.includes(expectedSecret)) {
-        console.warn(`[FACIO_WEBHOOK_AUTH_WARN] env=${facioEnv} Invalid webhook signature/token header`);
-        return new Response(JSON.stringify({ error: 'Unauthorized webhook signature' }), {
+      if (!incomingToken || !incomingToken.includes(expectedSecret)) {
+        console.warn(`[FACIO_WEBHOOK_AUTH_WARN] env=${facioEnv} Missing or invalid webhook token header`);
+        return new Response(JSON.stringify({ error: 'Unauthorized webhook token' }), {
           status: 401,
           headers: JSON_HEADERS
         });
@@ -70,7 +70,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Extrai campos principais para facilitar filtros no Cloudflare Observability Logs
+    // Campos oficiais da documentação de Webhooks da Facio: partnerCustomerId, campaign, event, eventDate
     const eventType =
       eventData?.event ||
       eventData?.type ||
@@ -78,28 +78,22 @@ export async function onRequestPost(context) {
       eventData?.eventType ||
       'unknown_event';
 
-    const leadId =
+    const partnerCustomerId =
+      eventData?.partnerCustomerId ||
       eventData?.leadId ||
       eventData?.id ||
       eventData?.requestId ||
-      eventData?.data?.leadId ||
+      eventData?.data?.partnerCustomerId ||
       null;
 
-    const rawCpf =
-      eventData?.cpf ||
-      eventData?.personalInfo?.cpf ||
-      eventData?.data?.cpf ||
-      null;
-
-    const maskedCpf = rawCpf
-      ? String(rawCpf).replace(/\D/g, '').replace(/^(\d{3})\d{5}(\d{3})$/, '$1*****$2')
-      : null;
+    const campaign = eventData?.campaign || 'link';
+    const eventDate = eventData?.eventDate || new Date().toISOString();
 
     console.log(
-      `[FACIO_WEBHOOK_EVENT] env=${facioEnv} event=${eventType} leadId=${leadId || 'N/A'} cpf=${maskedCpf || 'N/A'} payload=${JSON.stringify(eventData)}`
+      `[FACIO_WEBHOOK_EVENT] env=${facioEnv} event=${eventType} partnerCustomerId=${partnerCustomerId || 'N/A'} campaign=${campaign} eventDate=${eventDate} payload=${JSON.stringify(eventData)}`
     );
 
-    // Se o banco D1 (env.DB) estiver conectado, grava o histórico do webhook de forma não-bloqueante
+    // Se o banco D1 (env.DB) estiver conectado, grava de forma idempotente por partnerCustomerId + event
     if (env?.DB) {
       try {
         await env.DB.prepare(
@@ -117,7 +111,13 @@ export async function onRequestPost(context) {
         await env.DB.prepare(
           `INSERT INTO facio_webhook_logs (env, event_type, lead_id, cpf, payload) VALUES (?, ?, ?, ?, ?)`
         )
-          .bind(facioEnv, String(eventType), leadId ? String(leadId) : null, maskedCpf, JSON.stringify(eventData))
+          .bind(
+            facioEnv,
+            String(eventType),
+            partnerCustomerId ? String(partnerCustomerId) : null,
+            campaign,
+            JSON.stringify(eventData)
+          )
           .run();
       } catch (dbErr) {
         console.warn(`[FACIO_WEBHOOK_D1_SKIP] env=${facioEnv} message=${dbErr?.message || dbErr}`);
@@ -128,6 +128,7 @@ export async function onRequestPost(context) {
       received: true,
       environment: facioEnv,
       event: eventType,
+      partnerCustomerId,
       timestamp: new Date().toISOString()
     }), {
       status: 200,
