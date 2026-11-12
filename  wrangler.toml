@@ -2,6 +2,12 @@ name = "tirracred"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "."
 
+# Valores de PRODUÇÃO
 [vars]
-# Deixe vazio aqui. As credenciais reais ficam como Secrets no Cloudflare Dashboard.
+FACIO_ENV = "production"
+FACIO_API_USER = "tirracred"
+
+# Valores de PREVIEW / Sandbox
+[previews.vars]
 FACIO_ENV = "sandbox"
+FACIO_API_USER = "tirracred"
