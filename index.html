@@ -348,6 +348,21 @@
             width: 1.75rem;
             border-radius: 9999px;
         }
+
+        /* Botão Mega Destacado da Facio */
+        @keyframes facioPulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6), 0 8px 20px -2px rgba(5, 150, 105, 0.45); }
+            50% { transform: scale(1.015); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0), 0 12px 24px -2px rgba(5, 150, 105, 0.6); }
+        }
+        .btn-facio-highlight {
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
+            border: 2px solid #a7f3d0;
+            animation: facioPulseGlow 2s infinite;
+        }
+        .btn-facio-highlight:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: translateY(-1px);
+        }
     </style>
 
     <!-- [ADSENSE LOADER ÚNICO | HEAD] -->
@@ -674,36 +689,39 @@
                                 <!-- ETAPA 4: DADOS DE CONTATO E LIBERAÇÃO                 -->
                                 <!-- ===================================================== -->
                                 <div id="stage-4-contato" class="sim-stage-hidden">
-                                    <div class="space-y-2.5 my-auto">
+                                    <div class="space-y-2 my-auto">
                                         <div>
-                                            <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">4. Seu Nome Completo</label>
-                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                            <label for="nomeInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">4. Seu Nome Completo</label>
+                                            <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">WhatsApp</label>
-                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
+                                                <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">WhatsApp</label>
+                                                <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
                                             </div>
                                             <div>
-                                                <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-1">Seu E-mail</label>
-                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
+                                                <label for="emailInput" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">Seu E-mail</label>
+                                                <input id="emailInput" name="email" type="email" placeholder="voce@email.com" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="flex flex-col gap-1.5 pt-2 shrink-0">
+                                    <div class="flex flex-col gap-1.5 pt-1.5 shrink-0">
+                                        <!-- Botão Principal Destacado da Facio (quando pré-aprovado) -->
+                                        <button id="btn-facio-direct" type="button" class="hidden btn-facio-highlight w-full rounded-xl px-4 py-2.5 text-xs sm:text-sm font-black text-white transition items-center justify-center gap-2 tracking-wide">
+                                            <i class="fas fa-bolt text-yellow-300 animate-bounce"></i>
+                                            <span>LIBERAR PIX NA FACIO AGORA</span>
+                                            <i class="fas fa-arrow-right text-xs"></i>
+                                        </button>
+
                                         <div class="flex items-center gap-2">
-                                            <button type="button" onclick="goToStage(3)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
+                                            <button type="button" onclick="goToStage(3)" class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
                                                 &larr; CPF
                                             </button>
 
-                                            <button id="btn-facio-direct" type="button" class="hidden flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow transition items-center justify-center gap-1">
-                                                <span>⚡ Direto na Facio</span>
-                                            </button>
-
-                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-3 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md transition">
-                                                Ver Ofertas Liberadas &rarr;
+                                            <button id="submit-btn-home" type="submit" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-3 py-2 text-xs sm:text-sm font-extrabold text-white shadow-md transition">
+                                                Ver Todas as Ofertas &rarr;
                                             </button>
                                         </div>
                                     </div>
@@ -1477,25 +1495,56 @@
                 };
             }
 
+            function redirectToResultsPage(validData, isFacioAvailable, isFacioRejected = false) {
+                const leadContextPayload = {
+                    ...validData,
+                    facioChecked: true,
+                    facioAvailable: Boolean(isFacioAvailable),
+                    facioRejected: Boolean(isFacioRejected),
+                    facioMaxValue: facioState.offer?.maxValue ?? 300,
+                    facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                    facioFee: facioState.offer?.fee ?? 72.9,
+                    facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                };
+
+                try {
+                    sessionStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                    localStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
+                } catch (_) {}
+
+                const params = new URLSearchParams({
+                    nome: validData.nome,
+                    cpf: validData.cpf,
+                    whatsapp: validData.whatsapp,
+                    email: validData.email,
+                    valor: validData.valor,
+                    parcelas: validData.parcelas,
+                    negativado: validData.negativado,
+                    aposentado: validData.aposentado,
+                    bolsafamilia: validData.bolsafamilia,
+                    facioAvailable: Boolean(isFacioAvailable),
+                    facioRejected: Boolean(isFacioRejected),
+                    facioMaxValue: facioState.offer?.maxValue ?? 300,
+                    facioBaseFee: facioState.offer?.baseFee ?? 9.9,
+                    facioFee: facioState.offer?.fee ?? 72.9,
+                    facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
+                });
+
+                window.location.href = `./pages/resultados.html?${params.toString()}`;
+            }
+
             window.triggerFacioRegistration = async (buttonEl) => {
                 const validData = validateAndExtractLeadData(true);
                 if (!validData) return;
 
-                if (facioState.lastCheckedCpf !== validData.cpf) {
-                    const available = await checkFacioAvailability(validData.cpf);
-                    if (!available) {
-                        alert('Este CPF não está elegível para atribuição na Facio neste momento. Confira as outras ofertas na página de resultados!');
-                        return;
-                    }
-                }
-
                 const originalHtml = buttonEl ? buttonEl.innerHTML : '';
                 if (buttonEl) {
                     buttonEl.disabled = true;
-                    buttonEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Abrindo...';
+                    buttonEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Redirecionando para Facio...';
                 }
 
                 try {
+                    // Chama imediatamente /api/facio com action: 'lead' sem etapas extras
                     const res = await fetch('/api/facio', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1507,35 +1556,29 @@
 
                     const data = await res.json().catch(() => ({}));
 
-                    if (res.ok && data.registrationUrl) {
+                    // Assim que registrationUrl chegar (sem ser fallback genérico), redireciona imediatamente
+                    if (res.ok && data.registrationUrl && !data.fallbackMode) {
                         window.location.href = data.registrationUrl;
                         return;
                     }
 
-                    if (res.status === 409 || data.alreadyRegistered) {
-                        alert('Seu CPF já possui um cadastro ativo na Facio. Vamos exibir outras instituições parceiras com alta aprovação para o seu perfil!');
-                        facioState.isAvailable = false;
-                        facioState.alreadyRegistered = true;
-                        facioOfferBox?.classList.add('hidden');
-                        btnFacioDirect?.classList.add('hidden');
-                        btnFacioDirect?.classList.remove('flex');
-                        document.getElementById('submit-btn-home')?.click();
-                        return;
-                    }
-
-                    if (res.status === 400 || res.status === 422 || data.validationError) {
-                        const errDetail = Array.isArray(data.errors) ? data.errors.join(', ') : 'Verifique seu nome completo, WhatsApp e e-mail.';
-                        alert(`Não foi possível validar os dados informados na Facio (${errDetail}). Por favor, revise os campos e tente novamente.`);
-                        return;
-                    }
-
+                    // Fallback genérico APENAS se a API da Facio realmente falhar (5xx ou timeout/rede)
                     if (data.fallbackMode || res.status >= 500) {
-                        window.location.href = data.fallbackUrl || FACIO_FALLBACK_URL;
+                        window.location.href = data.fallbackUrl || data.registrationUrl || FACIO_FALLBACK_URL;
                         return;
                     }
 
-                    alert('Não foi possível concluir a pré-aprovação na Facio neste momento. Confira as outras ofertas disponíveis para o seu perfil!');
+                    // Se a Facio recusar o lead em produção (409, 400, 403, 422 ou sem registrationUrl):
+                    // esconde a Facio e leva imediatamente para as outras opções em resultados.html
+                    facioState.isAvailable = false;
+                    facioState.alreadyRegistered = Boolean(res.status === 409 || data.alreadyRegistered);
+                    facioOfferBox?.classList.add('hidden');
+                    btnFacioDirect?.classList.add('hidden');
+                    btnFacioDirect?.classList.remove('flex');
+                    redirectToResultsPage(validData, false, true);
+                    return;
                 } catch (err) {
+                    // Erro real de conexão/rede
                     window.location.href = FACIO_FALLBACK_URL;
                 } finally {
                     if (buttonEl) {
@@ -1558,7 +1601,7 @@
                 if (!validData) return;
 
                 const submitBtn = document.getElementById('submit-btn-home');
-                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Ofertas Liberadas &rarr;';
+                const originalSubmitText = submitBtn ? submitBtn.innerHTML : 'Ver Todas as Ofertas &rarr;';
                 if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Carregando...';
@@ -1568,36 +1611,7 @@
                     if (facioState.lastCheckedCpf !== validData.cpf) {
                         await checkFacioAvailability(validData.cpf);
                     }
-
-                    const leadContextPayload = {
-                        ...validData,
-                        facioAvailable: facioState.isAvailable,
-                        facioMaxValue: facioState.offer?.maxValue ?? 300,
-                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
-                        facioFee: facioState.offer?.fee ?? 72.9,
-                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
-                    };
-
-                    try {
-                        sessionStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
-                        localStorage.setItem('tirracred_lead', JSON.stringify(leadContextPayload));
-                    } catch (_) {}
-
-                    const params = new URLSearchParams({
-                        nome: validData.nome,
-                        valor: validData.valor,
-                        parcelas: validData.parcelas,
-                        negativado: validData.negativado,
-                        aposentado: validData.aposentado,
-                        bolsafamilia: validData.bolsafamilia,
-                        facioAvailable: facioState.isAvailable,
-                        facioMaxValue: facioState.offer?.maxValue ?? 300,
-                        facioBaseFee: facioState.offer?.baseFee ?? 9.9,
-                        facioFee: facioState.offer?.fee ?? 72.9,
-                        facioDesc: facioState.offer?.description || 'Antecipe até R$ 300 com a Facio. Taxas a partir de R$ 9,90.'
-                    });
-
-                    window.location.href = `./pages/resultados.html?${params.toString()}`;
+                    redirectToResultsPage(validData, facioState.isAvailable, !facioState.isAvailable);
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;
