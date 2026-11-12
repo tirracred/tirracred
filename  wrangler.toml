@@ -2,12 +2,10 @@ name = "tirracred"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "."
 
-# Produção
 [vars]
 FACIO_ENV = "production"
 FACIO_API_USER = "tirracred"
 
-# Preview / Sandbox
 [previews]
 [previews.vars]
 FACIO_ENV = "sandbox"
