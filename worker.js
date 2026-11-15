@@ -471,7 +471,7 @@ export default {
       return handleFacioLeadgen(request, env);
     }
 
-    // 2. Rota do Webhook da Facio (/api/facio-webhook)
+    // 2. Rota do Webhoook da Facio (/api/facio-webhook)
     if (path === '/api/facio-webhook') {
       return handleFacioWebhook(request, env);
     }
