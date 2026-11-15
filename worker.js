@@ -476,7 +476,15 @@ export default {
       return handleFacioWebhook(request, env);
     }
 
-    // 3. Entrega os arquivos estáticos do site (index.html, cartoes.html, pages/, public/)
+    // 3. Evita erro 404 no F12 quando o index.html busca /api/products antes do Supabase
+    if (path === '/api/products') {
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: CORS_JSON_HEADERS
+      });
+    }
+
+    // 4. Entrega os arquivos estáticos do site (index.html, cartoes.html, pages/, public/)
     if (env?.ASSETS) {
       return env.ASSETS.fetch(request);
     }
@@ -484,3 +492,4 @@ export default {
     return new Response('Not Found', { status: 404 });
   }
 };
+

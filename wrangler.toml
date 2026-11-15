@@ -1,18 +1,19 @@
 name = "tirracred"
 main = "worker.js"
 compatibility_date = "2024-09-23"
+workers_dev = true
+keep_vars = true
+
+routes = [
+  { pattern = "tirracred.com/*", zone_name = "tirracred.com" },
+  { pattern = "www.tirracred.com/*", zone_name = "tirracred.com" }
+]
 
 [assets]
 directory = "."
 binding = "ASSETS"
+run_worker_first = ["/api/*"]
 
 [vars]
 FACIO_ENV = "production"
-FACIO_API_USER = "tirracred"
-
-[env.sandbox]
-name = "sandbox-tirracred"
-
-[env.sandbox.vars]
-FACIO_ENV = "sandbox"
 FACIO_API_USER = "tirracred"
