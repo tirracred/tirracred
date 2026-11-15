@@ -1,7 +1,7 @@
 // netlify/functions/capturar-lead.js
 const supabase = require('./utils/supabase');
 
-// Cabeçalhos CORS compartilhados para todas as respostas
+// Cabeçaalhos CORS compartilhados para todas as respostas
 const headers = {
   'Access-Control-Allow-Origin': '*', // Em produção, ajuste para o domínio do seu site
   'Access-Control-Allow-Headers': 'Content-Type',
