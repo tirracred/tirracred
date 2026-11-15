@@ -102,7 +102,7 @@
         }
 
         /* =====================================================================
-           CAIXA DO SIMULADOR COM TAMANHO 100% FIXO (PC E CELULAR)
+           CAIXA DO SIMULADOR (FIXA NO PC / SEM CORTE DE CONTEÚDO NO CELULAR)
            ===================================================================== */
         .simulator-fixed-card {
             height: 348px;
@@ -123,6 +123,17 @@
             justify-content: space-between;
             flex: 1;
             animation: stageSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Ajuste exclusivo para telas Mobile (< 640px) */
+        @media (max-width: 639px) {
+            .simulator-fixed-card {
+                height: auto;
+                min-height: 348px;
+            }
+            .sim-stage-active {
+                gap: 0.625rem;
+            }
         }
 
         /* =====================================================================
@@ -147,7 +158,12 @@
             grid-template-rows: 1fr;
             align-items: center;
             width: 100%;
-            min-height: 108px;
+            min-height: 96px;
+        }
+        @media (min-width: 640px) {
+            .hero-slides-stack {
+                min-height: 108px;
+            }
         }
         @media (min-width: 1024px) {
             .hero-slides-stack {
@@ -450,7 +466,7 @@
     <!-- ========================================================= -->
     <div id="page-home" class="page-container active">
         <main>
-            <section id="hero-section" class="relative text-white h-[535px] sm:h-[515px] lg:h-[430px] flex items-center overflow-hidden">
+            <section id="hero-section" class="relative text-white min-h-[535px] h-auto py-5 sm:py-0 sm:h-[515px] lg:h-[430px] flex items-center overflow-hidden">
                 <div id="hero-background" class="absolute inset-0 z-0 bg-gray-900 overflow-hidden pointer-events-none">
                     <img src="public/banner-1.png" alt="Banner 1" class="hero-bg-slide opacity-100" data-bg-slide="0" decoding="async">
                     <img src="public/banner2.png" alt="Banner 2" class="hero-bg-slide opacity-0" data-bg-slide="1" decoding="async">
@@ -504,14 +520,14 @@
                                 <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-500 ease-out" style="width: 0%"></div>
                             </div>
 
-                            <div class="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0 mt-0.5">
-                                <div class="flex items-center gap-2">
-                                    <h2 class="text-base sm:text-lg font-extrabold text-gray-900">Simule seu empréstimo</h2>
-                                    <span id="sim-summary-chip" class="hidden text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                            <div class="flex items-center justify-between gap-1.5 pb-2 border-b border-gray-100 shrink-0 mt-0.5">
+                                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                                    <h2 class="text-sm sm:text-lg font-extrabold text-gray-900 truncate sm:whitespace-normal">Simule seu empréstimo</h2>
+                                    <span id="sim-summary-chip" class="hidden text-[10px] sm:text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 sm:px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
                                         R$ 300 • 1x
                                     </span>
                                 </div>
-                                <span id="step-badge" class="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 shrink-0">
+                                <span id="step-badge" class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 whitespace-nowrap shrink-0">
                                     Passo 1 de 4
                                 </span>
                             </div>
@@ -608,31 +624,31 @@
                                 <!-- ETAPA 3: CONSULTA DO CPF NA FACIO EM TEMPO REAL       -->
                                 <!-- ===================================================== -->
                                 <div id="stage-3-cpf" class="sim-stage-hidden">
-                                    <div class="space-y-2.5 my-auto">
+                                    <div class="space-y-2 sm:space-y-2.5 my-auto">
                                         <div>
-                                            <label for="cpf" class="block text-xs font-bold uppercase text-gray-600 mb-1">
+                                            <label for="cpf" class="block text-[11px] sm:text-xs font-bold uppercase text-gray-600 mb-1 leading-snug">
                                                 3. Digite seu CPF para verificar disponibilidade na Facio
                                             </label>
                                             <div class="relative">
-                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3.5 py-2.5 text-base font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
-                                                <span id="cpf-spinner" class="hidden absolute right-3.5 top-3 text-green-600">
+                                                <input id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required class="w-full rounded-xl border-2 border-gray-300 bg-white px-3.5 py-2 sm:py-2.5 text-base font-extrabold text-gray-900 outline-none focus:border-green-600 transition" maxlength="14">
+                                                <span id="cpf-spinner" class="hidden absolute right-3.5 top-2.5 sm:top-3 text-green-600">
                                                     <i class="fas fa-circle-notch fa-spin"></i>
                                                 </span>
                                             </div>
-                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500">
+                                            <p id="cpf-message" class="text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500 leading-snug">
                                                 Consulta 100% segura e gratuita, sem afetar seu score.
                                             </p>
                                         </div>
 
                                         <!-- Box do Resultado Elegível da Facio -->
-                                        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-3 shadow-sm fade-in">
+                                        <div id="facio-offer-box" class="hidden rounded-xl border-2 border-emerald-500 bg-emerald-50/90 p-2.5 sm:p-3 shadow-sm fade-in">
                                             <div class="flex items-center justify-between mb-1">
                                                 <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
                                                     <i class="fas fa-check-circle"></i> CPF Elegível na Facio
                                                 </span>
                                                 <img src="public/facio.png" alt="Facio" class="h-4 object-contain" onerror="this.style.display='none'">
                                             </div>
-                                            <p class="text-xs font-extrabold text-emerald-950">
+                                            <p class="text-xs font-extrabold text-emerald-950 leading-snug">
                                                 Até <span id="facio-offer-max" class="underline">R$ 300,00</span> via Pix • Oferta personalizada após análise (a partir de <span id="facio-offer-basefee">R$ 9,90</span>)
                                             </p>
                                             <p id="facio-offer-desc" class="hidden"></p>
@@ -640,11 +656,11 @@
                                         </div>
 
                                         <!-- Box quando o CPF não está elegível na Facio -->
-                                        <div id="facio-unavailable-box" class="hidden rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 fade-in">
+                                        <div id="facio-unavailable-box" class="hidden rounded-xl border border-amber-300 bg-amber-50 p-2.5 sm:p-3 text-xs text-amber-950 fade-in leading-snug">
                                             <div id="facio-unavailable-title" class="font-extrabold mb-0.5">
                                                 <i class="fas fa-info-circle text-amber-600 mr-1"></i> Sem oferta Facio disponível no momento
                                             </div>
-                                            <span id="facio-unavailable-sub" class="text-[11px]">
+                                            <span id="facio-unavailable-sub" class="text-[11px] block leading-snug">
                                                 Mas não se preocupe: separamos outras instituições parceiras com alta aprovação para o seu perfil. Clique em continuar!
                                             </span>
                                         </div>
@@ -654,7 +670,7 @@
                                         <button type="button" onclick="goToStage(2)" class="px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition shrink-0">
                                             &larr; Prazo
                                         </button>
-                                        <button id="btn-to-stage-4" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+                                        <button id="btn-to-stage-4" type="button" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 px-4 py-2.5 text-xs sm:text-sm font-extrabold text-white shadow-md transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
                                             <span id="btn-to-stage-4-text">Continuar para Seus Dados</span>
                                             <i class="fas fa-arrow-right text-xs"></i>
                                         </button>
@@ -671,7 +687,7 @@
                                             <input id="nomeInput" name="nome" placeholder="Digite seu nome e sobrenome" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition">
                                         </div>
 
-                                        <div class="grid grid-cols-2 gap-2">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             <div>
                                                 <label for="whatsapp" class="block text-[11px] font-bold uppercase text-gray-600 mb-0.5">WhatsApp</label>
                                                 <input id="whatsapp" name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus:border-green-600 transition" maxlength="15">
@@ -1332,7 +1348,7 @@
 
                 if (cpfMessage) {
                     cpfMessage.textContent = 'Verificando disponibilidade do CPF na Facio em tempo real...';
-                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-semibold animate-pulse';
+                    cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-blue-600 font-semibold animate-pulse leading-snug';
                 }
 
                 activeCheckPromise = (async () => {
@@ -1374,7 +1390,7 @@
                         btnFacioDirect?.classList.add('flex');
                         if (cpfMessage) {
                             cpfMessage.textContent = '✓ Oferta Facio disponível para seu CPF! Clique em Continuar abaixo:';
-                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold';
+                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-emerald-700 font-bold leading-snug';
                         }
                     } else {
                         facioOfferBox?.classList.add('hidden');
@@ -1394,7 +1410,7 @@
                             cpfMessage.textContent = facioState.alreadyRegistered
                                 ? '✓ CPF verificado (já cadastrado na Facio). Clique em Continuar para ver outros parceiros:'
                                 : '✓ CPF verificado! Clique em Continuar para ver as ofertas dos parceiros:';
-                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-amber-700 font-semibold';
+                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-amber-700 font-semibold leading-snug';
                         }
                     }
 
@@ -1416,7 +1432,7 @@
                         facioState.lastCheckedCpf = null;
                         if (cpfMessage) {
                             cpfMessage.textContent = 'Consulta 100% segura e gratuita, sem afetar seu score.';
-                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500';
+                            cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] font-semibold text-gray-500 leading-snug';
                         }
                         return;
                     }
@@ -1430,7 +1446,7 @@
                             btnFacioDirect?.classList.add('hidden');
                             if (cpfMessage) {
                                 cpfMessage.textContent = '✕ CPF inválido. Verifique os números digitados.';
-                                cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                                cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold leading-snug';
                             }
                         }
                     }
@@ -1443,7 +1459,7 @@
                 if (!validateCPF(cleanCpf)) {
                     if (cpfMessage) {
                         cpfMessage.textContent = '✕ Digite um CPF válido de 11 dígitos antes de continuar.';
-                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold';
+                        cpfMessage.className = 'text-[11px] mt-1 min-h-[1rem] text-red-600 font-bold leading-snug';
                     }
                     cpfInput?.focus();
                     return;
@@ -1775,7 +1791,7 @@
             }
 
             // ===================================================
-            // 8. LISTaA DE PRODUTOS E PAGINAÇÃO
+            // 8. LISTA DE PRODUTOS E PAGINAÇÃO
             // ===================================================
             const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -2226,7 +2242,7 @@
                     let supabaseProducts = [];
 
                     try {
-                        const res = await fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' });
+                        const res = await fetch(`/api/products?t=${Date.now()}`, { cache: no-store });
                         if (res.ok) {
                             const data = await res.json();
                             if (Array.isArray(data)) d1Products = data;
@@ -2296,7 +2312,9 @@
         });
 
 
+
     </script>
+
 
 
 </body>
@@ -2305,3 +2323,4 @@
 
 
 </html>
+
