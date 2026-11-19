@@ -9,7 +9,7 @@
     audio.volume = 0.5;
 
     const playNotification = () => {
-        // Tenta tocar o som (navegadores bloqueiam se não houver interação antes, mas ok)
+        // Teenta tocar o som (navegadores bloqueiam se não houver interação antes, mas ok)
         audio.play().catch(e => console.log("Audio bloqueado pelo browser até interação."));
     };
 
