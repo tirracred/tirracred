@@ -17,3 +17,7 @@ run_worker_first = ["/api/*"]
 [vars]
 FACIO_ENV = "production"
 FACIO_API_USER = "tirracred"
+
+[d1_databases]
+binding = "DB"
+database_id = "4f25a553-9ae0-423f-94bb-581cdd9a9850"
