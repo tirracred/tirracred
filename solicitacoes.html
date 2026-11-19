@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Solicitações D1 - Admin TirraCred</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link id="pageFavicon" rel="icon" type="image/png" href="/api/favicon" onerror="this.href='public/favincon.png'" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f0fdf4; }
+    .copy-pill {
+      transition: all 0.15s ease;
+    }
+    .copy-pill:hover {
+      border-color: #10b981;
+      background-color: #ecfdf5;
+    }
+    .copy-pill:active {
+      transform: scale(0.97);
+    }
+    .copied-flash {
+      background-color: #059669 !important;
+      border-color: #059669 !important;
+      color: #ffffff !important;
+    }
+    .copied-flash * {
+      color: #ffffff !important;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-anim {
+      animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+  <!-- ========================================================= -->
+  <!-- TELA DE LOGIN (MESMA AUTENTICAÇÃO DO ADMIN.HTML)          -->
+  <!-- ========================================================= -->
+  <div id="login" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 w-full max-w-md">
+      <img src="public/logo.png" class="w-36 mx-auto mb-4 object-contain" alt="TirraCred"
+           onerror="this.onerror=null;this.src='https://placehold.co/160x50/fff/000?text=TirraCred';">
+      <div class="flex justify-center mb-2">
+        <span class="text-[11px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-900 px-3 py-0.5 rounded-full border border-amber-200">
+          ⚡ Central de Solicitações D1
+        </span>
+      </div>
+      <h2 class="text-2xl font-extrabold text-center text-gray-900 mb-1">Acesso Restrito</h2>
+      <p class="text-xs text-center text-gray-500 mb-6">Entre com sua conta admin para visualizar e copiar as solicitações do Cloudflare D1</p>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="text-xs font-bold uppercase text-gray-600">E-mail</label>
+          <input id="email" type="email" required autocomplete="email" class="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-emerald-600 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase text-gray-600">Senha</label>
+          <input id="password" type="password" required autocomplete="current-password" class="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-emerald-600 outline-none">
+        </div>
+        <button id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow-md">
+          Entrar nas Solicitações
+        </button>
+        <p id="loginError" class="text-center text-sm text-red-600 mt-2 font-medium"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PAINEL PRINCIPAL DE SOLICITAÇÕES (CLOUDFLARE D1)          -->
+  <!-- ========================================================= -->
+  <div id="app" class="hidden flex-1 flex flex-col">
+    <header class="bg-white/95 backdrop-blur shadow-sm sticky top-0 z-40 border-b border-gray-200">
+      <div class="container mx-auto px-4 py-2.5 sm:py-0 sm:h-16 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <img src="public/logo.png" alt="logo" class="h-8 object-contain"
+               onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
+          <span class="text-xs font-extrabold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200 px-2.5 py-0.5 rounded-full">
+            ⚡ Solicitações D1
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="admin.html" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
+            <i class="fas fa-boxes-stacked text-emerald-600"></i> <span>Admin Produtos</span>
+          </a>
+          <a href="index.html" target="_blank" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
+            <i class="fas fa-home text-emerald-600"></i> <span class="hidden sm:inline">Ver Index</span>
+          </a>
+          <button id="logout" type="button" class="px-3.5 py-2 bg-red-600 text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-red-700 transition">
+            Sair
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 max-w-7xl flex-1 space-y-5">
+
+      <!-- KPIs Rápidos -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+          <div class="text-[11px] font-bold uppercase text-gray-400">Total no D1</div>
+          <div id="kpiTotal" class="text-2xl font-black text-gray-900 mt-0.5">0</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-emerald-200 shadow-sm">
+          <div class="text-[11px] font-bold uppercase text-emerald-700">📅 Hoje</div>
+          <div id="kpiToday" class="text-2xl font-black text-emerald-700 mt-0.5">0</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm">
+          <div class="text-[11px] font-bold uppercase text-amber-700">⚡ Facio Elegível</div>
+          <div id="kpiFacio" class="text-2xl font-black text-amber-600 mt-0.5">0</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-red-200 shadow-sm">
+          <div class="text-[11px] font-bold uppercase text-red-700">🚫 Negativados</div>
+          <div id="kpiNegativado" class="text-2xl font-black text-red-600 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Barra de Controle, Busca e Filtros -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900">Últimas Solicitações de Crédito</h1>
+            <p id="statusText" class="text-xs sm:text-sm text-gray-500 mt-0.5">Carregando dados do Cloudflare D1...</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Alternador de Visualização -->
+            <div class="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-bold">
+              <button type="button" id="viewCardsBtn" onclick="setViewMode('cards')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-sm">
+                <i class="fas fa-grip"></i> Cards
+              </button>
+              <button type="button" id="viewTableBtn" onclick="setViewMode('table')" class="px-2.5 py-1 rounded-lg text-gray-600 hover:text-gray-900">
+                <i class="fas fa-table"></i> Tabela
+              </button>
+            </div>
+
+            <!-- Auto-refresh -->
+            <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs font-bold text-gray-700 cursor-pointer select-none" title="Atualizar lista automaticamente a cada 30 segundos">
+              <input id="autoRefreshToggle" type="checkbox" class="h-3.5 w-3.5 accent-emerald-600 rounded">
+              <span>Auto 30s</span>
+            </label>
+
+            <button type="button" onclick="loadSolicitacoes()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-1.5">
+              <i id="refreshIcon" class="fas fa-sync-alt"></i> Atualizar
+            </button>
+
+            <button type="button" onclick="exportCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-file-csv"></i> CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Busca + Filtros -->
+        <div class="flex flex-col lg:flex-row gap-3 pt-3 border-t border-gray-100 items-stretch lg:items-center justify-between">
+          <div class="relative flex-1 max-w-md">
+            <i class="fas fa-search absolute left-3.5 top-3 text-gray-400 text-sm"></i>
+            <input id="searchInput" type="text" oninput="renderSolicitacoes()" placeholder="Buscar por nome, CPF, WhatsApp ou e-mail..."
+                   class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-emerald-500 outline-none">
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1.5">
+            <!-- Fonte de Dados -->
+            <select id="sourceSelect" onchange="renderSolicitacoes()" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 bg-amber-50 text-amber-900 outline-none">
+              <option value="d1">☁️ Só Cloudflare D1</option>
+              <option value="all">🔄 D1 + Supabase</option>
+            </select>
+
+            <!-- Período -->
+            <select id="periodSelect" onchange="renderSolicitacoes()" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 bg-white text-gray-700 outline-none">
+              <option value="all">📅 Todo Período</option>
+              <option value="today">Hoje</option>
+              <option value="7d">Últimos 7 dias</option>
+              <option value="30d">Últimos 30 dias</option>
+            </select>
+
+            <!-- Filtros de Perfil -->
+            <button type="button" onclick="setProfileFilter('all')" data-pfilter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">Todos</button>
+            <button type="button" onclick="setProfileFilter('negativado')" data-pfilter="negativado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🚫 Negativado</button>
+            <button type="button" onclick="setProfileFilter('aposentado')" data-pfilter="aposentado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">👴 Aposentado/CLT</button>
+            <button type="button" onclick="setProfileFilter('bolsafamilia')" data-pfilter="bolsafamilia" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🤝 Bolsa Família</button>
+            <button type="button" onclick="setProfileFilter('facio')" data-pfilter="facio" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">⚡ Facio</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dica de Cópia Rápida -->
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-gray-500">
+        <span><i class="fas fa-hand-pointer text-emerald-600 mr-1"></i> <strong>Dica:</strong> Clique em qualquer campo (Nome, CPF, WhatsApp ou E-mail) para copiar na hora, ou use <strong>Copiar Ficha</strong>.</span>
+        <span id="filteredCounter" class="font-bold text-gray-700"></span>
+      </div>
+
+      <!-- CONTAINER DE CARDS (PADRÃO) -->
+      <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+      <!-- CONTAINER DE TABELA COMPACTA -->
+      <div id="tableContainer" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-900 text-white text-xs uppercase tracking-wider">
+                <th class="py-3.5 px-4 font-extrabold">ID / Data</th>
+                <th class="py-3.5 px-4 font-extrabold">Nome (clique p/ copiar)</th>
+                <th class="py-3.5 px-4 font-extrabold">CPF (clique p/ copiar)</th>
+                <th class="py-3.5 px-4 font-extrabold">WhatsApp / E-mail</th>
+                <th class="py-3.5 px-4 font-extrabold">Valor / Perfil</th>
+                <th class="py-3.5 px-4 font-extrabold text-right">Cópia Rápida</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-100 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- TOAST DE FEEDBACK AO COPIAR -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+    const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const LEADS_API_ENDPOINTS = [
+      'https://tirracred.tirradigital.workers.dev/api/leads',
+      '/api/leads',
+      '/api/capturar-lead'
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const loginEl = $('login');
+    const appEl = $('app');
+
+    let d1Rows = [];
+    let supaRows = [];
+    let currentProfileFilter = 'all';
+    let currentViewMode = 'cards';
+    let activeEndpoint = LEADS_API_ENDPOINTS[0];
+    let autoRefreshTimer = null;
+
+    // =========================================================================
+    // HELPERS DE FORMATAÇÃO E CÓPIA ULTRA-RÁPIDA
+    // =========================================================================
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function isTruthy(v) {
+      return v === true || v === 1 || v === '1' || v === 'true';
+    }
+
+    function onlyDigits(v) {
+      return String(v || '').replace(/\D/g, '');
+    }
+
+    function formatCPF(raw) {
+      const d = onlyDigits(raw);
+      if (d.length !== 11) return raw || '-';
+      return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+
+    function formatPhone(raw) {
+      const d = onlyDigits(raw);
+      if (d.length === 11) return d.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      if (d.length === 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+      return raw || '-';
+    }
+
+    function formatBRL(val) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(val) || 0);
+    }
+
+    function parseDateObj(rawDate) {
+      if (!rawDate) return null;
+      const str = String(rawDate).trim();
+      const iso = str.includes('T') ? str : str.replace(' ', 'T') + 'Z';
+      const d = new Date(iso);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDateBR(rawDate) {
+      const d = parseDateObj(rawDate);
+      if (!d) return 'Sem data';
+      return d.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function showToast(msg) {
+      const wrap = $('toastContainer');
+      if (!wrap) return;
+      const el = document.createElement('div');
+      el.className = 'toast-anim bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xl border border-emerald-500/40 flex items-center gap-2';
+      el.innerHTML = `<i class="fas fa-check-circle text-emerald-400"></i><span>${esc(msg)}</span>`;
+      wrap.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => el.remove(), 260);
+      }, 1700);
+    }
+
+    async function copyToClipboard(text, label, btnEl) {
+      const val = String(text ?? '').trim();
+      if (!val || val === '-') {
+        showToast('Campo vazio para copiar');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(val);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = val;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+
+      if (btnEl) {
+        btnEl.classList.add('copied-flash');
+        setTimeout(() => btnEl.classList.remove('copied-flash'), 800);
+      }
+      showToast(`${label} copiado!`);
+    }
+
+    window.copyField = (encodedVal, label, btnEl) => {
+      const val = decodeURIComponent(encodedVal || '');
+      copyToClipboard(val, label, btnEl);
+    };
+
+    window.copyFullLead = (leadUid, btnEl) => {
+      const list = getMergedList();
+      const l = list.find(x => x._uid === leadUid);
+      if (!l) return;
+
+      const perfis = [];
+      if (isTruthy(l.negativado)) perfis.push('Negativado');
+      if (isTruthy(l.aposentado)) perfis.push('Aposentado/CLT');
+      if (isTruthy(l.bolsafamilia)) perfis.push('Bolsa Família');
+      if (isTruthy(l.facio_elegivel)) perfis.push('Facio Elegível');
+
+      const ficha = [
+        `Nome: ${l.nome || '-'}`,
+        `CPF: ${formatCPF(l.cpf)} (${onlyDigits(l.cpf) || '-'})`,
+        `WhatsApp: ${formatPhone(l.whatsapp)} (${onlyDigits(l.whatsapp) || '-'})`,
+        `E-mail: ${l.email || '-'}`,
+        `Valor: ${formatBRL(l.valor_desejado)} em ${l.parcelas || 1}x`,
+        `Perfil: ${perfis.length ? perfis.join(', ') : 'Padrão'}`,
+        `Data: ${formatDateBR(l.created_at)}`
+      ].join('\n');
+
+      copyToClipboard(ficha, 'Ficha completa', btnEl);
+    };
+
+    // =========================================================================
+    // AUTH HEADERS (ENVIA O TOKEN DA SESSÃO SUPABASE PARA O WORKER BLINDADO)
+    // =========================================================================
+    async function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+      } catch (_) {}
+      return headers;
+    }
+
+    // =========================================================================
+    // CARREGAMENTO DAS SOLICITAÇÕES DO CLOUDFLARE D1 (+ SUPABASE OPCIONAL)
+    // =========================================================================
+    window.loadSolicitacoes = async () => {
+      const status = $('statusText');
+      const icon = $('refreshIcon');
+      if (icon) icon.classList.add('fa-spin');
+      if (status) status.textContent = 'Buscando últimas solicitações no Cloudflare D1...';
+
+      const headers = await getAuthHeaders();
+      let d1Err = '';
+      d1Rows = [];
+      supaRows = [];
+
+      // 1) Busca do Cloudflare D1
+      for (const ep of LEADS_API_ENDPOINTS) {
+        try {
+          const res = await fetch(`${ep}?t=${Date.now()}`, {
+            cache: 'no-store',
+            headers
+          });
+          const ct = res.headers.get('content-type') || '';
+          if (res.ok && ct.includes('application/json')) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              d1Rows = data.map(r => ({
+                ...r,
+                _source: 'd1',
+                _d1_id: r.id,
+                _uid: `d1_${r.id}`
+              }));
+              activeEndpoint = ep;
+              d1Err = '';
+              break;
+            }
+          } else {
+            const raw = await res.text().catch(() => '');
+            let errParsed = '';
+            try { errParsed = JSON.parse(raw)?.error || ''; } catch (_) {}
+            d1Err = errParsed || `HTTP ${res.status} em ${ep}`;
+          }
+        } catch (err) {
+          d1Err = err.message;
+        }
+      }
+
+      // 2) Busca do Supabase (usado apenas se o usuário mudar o seletor para "D1 + Supabase")
+      try {
+        const { data, error } = await _supabase
+          .from('leads')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(500);
+        if (!error && Array.isArray(data)) {
+          supaRows = data.map(r => ({
+            ...r,
+            _source: 'supabase',
+            _supa_id: r.id,
+            _uid: `supa_${r.id}`
+          }));
+        }
+      } catch (_) {}
+
+      if (icon) icon.classList.remove('fa-spin');
+
+      const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (status) {
+        if (d1Err && !d1Rows.length) {
+          status.innerHTML = `<span class="text-red-600 font-bold">⚠️ Erro no Cloudflare D1: ${esc(d1Err)}</span> • Atualizado às ${nowStr}`;
+        } else {
+          status.textContent = `Conectado ao Cloudflare D1 (${d1Rows.length} solicitações) • Última atualização às ${nowStr}`;
+        }
+      }
+
+      updateKPIs();
+      renderSolicitacoes();
+    };
+
+    function getMergedList() {
+      const mode = $('sourceSelect')?.value || 'd1';
+      if (mode === 'd1') {
+        return [...d1Rows].sort(sortByRecent);
+      }
+
+      const map = new Map();
+      const merged = [];
+      for (const l of [...d1Rows, ...supaRows]) {
+        const cpf = onlyDigits(l.cpf);
+        const dayKey = l.created_at ? String(l.created_at).slice(0, 10) : 'legacy';
+        const key = `${cpf}_${String(l.valor_desejado || '')}_${String(l.nome || '').toLowerCase().trim()}_${dayKey}`;
+        if (!map.has(key)) {
+          map.set(key, { ...l });
+          merged.push(map.get(key));
+        } else {
+          const ex = map.get(key);
+          ex._source = 'both';
+          if (!ex.created_at && l.created_at) ex.created_at = l.created_at;
+          if (l._d1_id) ex._d1_id = l._d1_id;
+          if (l._supa_id) ex._supa_id = l._supa_id;
+          if (isTruthy(l.facio_elegivel)) ex.facio_elegivel = 1;
+        }
+      }
+      return merged.sort(sortByRecent);
+    }
+
+    function sortByRecent(a, b) {
+      const da = parseDateObj(a.created_at)?.getTime() || 0;
+      const db = parseDateObj(b.created_at)?.getTime() || 0;
+      if (db !== da) return db - da;
+      return (Number(b.id) || 0) - (Number(a.id) || 0);
+    }
+
+    function updateKPIs() {
+      const base = d1Rows.length ? d1Rows : getMergedList();
+      const todayKey = new Date().toISOString().slice(0, 10);
+
+      let todayCount = 0;
+      let facioCount = 0;
+      let negCount = 0;
+
+      for (const l of base) {
+        const d = parseDateObj(l.created_at);
+        if (d && d.toISOString().slice(0, 10) === todayKey) todayCount++;
+        if (isTruthy(l.facio_elegivel)) facioCount++;
+        if (isTruthy(l.negativado)) negCount++;
+      }
+
+      if ($('kpiTotal')) $('kpiTotal').textContent = base.length;
+      if ($('kpiToday')) $('kpiToday').textContent = todayCount;
+      if ($('kpiFacio')) $('kpiFacio').textContent = facioCount;
+      if ($('kpiNegativado')) $('kpiNegativado').textContent = negCount;
+    }
+
+    window.setProfileFilter = (pf) => {
+      currentProfileFilter = pf;
+      document.querySelectorAll('[data-pfilter]').forEach(btn => {
+        const active = btn.getAttribute('data-pfilter') === pf;
+        btn.className = active
+          ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white'
+          : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200';
+      });
+      renderSolicitacoes();
+    };
+
+    window.setViewMode = (mode) => {
+      currentViewMode = mode;
+      $('cardsContainer').classList.toggle('hidden', mode !== 'cards');
+      $('tableContainer').classList.toggle('hidden', mode !== 'table');
+      $('viewCardsBtn').className = mode === 'cards'
+        ? 'px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-sm'
+        : 'px-2.5 py-1 rounded-lg text-gray-600 hover:text-gray-900';
+      $('viewTableBtn').className = mode === 'table'
+        ? 'px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-sm'
+        : 'px-2.5 py-1 rounded-lg text-gray-600 hover:text-gray-900';
+      renderSolicitacoes();
+    };
+
+    function getFilteredSolicitacoes() {
+      const list = getMergedList();
+      const q = ($('searchInput')?.value || '').toLowerCase().trim();
+      const qDigits = onlyDigits(q);
+      const period = $('periodSelect')?.value || 'all';
+      const now = Date.now();
+      const todayKey = new Date().toISOString().slice(0, 10);
+
+      return list.filter(l => {
+        if (currentProfileFilter === 'negativado' && !isTruthy(l.negativado)) return false;
+        if (currentProfileFilter === 'aposentado' && !isTruthy(l.aposentado)) return false;
+        if (currentProfileFilter === 'bolsafamilia' && !isTruthy(l.bolsafamilia)) return false;
+        if (currentProfileFilter === 'facio' && !isTruthy(l.facio_elegivel)) return false;
+
+        if (period !== 'all') {
+          const d = parseDateObj(l.created_at);
+          if (!d) return false;
+          if (period === 'today' && d.toISOString().slice(0, 10) !== todayKey) return false;
+          if (period === '7d' && (now - d.getTime()) > 7 * 86400000) return false;
+          if (period === '30d' && (now - d.getTime()) > 30 * 86400000) return false;
+        }
+
+        if (!q) return true;
+        const hay = `${l.nome || ''} ${l.cpf || ''} ${onlyDigits(l.cpf)} ${l.whatsapp || ''} ${onlyDigits(l.whatsapp)} ${l.email || ''}`.toLowerCase();
+        if (hay.includes(q)) return true;
+        if (qDigits && (onlyDigits(l.cpf).includes(qDigits) || onlyDigits(l.whatsapp).includes(qDigits))) return true;
+        return false;
+      });
+    }
+
+    function profileBadgesHTML(l) {
+      const badges = [];
+      if (isTruthy(l.facio_elegivel)) badges.push('<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Facio</span>');
+      if (isTruthy(l.negativado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-700 border border-red-200">🚫 Negativado</span>');
+      if (isTruthy(l.aposentado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">👴 Aposentado/CLT</span>');
+      if (isTruthy(l.bolsafamilia)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">🤝 Bolsa Família</span>');
+      if (!badges.length) badges.push('<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500">Padrão</span>');
+      return badges.join('');
+    }
+
+    function sourceBadgeHTML(src) {
+      if (src === 'both') return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">D1 + Supa</span>';
+      if (src === 'd1') return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">Cloudflare D1</span>';
+      return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Supabase</span>';
+    }
+
+    window.renderSolicitacoes = () => {
+      const filtered = getFilteredSolicitacoes();
+      if ($('filteredCounter')) {
+        $('filteredCounter').textContent = `Exibindo ${filtered.length} ${filtered.length === 1 ? 'solicitação' : 'solicitações'}`;
+      }
+
+      if (currentViewMode === 'cards') {
+        const container = $('cardsContainer');
+        if (!filtered.length) {
+          container.innerHTML = `
+            <div class="col-span-full bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500 font-semibold">
+              Nenhuma solicitação encontrada para os filtros selecionados.
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(l => {
+          const nomeClean = String(l.nome || 'Sem nome').trim();
+          const cpfDigits = onlyDigits(l.cpf);
+          const cpfFmt = formatCPF(l.cpf);
+          const wppDigits = onlyDigits(l.whatsapp);
+          const wppFmt = formatPhone(l.whatsapp);
+          const emailClean = String(l.email || '').trim();
+          const valorFmt = formatBRL(l.valor_desejado);
+          const wppUrl = wppDigits ? `https://wa.me/55${wppDigits}?text=${encodeURIComponent(`Olá ${nomeClean.split(' ')[0]}, tudo bem? Vi sua simulação na TirraCred no valor de ${valorFmt}!`)}` : '#';
+
+          return `
+            <article class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between gap-3">
+              <!-- Topo do Card: ID, Data, Fonte e Valor -->
+              <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-gray-100">
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-extrabold text-gray-400">#${esc(l.id)}</span>
+                    ${sourceBadgeHTML(l._source)}
+                  </div>
+                  <div class="text-[11px] font-semibold text-gray-500 mt-1">
+                    <i class="far fa-clock text-emerald-600 mr-1"></i>${esc(formatDateBR(l.created_at))}
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-lg font-black text-emerald-700 leading-tight">${valorFmt}</div>
+                  <div class="text-[11px] font-bold text-gray-400">${esc(l.parcelas || 1)}x</div>
+                </div>
+              </div>
+
+              <!-- Campos com Cópia em 1 Clique -->
+              <div class="space-y-2">
+                <!-- Nome -->
+                <button type="button" onclick="copyField('${encodeURIComponent(nomeClean)}', 'Nome', this)"
+                        class="copy-pill w-full text-left px-3 py-2 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center justify-between gap-2 group" title="Clique para copiar o Nome">
+                  <div class="min-w-0">
+                    <span class="block text-[10px] font-bold uppercase text-gray-400 leading-none">Nome Completo</span>
+                    <span class="block text-sm font-extrabold text-gray-900 truncate mt-0.5">${esc(nomeClean)}</span>
+                  </div>
+                  <i class="far fa-copy text-gray-400 group-hover:text-emerald-600 shrink-0 text-xs"></i>
+                </button>
+
+                <!-- CPF (com opção rápida de copiar só números) -->
+                <div class="grid grid-cols-12 gap-1.5">
+                  <button type="button" onclick="copyField('${encodeURIComponent(cpfDigits || cpfFmt)}', 'CPF (só números)', this)"
+                          class="copy-pill col-span-8 text-left px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center justify-between gap-1.5 group" title="Clique para copiar CPF sem pontos">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] font-bold uppercase text-gray-400 leading-none">CPF (só números)</span>
+                      <span class="block text-xs font-mono font-extrabold text-gray-900 truncate mt-0.5">${esc(cpfFmt)}</span>
+                    </div>
+                    <i class="far fa-copy text-gray-400 group-hover:text-emerald-600 shrink-0 text-xs"></i>
+                  </button>
+                  <button type="button" onclick="copyField('${encodeURIComponent(cpfFmt)}', 'CPF formatado', this)"
+                          class="copy-pill col-span-4 px-2 py-1.5 rounded-xl border border-gray-200 bg-gray-50/70 text-[10px] font-bold text-gray-600 flex flex-col items-center justify-center leading-tight" title="Copiar CPF com pontos e traço">
+                    <i class="fas fa-hashtag text-emerald-600 mb-0.5"></i>
+                    <span>c/ pontos</span>
+                  </button>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="grid grid-cols-12 gap-1.5">
+                  <button type="button" onclick="copyField('${encodeURIComponent(wppDigits || wppFmt)}', 'WhatsApp', this)"
+                          class="copy-pill col-span-8 text-left px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center justify-between gap-1.5 group" title="Clique para copiar o WhatsApp">
+                    <div class="min-w-0">
+                      <span class="block text-[10px] font-bold uppercase text-gray-400 leading-none">WhatsApp</span>
+                      <span class="block text-xs font-mono font-extrabold text-emerald-800 truncate mt-0.5">${esc(wppFmt)}</span>
+                    </div>
+                    <i class="far fa-copy text-gray-400 group-hover:text-emerald-600 shrink-0 text-xs"></i>
+                  </button>
+                  <a href="${wppUrl}" target="_blank" rel="noopener noreferrer"
+                     class="col-span-4 px-2 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center gap-1 transition">
+                    <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
+                    <span>Chamar</span>
+                  </a>
+                </div>
+
+                <!-- E-mail -->
+                <button type="button" onclick="copyField('${encodeURIComponent(emailClean)}', 'E-mail', this)"
+                        class="copy-pill w-full text-left px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center justify-between gap-2 group" title="Clique para copiar o E-mail">
+                  <div class="min-w-0">
+                    <span class="block text-[10px] font-bold uppercase text-gray-400 leading-none">E-mail</span>
+                    <span class="block text-xs font-semibold text-gray-700 truncate mt-0.5">${esc(emailClean || '-')}</span>
+                  </div>
+                  <i class="far fa-copy text-gray-400 group-hover:text-emerald-600 shrink-0 text-xs"></i>
+                </button>
+              </div>
+
+              <!-- Perfil + Botão Copiar Tudo + Excluir -->
+              <div class="pt-2.5 border-t border-gray-100 space-y-2.5">
+                <div class="flex flex-wrap gap-1">${profileBadgesHTML(l)}</div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="copyFullLead('${esc(l._uid)}', this)"
+                          class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition shadow-sm flex items-center justify-center gap-1.5">
+                    <i class="fas fa-copy"></i> Copiar Ficha Completa
+                  </button>
+                  <button type="button" onclick="deleteSolicitacao(${l._d1_id || 'null'}, ${l._supa_id || 'null'})"
+                          class="p-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition" title="Excluir registro">
+                    <i class="fas fa-trash text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      } else {
+        const tbody = $('tableBody');
+        if (!filtered.length) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-500 font-semibold">Nenhuma solicitação encontrada.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(l => {
+          const nomeClean = String(l.nome || 'Sem nome').trim();
+          const cpfDigits = onlyDigits(l.cpf);
+          const cpfFmt = formatCPF(l.cpf);
+          const wppDigits = onlyDigits(l.whatsapp);
+          const wppFmt = formatPhone(l.whatsapp);
+          const emailClean = String(l.email || '').trim();
+          const valorFmt = formatBRL(l.valor_desejado);
+          const wppUrl = wppDigits ? `https://wa.me/55${wppDigits}` : '#';
+
+          return `
+            <tr class="hover:bg-emerald-50/40 transition">
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-gray-700 text-xs">#${esc(l.id)}</span>
+                  ${sourceBadgeHTML(l._source)}
+                </div>
+                <div class="text-[11px] text-gray-500 mt-0.5">${esc(formatDateBR(l.created_at))}</div>
+              </td>
+              <td class="py-3 px-4">
+                <button type="button" onclick="copyField('${encodeURIComponent(nomeClean)}', 'Nome', this)"
+                        class="copy-pill px-2.5 py-1 rounded-lg border border-transparent text-left font-extrabold text-gray-900 flex items-center gap-1.5">
+                  <span>${esc(nomeClean)}</span>
+                  <i class="far fa-copy text-[10px] text-gray-400"></i>
+                </button>
+              </td>
+              <td class="py-3 px-4 whitespace-nowrap">
+                <button type="button" onclick="copyField('${encodeURIComponent(cpfDigits || cpfFmt)}', 'CPF', this)"
+                        class="copy-pill px-2.5 py-1 rounded-lg border border-gray-200 bg-gray-50 font-mono text-xs font-bold text-gray-800 inline-flex items-center gap-1.5">
+                  <span>${esc(cpfFmt)}</span>
+                  <i class="far fa-copy text-[10px] text-gray-400"></i>
+                </button>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="copyField('${encodeURIComponent(wppDigits || wppFmt)}', 'WhatsApp', this)"
+                          class="copy-pill px-2 py-0.5 rounded-lg border border-gray-200 bg-gray-50 font-mono text-xs font-bold text-emerald-800 inline-flex items-center gap-1">
+                    <span>${esc(wppFmt)}</span>
+                    <i class="far fa-copy text-[10px] text-gray-400"></i>
+                  </button>
+                  <a href="${wppUrl}" target="_blank" rel="noopener noreferrer" class="text-emerald-600 hover:text-emerald-700" title="Abrir WhatsApp">
+                    <i class="fab fa-whatsapp text-base"></i>
+                  </a>
+                </div>
+                <button type="button" onclick="copyField('${encodeURIComponent(emailClean)}', 'E-mail', this)"
+                        class="copy-pill mt-1 px-2 py-0.5 rounded-lg border border-transparent text-xs text-gray-500 inline-flex items-center gap-1 max-w-[220px] truncate">
+                  <span class="truncate">${esc(emailClean || '-')}</span>
+                  <i class="far fa-copy text-[10px] text-gray-400 shrink-0"></i>
+                </button>
+              </td>
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="font-black text-emerald-700 text-sm">${valorFmt} <span class="text-xs font-semibold text-gray-400">(${esc(l.parcelas || 1)}x)</span></div>
+                <div class="flex flex-wrap gap-1 mt-1">${profileBadgesHTML(l)}</div>
+              </td>
+              <td class="py-3 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <button type="button" onclick="copyFullLead('${esc(l._uid)}', this)"
+                          class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
+                    <i class="fas fa-copy mr-1"></i> Copiar Tudo
+                  </button>
+                  <button type="button" onclick="deleteSolicitacao(${l._d1_id || 'null'}, ${l._supa_id || 'null'})"
+                          class="p-2 rounded-lg text-red-600 hover:bg-red-50 transition" title="Excluir">
+                    <i class="fas fa-trash text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    };
+
+    window.deleteSolicitacao = async (d1Id, supaId) => {
+      if (!confirm('Deseja excluir esta solicitação permanentemente?')) return;
+      const headers = await getAuthHeaders();
+      if (d1Id) {
+        await fetch(`${activeEndpoint}?id=${d1Id}`, { method: 'DELETE', headers }).catch(() => {});
+      }
+      if (supaId) {
+        await _supabase.from('leads').delete().eq('id', supaId);
+      }
+      showToast('Solicitação excluída');
+      await loadSolicitacoes();
+    };
+
+    window.exportCSV = () => {
+      const list = getFilteredSolicitacoes();
+      if (!list.length) return alert('Não há solicitações para exportar.');
+      const headers = ['ID', 'Fonte', 'Data', 'Nome', 'CPF', 'WhatsApp', 'Email', 'Valor', 'Parcelas', 'Negativado', 'Aposentado', 'Bolsa_Familia', 'Facio_Elegivel'];
+      const rows = list.map(l => [
+        l.id,
+        l._source,
+        `"${formatDateBR(l.created_at)}"`,
+        `"${String(l.nome || '').replace(/"/g, '""')}"`,
+        `"${onlyDigits(l.cpf)}"`,
+        `"${onlyDigits(l.whatsapp)}"`,
+        `"${String(l.email || '')}"`,
+        l.valor_desejado || 0,
+        l.parcelas || 1,
+        isTruthy(l.negativado) ? 'Sim' : 'Nao',
+        isTruthy(l.aposentado) ? 'Sim' : 'Nao',
+        isTruthy(l.bolsafamilia) ? 'Sim' : 'Nao',
+        isTruthy(l.facio_elegivel) ? 'Sim' : 'Nao'
+      ].join(','));
+
+      const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `solicitacoes_d1_tirracred_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    $('autoRefreshToggle')?.addEventListener('change', (e) => {
+      if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      }
+      if (e.target.checked) {
+        autoRefreshTimer = setInterval(loadSolicitacoes, 30000);
+        showToast('Atualização automática (30s) ativada');
+      }
+    });
+
+    // =========================================================================
+    // AUTENTICAÇÃO SUPABASE (MESMA DO ADMIN.HTML)
+    // =========================================================================
+    $('logout').onclick = async () => {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      await _supabase.auth.signOut();
+      appEl.classList.add('hidden');
+      loginEl.classList.remove('hidden');
+    };
+
+    $('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      $('loginError').textContent = '';
+      const btn = $('loginSubmitBtn');
+      const orig = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
+
+      const email = $('email').value.trim();
+      const password = $('password').value;
+
+      const { error } = await _supabase.auth.signInWithPassword({ email, password });
+      btn.disabled = false;
+      btn.textContent = orig;
+
+      if (error) {
+        $('loginError').textContent = error.message;
+        return;
+      }
+
+      loginEl.classList.add('hidden');
+      appEl.classList.remove('hidden');
+      loadSolicitacoes();
+    };
+
+    (async () => {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session) {
+        loginEl.classList.add('hidden');
+        appEl.classList.remove('hidden');
+        loadSolicitacoes();
+      }
+    })();
+  </script>
+</body>
+</html>

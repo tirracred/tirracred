@@ -96,6 +96,9 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <a href="solicitacoes.html" target="_blank" class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-xs sm:text-sm font-extrabold text-amber-900 flex items-center gap-1.5 transition shadow-sm" title="Abrir janela dedicada de Solicitações D1 com cópia rápida">
+            <i class="fas fa-bolt text-amber-600"></i> <span>Solicitações D1 ↗</span>
+          </a>
           <a href="index.html" target="_blank" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
             <i class="fas fa-home text-emerald-600"></i> <span>Ver Index</span>
           </a>
@@ -170,6 +173,9 @@
             <p id="leadsStatus" class="text-xs sm:text-sm text-gray-500 mt-0.5">Sincronizado com Cloudflare D1 (tirracred) + Supabase</p>
           </div>
           <div class="flex flex-wrap gap-2">
+            <a href="solicitacoes.html" target="_blank" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-extrabold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-up-right-from-square"></i> Abrir Janela Cópia Rápida
+            </a>
             <button type="button" onclick="openAddLeadModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
               <i class="fas fa-user-plus"></i> Novo Lead (D1)
             </button>
@@ -2471,10 +2477,42 @@
       });
     }
 
+    async function getAdminAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+      } catch (_) {}
+      return headers;
+    }
+
+    window.quickCopyLeadText = async (encodedTxt, label, btnEl) => {
+      const txt = decodeURIComponent(encodedTxt || '').trim();
+      if (!txt) return;
+      try {
+        await navigator.clipboard.writeText(txt);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      if (btnEl) {
+        const orig = btnEl.innerHTML;
+        btnEl.innerHTML = `<i class="fas fa-check text-emerald-600"></i> ${label}`;
+        setTimeout(() => { btnEl.innerHTML = orig; }, 900);
+      }
+    };
+
     window.loadLeadsAdmin = async () => {
       const status = $('leadsStatus');
       if (status) status.textContent = 'Sincronizando leads do Cloudflare D1 (tirracred) e Supabase...';
 
+      const authHeaders = await getAdminAuthHeaders();
       let d1Leads = [];
       let supaLeads = [];
 
@@ -2483,7 +2521,7 @@
       let activeLeadsEndpoint = LEADS_API_ENDPOINTS[0];
       for (const ep of LEADS_API_ENDPOINTS) {
         try {
-          const res = await fetch(`${ep}?t=${Date.now()}`, { cache: 'no-store' });
+          const res = await fetch(`${ep}?t=${Date.now()}`, { cache: 'no-store', headers: authHeaders });
           const contentType = res.headers.get('content-type') || '';
           if (res.ok && contentType.includes('application/json')) {
             const data = await res.json();
@@ -2636,9 +2674,18 @@
               <div class="flex flex-wrap gap-1">${badges.join('')}</div>
             </td>
             <td class="py-3 px-4 text-right whitespace-nowrap">
-              <button type="button" onclick="deleteLeadItem(${l._d1_id || 'null'}, ${l._supa_id || 'null'})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Excluir Lead">
-                <i class="fas fa-trash"></i>
-              </button>
+              <div class="inline-flex items-center gap-1">
+                <button type="button" onclick="quickCopyLeadText('${encodeURIComponent(`Nome: ${l.nome || '-'}
+CPF: ${l.cpf || '-'}
+WhatsApp: ${l.whatsapp || '-'}
+E-mail: ${l.email || '-'}
+Valor: ${valorFmt} (${l.parcelas || 1}x)`)}', 'Copiado!', this)" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold transition" title="Copiar todos os dados deste cliente">
+                  <i class="fas fa-copy mr-1"></i>Copiar
+                </button>
+                <button type="button" onclick="deleteLeadItem(${l._d1_id || 'null'}, ${l._supa_id || 'null'})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Excluir Lead">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -2647,8 +2694,9 @@
 
     window.deleteLeadItem = async (d1Id, supaId) => {
       if (!confirm('Deseja excluir este lead permanentemente?')) return;
+      const authHeaders = await getAdminAuthHeaders();
       if (d1Id) {
-        await fetch(`${window._activeLeadsEndpoint || LEADS_API_ENDPOINTS[0]}?id=${d1Id}`, { method: 'DELETE' }).catch(() => {});
+        await fetch(`${window._activeLeadsEndpoint || LEADS_API_ENDPOINTS[0]}?id=${d1Id}`, { method: 'DELETE', headers: authHeaders }).catch(() => {});
       }
       if (supaId) {
         await _supabase.from('leads').delete().eq('id', supaId);

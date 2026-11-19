@@ -598,6 +598,55 @@ async function saveLeadToSupabase(env, lead) {
   return { ok: true, usedLegacySchema: false };
 }
 
+
+// Valida o token JWT da sessão do Admin (Supabase Auth) antes de permitir GET ou DELETE de leads
+async function verifyAdminRequest(request, env) {
+  const authHeader = request.headers.get('Authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return { ok: false, reason: 'Token de autenticação ausente. Faça login no painel admin.' };
+  }
+
+  const token = authHeader.slice(7).trim();
+  if (!token) {
+    return { ok: false, reason: 'Token vazio.' };
+  }
+
+  const supaUrl = env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const supaKey = env?.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+
+  try {
+    const res = await fetch(`${supaUrl}/auth/v1/user`, {
+      method: 'GET',
+      headers: {
+        'apikey': supaKey,
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      return { ok: false, reason: 'Sessão inválida ou expirada. Faça login novamente.' };
+    }
+
+    const user = await res.json().catch(() => null);
+    if (!user || !user.id) {
+      return { ok: false, reason: 'Usuário não autenticado.' };
+    }
+
+    // Se você configurar ADMIN_EMAIL nos vars/secrets do Worker, restringe somente ao seu e-mail
+    if (env?.ADMIN_EMAIL) {
+      const allowed = String(env.ADMIN_EMAIL).split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      const userEmail = String(user.email || '').trim().toLowerCase();
+      if (allowed.length && !allowed.includes(userEmail)) {
+        return { ok: false, reason: 'E-mail não autorizado para acessar leads.' };
+      }
+    }
+
+    return { ok: true, user };
+  } catch (err) {
+    return { ok: false, reason: 'Erro ao validar autenticação no Supabase.' };
+  }
+}
+
 async function handleLeadsAPI(request, env) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_JSON_HEADERS });
@@ -606,8 +655,15 @@ async function handleLeadsAPI(request, env) {
   const db = getD1Database(env);
   const url = new URL(request.url);
 
-  // GET /api/leads -> Lista leads salvos no Cloudflare D1
+  // GET /api/leads -> Lista leads salvos no Cloudflare D1 (PROTEGIDO POR LOGIN ADMIN)
   if (request.method === 'GET') {
+    const auth = await verifyAdminRequest(request, env);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ error: auth.reason }), {
+        status: 401,
+        headers: CORS_JSON_HEADERS
+      });
+    }
     if (!db) {
       return new Response(JSON.stringify({
         error: 'Binding D1 (DB) não vinculado ao Worker tirracred. Vá em Cloudflare > Workers & Pages > tirracred > Settings > Bindings > Add D1 Database (Variable name: DB, Database: tirracred).'
@@ -635,8 +691,15 @@ async function handleLeadsAPI(request, env) {
     }
   }
 
-  // DELETE /api/leads?id=123 -> Exclui lead do Cloudflare D1
+  // DELETE /api/leads?id=123 -> Exclui lead do Cloudflare D1 (PROTEGIDO POR LOGIN ADMIN)
   if (request.method === 'DELETE') {
+    const auth = await verifyAdminRequest(request, env);
+    if (!auth.ok) {
+      return new Response(JSON.stringify({ error: auth.reason }), {
+        status: 401,
+        headers: CORS_JSON_HEADERS
+      });
+    }
     if (!db) {
       return new Response(JSON.stringify({ error: 'Binding D1 (DB) não configurado no Worker.' }), {
         status: 500,
