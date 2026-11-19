@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Solicitações D1 - Admin TirraCred</title>
+  <title>Solicitações D1 + Consulta Facio - Admin TirraCred</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link id="pageFavicon" rel="icon" type="image/png" href="/api/favicon" onerror="this.href='public/favincon.png'" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,6 +12,7 @@
 
   <style>
     body { font-family: 'Inter', sans-serif; background: #f0fdf4; }
+    .modal-bg { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); }
     .copy-pill {
       transition: all 0.15s ease;
     }
@@ -51,11 +52,11 @@
            onerror="this.onerror=null;this.src='https://placehold.co/160x50/fff/000?text=TirraCred';">
       <div class="flex justify-center mb-2">
         <span class="text-[11px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-900 px-3 py-0.5 rounded-full border border-amber-200">
-          ⚡ Central de Solicitações D1
+          ⚡ Central de Solicitações D1 + Facio API
         </span>
       </div>
       <h2 class="text-2xl font-extrabold text-center text-gray-900 mb-1">Acesso Restrito</h2>
-      <p class="text-xs text-center text-gray-500 mb-6">Entre com sua conta admin para visualizar e copiar as solicitações do Cloudflare D1</p>
+      <p class="text-xs text-center text-gray-500 mb-6">Entre com sua conta admin para visualizar leads e consultar aprovações na API da Facio</p>
 
       <form id="loginForm" class="space-y-4">
         <div>
@@ -75,7 +76,7 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- PAINEL PRINCIPAL DE SOLICITAÇÕES (CLOUDFLARE D1)          -->
+  <!-- PAINEL PRINCIPAL DE SOLICITAÇÕES (CLOUDFLARE D1 + FACIO)  -->
   <!-- ========================================================= -->
   <div id="app" class="hidden flex-1 flex flex-col">
     <header class="bg-white/95 backdrop-blur shadow-sm sticky top-0 z-40 border-b border-gray-200">
@@ -84,11 +85,16 @@
           <img src="public/logo.png" alt="logo" class="h-8 object-contain"
                onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
           <span class="text-xs font-extrabold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200 px-2.5 py-0.5 rounded-full">
-            ⚡ Solicitações D1
+            ⚡ Solicitações D1 + Facio
           </span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openWebhooksModal()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-xs sm:text-sm font-extrabold text-indigo-900 flex items-center gap-1.5 transition">
+            <i class="fas fa-bell text-indigo-600"></i>
+            <span>Webhooks Facio</span>
+            <span id="webhooksBadgeCount" class="px-1.5 py-0.5 text-[10px] rounded-full bg-indigo-600 text-white font-black">0</span>
+          </button>
           <a href="admin.html" class="px-3 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
             <i class="fas fa-boxes-stacked text-emerald-600"></i> <span>Admin Produtos</span>
           </a>
@@ -105,7 +111,7 @@
     <main class="container mx-auto px-4 py-6 max-w-7xl flex-1 space-y-5">
 
       <!-- KPIs Rápidos -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
           <div class="text-[11px] font-bold uppercase text-gray-400">Total no D1</div>
           <div id="kpiTotal" class="text-2xl font-black text-gray-900 mt-0.5">0</div>
@@ -115,13 +121,44 @@
           <div id="kpiToday" class="text-2xl font-black text-emerald-700 mt-0.5">0</div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm">
-          <div class="text-[11px] font-bold uppercase text-amber-700">⚡ Facio Elegível</div>
+          <div class="text-[11px] font-bold uppercase text-amber-700">⚡ Pré-Aprovado Facio</div>
           <div id="kpiFacio" class="text-2xl font-black text-amber-600 mt-0.5">0</div>
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-red-200 shadow-sm">
+        <div onclick="openWebhooksModal()" class="cursor-pointer bg-white hover:bg-indigo-50/40 transition rounded-2xl p-4 border border-indigo-200 shadow-sm">
+          <div class="text-[11px] font-bold uppercase text-indigo-700">🔔 Eventos Webhook</div>
+          <div id="kpiWebhooks" class="text-2xl font-black text-indigo-700 mt-0.5">0</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-red-200 shadow-sm col-span-2 lg:col-span-1">
           <div class="text-[11px] font-bold uppercase text-red-700">🚫 Negativados</div>
           <div id="kpiNegativado" class="text-2xl font-black text-red-600 mt-0.5">0</div>
         </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- CONSULTA AVULSA NA API FACIO (EM TEMPO REAL)              -->
+      <!-- ========================================================= -->
+      <div class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-2xl p-4 sm:p-5 shadow-md border border-emerald-700">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider bg-white/15 text-emerald-100 px-2.5 py-0.5 rounded-full">
+              <i class="fas fa-bolt text-yellow-300"></i> Consulta Direta na API Facio
+            </div>
+            <h2 class="text-base sm:text-lg font-extrabold">Consultar CPF avulso na Facio agora</h2>
+            <p class="text-xs text-emerald-100/90">Verifica em tempo real na API (`/availability`) se o CPF tem oferta pré-aprovada, se já possui cadastro (409) e cruza com os webhooks de aprovação recebidos.</p>
+          </div>
+
+          <form id="quickFacioForm" class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto shrink-0">
+            <input id="quickFacioCpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"
+                   class="w-full sm:w-52 px-4 py-2.5 rounded-xl bg-white text-gray-900 font-mono font-extrabold text-sm outline-none border-2 border-transparent focus:border-yellow-300 shadow-sm">
+            <button id="quickFacioBtn" type="submit" class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 whitespace-nowrap">
+              <i class="fas fa-magnifying-glass-dollar"></i>
+              <span>Consultar Facio</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Resultado da consulta avulsa -->
+        <div id="quickFacioResult" class="hidden mt-4 rounded-xl bg-white/95 text-gray-900 p-3.5 text-xs sm:text-sm shadow-inner"></div>
       </div>
 
       <!-- Barra de Controle, Busca e Filtros -->
@@ -133,6 +170,12 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
+            <!-- Consultar todos visíveis em lote -->
+            <button type="button" id="batchCheckBtn" onclick="runBatchFacioCheck()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-extrabold rounded-xl transition shadow-sm flex items-center gap-1.5" title="Consulta na API Facio os próximos leads visíveis">
+              <i class="fas fa-bolt"></i>
+              <span id="batchCheckBtnText">Consultar Visíveis na Facio</span>
+            </button>
+
             <!-- Alternador de Visualização -->
             <div class="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-bold">
               <button type="button" id="viewCardsBtn" onclick="setViewMode('cards')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-sm">
@@ -184,17 +227,18 @@
 
             <!-- Filtros de Perfil -->
             <button type="button" onclick="setProfileFilter('all')" data-pfilter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">Todos</button>
+            <button type="button" onclick="setProfileFilter('facio')" data-pfilter="facio" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">⚡ Facio Elegível</button>
+            <button type="button" onclick="setProfileFilter('webhook')" data-pfilter="webhook" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🔔 Com Webhook</button>
             <button type="button" onclick="setProfileFilter('negativado')" data-pfilter="negativado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🚫 Negativado</button>
             <button type="button" onclick="setProfileFilter('aposentado')" data-pfilter="aposentado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">👴 Aposentado/CLT</button>
             <button type="button" onclick="setProfileFilter('bolsafamilia')" data-pfilter="bolsafamilia" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🤝 Bolsa Família</button>
-            <button type="button" onclick="setProfileFilter('facio')" data-pfilter="facio" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">⚡ Facio</button>
           </div>
         </div>
       </div>
 
       <!-- Dica de Cópia Rápida -->
       <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-gray-500">
-        <span><i class="fas fa-hand-pointer text-emerald-600 mr-1"></i> <strong>Dica:</strong> Clique em qualquer campo (Nome, CPF, WhatsApp ou E-mail) para copiar na hora, ou use <strong>Copiar Ficha</strong>.</span>
+        <span><i class="fas fa-bolt text-amber-500 mr-1"></i> Clique em <strong>Consultar API Facio</strong> em qualquer card para checar aprovação/disponibilidade na hora e gerar o link pré-preenchido.</span>
         <span id="filteredCounter" class="font-bold text-gray-700"></span>
       </div>
 
@@ -211,8 +255,8 @@
                 <th class="py-3.5 px-4 font-extrabold">Nome (clique p/ copiar)</th>
                 <th class="py-3.5 px-4 font-extrabold">CPF (clique p/ copiar)</th>
                 <th class="py-3.5 px-4 font-extrabold">WhatsApp / E-mail</th>
-                <th class="py-3.5 px-4 font-extrabold">Valor / Perfil</th>
-                <th class="py-3.5 px-4 font-extrabold text-right">Cópia Rápida</th>
+                <th class="py-3.5 px-4 font-extrabold">Status API Facio</th>
+                <th class="py-3.5 px-4 font-extrabold text-right">Ações / Cópia</th>
               </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-gray-100 text-sm"></tbody>
@@ -223,7 +267,39 @@
     </main>
   </div>
 
-  <!-- TOAST DE FEEDBACK AO COPIAR -->
+  <!-- ========================================================= -->
+  <!-- MODAL HISTÓRICO DE WEBHOOKS DA FACIO (APROVAÇÕES REAIS)   -->
+  <!-- ========================================================= -->
+  <div id="webhooksModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-gray-100">
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="text-lg font-extrabold flex items-center gap-2">
+            <i class="fas fa-bell text-yellow-400"></i> Eventos de Webhook da Facio (D1)
+          </h3>
+          <p class="text-[11px] text-slate-300 mt-0.5">Notificações oficiais enviadas pela Facio sobre cadastros, análises e aprovações de empréstimos</p>
+        </div>
+        <button type="button" onclick="closeWebhooksModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3" id="webhooksModalBody">
+        <p class="text-sm text-gray-500 text-center py-8">Carregando eventos...</p>
+      </div>
+
+      <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between shrink-0">
+        <button type="button" onclick="loadFacioWebhooks(true)" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5">
+          <i class="fas fa-sync-alt"></i> Recarregar Webhooks
+        </button>
+        <button type="button" onclick="closeWebhooksModal()" class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST DE FEEDBACK -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
@@ -231,10 +307,19 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
     const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const WORKER_BASE = 'https://tirracred.tirradigital.workers.dev';
     const LEADS_API_ENDPOINTS = [
-      'https://tirracred.tirradigital.workers.dev/api/leads',
+      `${WORKER_BASE}/api/leads`,
       '/api/leads',
       '/api/capturar-lead'
+    ];
+    const FACIO_API_ENDPOINTS = [
+      `${WORKER_BASE}/api/facio`,
+      '/api/facio'
+    ];
+    const WEBHOOKS_API_ENDPOINTS = [
+      `${WORKER_BASE}/api/facio-webhooks`,
+      '/api/facio-webhooks'
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -243,13 +328,20 @@
 
     let d1Rows = [];
     let supaRows = [];
+    let webhookLogs = [];
     let currentProfileFilter = 'all';
     let currentViewMode = 'cards';
     let activeEndpoint = LEADS_API_ENDPOINTS[0];
     let autoRefreshTimer = null;
+    let batchRunning = false;
+    let batchCancelRequested = false;
+
+    // Cache em memória dos resultados de consulta em tempo real da API Facio (por CPF limpo)
+    // { [cpfDigits]: { state: 'checking'|'eligible'|'already_registered'|'unavailable'|'error', offer, registrationUrl, partnerCustomerId, checkedAt, message, raw } }
+    const facioLiveCache = {};
 
     // =========================================================================
-    // HELPERS DE FORMATAÇÃO E CÓPIA ULTRA-RÁPIDA
+    // HELPERS DE FORMATAÇÃO E VALIDAÇÃO
     // =========================================================================
     function esc(str) {
       return String(str ?? '')
@@ -272,6 +364,29 @@
       const d = onlyDigits(raw);
       if (d.length !== 11) return raw || '-';
       return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+
+    function formatCPFInput(raw) {
+      const d = onlyDigits(raw).slice(0, 11);
+      return d
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    }
+
+    function isValidCPF(cpf) {
+      const c = onlyDigits(cpf);
+      if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+      let sum = 0;
+      for (let i = 0; i < 9; i++) sum += parseInt(c.charAt(i), 10) * (10 - i);
+      let rem = sum % 11;
+      const v1 = rem < 2 ? 0 : 11 - rem;
+      if (v1 !== parseInt(c.charAt(9), 10)) return false;
+      sum = 0;
+      for (let i = 0; i < 10; i++) sum += parseInt(c.charAt(i), 10) * (11 - i);
+      rem = sum % 11;
+      const v2 = rem < 2 ? 0 : 11 - rem;
+      return v2 === parseInt(c.charAt(10), 10);
     }
 
     function formatPhone(raw) {
@@ -316,7 +431,7 @@
         el.style.opacity = '0';
         el.style.transition = 'opacity 0.25s ease';
         setTimeout(() => el.remove(), 260);
-      }, 1700);
+      }, 1900);
     }
 
     async function copyToClipboard(text, label, btnEl) {
@@ -355,19 +470,31 @@
       const l = list.find(x => x._uid === leadUid);
       if (!l) return;
 
+      const cpfDigits = onlyDigits(l.cpf);
+      const live = facioLiveCache[cpfDigits];
+      const wh = findWebhookForLead(l);
+
       const perfis = [];
       if (isTruthy(l.negativado)) perfis.push('Negativado');
       if (isTruthy(l.aposentado)) perfis.push('Aposentado/CLT');
       if (isTruthy(l.bolsafamilia)) perfis.push('Bolsa Família');
       if (isTruthy(l.facio_elegivel)) perfis.push('Facio Elegível');
 
+      const facioStatusLine = wh
+        ? `Webhook: ${wh.event_type} (${formatDateBR(wh.created_at)})`
+        : (live?.message || l.facio_status || (isTruthy(l.facio_elegivel) ? 'Elegível no simulador' : 'Não consultado'));
+
+      const regUrl = live?.registrationUrl || l.facio_registration_url || '';
+
       const ficha = [
         `Nome: ${l.nome || '-'}`,
-        `CPF: ${formatCPF(l.cpf)} (${onlyDigits(l.cpf) || '-'})`,
+        `CPF: ${formatCPF(l.cpf)} (${cpfDigits || '-'})`,
         `WhatsApp: ${formatPhone(l.whatsapp)} (${onlyDigits(l.whatsapp) || '-'})`,
         `E-mail: ${l.email || '-'}`,
         `Valor: ${formatBRL(l.valor_desejado)} em ${l.parcelas || 1}x`,
         `Perfil: ${perfis.length ? perfis.join(', ') : 'Padrão'}`,
+        `Status Facio: ${facioStatusLine}`,
+        ...(regUrl ? [`Link Facio: ${regUrl}`] : []),
         `Data: ${formatDateBR(l.created_at)}`
       ].join('\n');
 
@@ -375,7 +502,7 @@
     };
 
     // =========================================================================
-    // AUTH HEADERS (ENVIA O TOKEN DA SESSÃO SUPABASE PARA O WORKER BLINDADO)
+    // AUTH HEADERS
     // =========================================================================
     async function getAuthHeaders() {
       const headers = { 'Content-Type': 'application/json' };
@@ -389,18 +516,398 @@
     }
 
     // =========================================================================
-    // CARREGAMENTO DAS SOLICITAÇÕES DO CLOUDFLARE D1 (+ SUPABASE OPCIONAL)
+    // CHAMADA À API DA FACIO (AVAILABILITY + LEAD + WEBHOOKS)
     // =========================================================================
+    async function callFacioApi(payload) {
+      let lastRes = null;
+      let lastData = {};
+
+      for (const ep of FACIO_API_ENDPOINTS) {
+        try {
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, strict: true })
+          });
+          const data = await res.json().catch(() => ({}));
+          lastRes = res;
+          lastData = data;
+          if (res.status !== 404) return { res, data };
+        } catch (err) {
+          lastData = { error: err.message };
+        }
+      }
+      return { res: lastRes, data: lastData };
+    }
+
+    // Cruza webhooks recebidos da Facio com um lead (por facio_partner_id ou cpf)
+    function findWebhookForLead(lead) {
+      if (!webhookLogs.length || !lead) return null;
+      const leadCpf = onlyDigits(lead.cpf);
+      const partnerId = lead.facio_partner_id ? String(lead.facio_partner_id).trim() : '';
+
+      for (const w of webhookLogs) {
+        const wLeadId = w.lead_id ? String(w.lead_id).trim() : '';
+        const wCpf = onlyDigits(w.cpf);
+        if (partnerId && wLeadId && wLeadId === partnerId) return w;
+        if (leadCpf && wCpf && wCpf === leadCpf) return w;
+        if (leadCpf && w.payload && String(w.payload).includes(leadCpf)) return w;
+      }
+      return null;
+    }
+
+    function classifyWebhookEvent(eventName) {
+      const ev = String(eventName || '').toLowerCase();
+      if (/(approv|aprov|contract|contrat|disburs|paid|pago|liber|grant|active|completed)/.test(ev)) {
+        return { label: `🎉 APROVADO / CONTRATADO (${eventName})`, tone: 'emerald' };
+      }
+      if (/(reject|reprov|deni|negad|cancel|fail|refus|declin)/.test(ev)) {
+        return { label: `❌ REPROVADO / CANCELADO (${eventName})`, tone: 'red' };
+      }
+      return { label: `🔔 EVENTO FACIO: ${eventName}`, tone: 'indigo' };
+    }
+
+    window.checkLeadInFacioAPI = async (cpfRaw, silentToast = false) => {
+      const cleanCpf = onlyDigits(cpfRaw);
+      if (!isValidCPF(cleanCpf)) {
+        if (!silentToast) showToast('CPF inválido para consultar na Facio');
+        return null;
+      }
+
+      facioLiveCache[cleanCpf] = {
+        ...(facioLiveCache[cleanCpf] || {}),
+        state: 'checking',
+        message: 'Consultando API da Facio...'
+      };
+      renderSolicitacoes();
+
+      const { res, data } = await callFacioApi({
+        action: 'availability',
+        cpf: cleanCpf
+      });
+
+      const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      let resultObj;
+
+      if (res && res.ok && data.isAvailable && !data.fallbackMode) {
+        const maxVal = data.offer?.maxValue ?? 300;
+        const baseFee = data.offer?.baseFee ?? 9.9;
+        resultObj = {
+          state: 'eligible',
+          offer: data.offer || { maxValue: maxVal, baseFee },
+          checkedAt: nowStr,
+          message: `Pré-aprovado até ${formatBRL(maxVal)} (taxa a partir de ${formatBRL(baseFee)})`,
+          raw: data
+        };
+        // Atualiza em memória nas linhas carregadas
+        d1Rows.forEach(r => { if (onlyDigits(r.cpf) === cleanCpf) { r.facio_elegivel = 1; r.facio_status = 'eligible'; } });
+      } else if (res && (res.status === 409 || data.alreadyRegistered)) {
+        resultObj = {
+          state: 'already_registered',
+          checkedAt: nowStr,
+          message: 'Já possui cadastro ativo na Facio (HTTP 409)',
+          raw: data
+        };
+        d1Rows.forEach(r => { if (onlyDigits(r.cpf) === cleanCpf) { r.facio_elegivel = 0; r.facio_status = 'already_registered'; } });
+      } else if (res && res.ok && !data.isAvailable) {
+        resultObj = {
+          state: 'unavailable',
+          checkedAt: nowStr,
+          message: 'Não aprovado / Sem oferta disponível na Facio',
+          raw: data
+        };
+        d1Rows.forEach(r => { if (onlyDigits(r.cpf) === cleanCpf) { r.facio_elegivel = 0; r.facio_status = 'unavailable'; } });
+      } else {
+        resultObj = {
+          state: 'error',
+          checkedAt: nowStr,
+          message: data.error || data.message || `Erro HTTP ${res ? res.status : 'rede'} na API Facio`,
+          raw: data
+        };
+      }
+
+      facioLiveCache[cleanCpf] = {
+        ...(facioLiveCache[cleanCpf] || {}),
+        ...resultObj
+      };
+
+      updateKPIs();
+      renderSolicitacoes();
+
+      if (!silentToast) {
+        if (resultObj.state === 'eligible') showToast(`✅ CPF pré-aprovado na Facio!`);
+        else if (resultObj.state === 'already_registered') showToast(`⚠️ CPF já cadastrado na Facio (409)`);
+        else if (resultObj.state === 'unavailable') showToast(`❌ Sem oferta Facio para este CPF`);
+        else showToast(`Erro ao consultar Facio: ${resultObj.message}`);
+      }
+      return resultObj;
+    };
+
+    window.generateFacioLinkForLead = async (leadUid) => {
+      const list = getMergedList();
+      const l = list.find(x => x._uid === leadUid);
+      if (!l) return;
+
+      const cleanCpf = onlyDigits(l.cpf);
+      let cleanWpp = onlyDigits(l.whatsapp);
+      if ((cleanWpp.length === 12 || cleanWpp.length === 13) && cleanWpp.startsWith('55')) {
+        cleanWpp = cleanWpp.slice(2);
+      }
+
+      facioLiveCache[cleanCpf] = {
+        ...(facioLiveCache[cleanCpf] || {}),
+        generatingLink: true
+      };
+      renderSolicitacoes();
+
+      const { res, data } = await callFacioApi({
+        action: 'lead',
+        nome: String(l.nome || '').trim(),
+        cpf: cleanCpf,
+        whatsapp: cleanWpp,
+        email: String(l.email || '').trim().toLowerCase(),
+        campaign: 'ds_banner'
+      });
+
+      const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      if (res && res.ok && data.registrationUrl && !data.fallbackMode) {
+        facioLiveCache[cleanCpf] = {
+          ...(facioLiveCache[cleanCpf] || {}),
+          state: 'eligible',
+          generatingLink: false,
+          registrationUrl: data.registrationUrl,
+          partnerCustomerId: data.partnerCustomerId || null,
+          checkedAt: nowStr,
+          message: 'Lead aceito pela Facio! Link pré-preenchido pronto.',
+          raw: data
+        };
+        d1Rows.forEach(r => {
+          if (onlyDigits(r.cpf) === cleanCpf) {
+            r.facio_elegivel = 1;
+            r.facio_status = 'lead_sent';
+            r.facio_registration_url = data.registrationUrl;
+            if (data.partnerCustomerId) r.facio_partner_id = data.partnerCustomerId;
+          }
+        });
+        await copyToClipboard(data.registrationUrl, 'Link Facio', null);
+      } else if (res && (res.status === 409 || data.alreadyRegistered)) {
+        facioLiveCache[cleanCpf] = {
+          ...(facioLiveCache[cleanCpf] || {}),
+          state: 'already_registered',
+          generatingLink: false,
+          checkedAt: nowStr,
+          message: 'Já possui cadastro na Facio (HTTP 409)',
+          raw: data
+        };
+        showToast('⚠️ Cliente já tem cadastro na Facio (409)');
+      } else {
+        const errDetail = Array.isArray(data.errors) ? data.errors.join(', ') : (data.error || data.details?.message || `HTTP ${res?.status || 'erro'}`);
+        facioLiveCache[cleanCpf] = {
+          ...(facioLiveCache[cleanCpf] || {}),
+          generatingLink: false,
+          checkedAt: nowStr,
+          linkError: errDetail,
+          raw: data
+        };
+        showToast(`Facio recusou o envio: ${errDetail}`);
+      }
+
+      renderSolicitacoes();
+    };
+
+    window.runBatchFacioCheck = async () => {
+      if (batchRunning) {
+        batchCancelRequested = true;
+        return;
+      }
+
+      const filtered = getFilteredSolicitacoes().filter(l => isValidCPF(l.cpf));
+      const pending = filtered.filter(l => {
+        const c = onlyDigits(l.cpf);
+        return !facioLiveCache[c] || facioLiveCache[c].state === 'error';
+      }).slice(0, 20); // Limite seguro de 20 por lote para evitar rate limit
+
+      if (!pending.length) {
+        showToast('Todos os leads visíveis (até 20) já foram consultados!');
+        return;
+      }
+
+      batchRunning = true;
+      batchCancelRequested = false;
+      const btnText = $('batchCheckBtnText');
+      const btn = $('batchCheckBtn');
+
+      if (btn) btn.className = 'px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-extrabold rounded-xl transition shadow-sm flex items-center gap-1.5';
+
+      let done = 0;
+      for (const l of pending) {
+        if (batchCancelRequested) break;
+        done++;
+        if (btnText) btnText.textContent = `Parar (${done}/${pending.length})...`;
+        await window.checkLeadInFacioAPI(l.cpf, true);
+        await new Promise(r => setTimeout(r, 350));
+      }
+
+      batchRunning = false;
+      batchCancelRequested = false;
+      if (btn) btn.className = 'px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-extrabold rounded-xl transition shadow-sm flex items-center gap-1.5';
+      if (btnText) btnText.textContent = 'Consultar Visíveis na Facio';
+      showToast(`Lote concluído: ${done} CPFs consultados na API Facio`);
+    };
+
+    // =========================================================================
+    // CONSULTA AVULSA DE CPF NO TOPO
+    // =========================================================================
+    $('quickFacioCpf')?.addEventListener('input', (e) => {
+      e.target.value = formatCPFInput(e.target.value);
+    });
+
+    $('quickFacioForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const raw = $('quickFacioCpf').value;
+      const clean = onlyDigits(raw);
+      const box = $('quickFacioResult');
+      const btn = $('quickFacioBtn');
+
+      if (!isValidCPF(clean)) {
+        box.classList.remove('hidden');
+        box.innerHTML = `<span class="text-red-700 font-bold"><i class="fas fa-times-circle mr-1"></i> CPF inválido. Digite um CPF válido de 11 dígitos.</span>`;
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>Consultando...</span>';
+      box.classList.remove('hidden');
+      box.innerHTML = `<span class="text-blue-700 font-bold"><i class="fas fa-circle-notch fa-spin mr-1"></i> Consultando CPF ${formatCPF(clean)} em tempo real na API da Facio...</span>`;
+
+      const res = await window.checkLeadInFacioAPI(clean, true);
+      const matchedWh = findWebhookForLead({ cpf: clean });
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magnifying-glass-dollar"></i><span>Consultar Facio</span>';
+
+      let badgeHtml = '';
+      if (res?.state === 'eligible') {
+        badgeHtml = `<div class="text-emerald-800 font-black text-sm"><i class="fas fa-check-circle text-emerald-600 mr-1"></i> PRÉ-APROVADO / ELEGÍVEL NA FACIO — ${esc(res.message)}</div>`;
+      } else if (res?.state === 'already_registered') {
+        badgeHtml = `<div class="text-amber-800 font-black text-sm"><i class="fas fa-user-check text-amber-600 mr-1"></i> JÁ CADASTRADO NA FACIO (HTTP 409)</div>`;
+      } else if (res?.state === 'unavailable') {
+        badgeHtml = `<div class="text-red-700 font-black text-sm"><i class="fas fa-ban text-red-600 mr-1"></i> NÃO APROVADO / SEM OFERTA NA FACIO (isAvailable: false)</div>`;
+      } else {
+        badgeHtml = `<div class="text-red-700 font-bold"><i class="fas fa-exclamation-triangle mr-1"></i> ${esc(res?.message || 'Erro ao consultar API')}</div>`;
+      }
+
+      const whHtml = matchedWh
+        ? `<div class="mt-2 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-bold">
+             <i class="fas fa-bell mr-1 text-indigo-600"></i> Webhook encontrado no D1: <strong>${esc(matchedWh.event_type)}</strong> em ${esc(formatDateBR(matchedWh.created_at))} (ID: ${esc(matchedWh.lead_id || '-')})
+           </div>`
+        : `<div class="mt-1.5 text-[11px] text-gray-500">Nenhum evento de webhook de contratação registrado ainda no D1 para este CPF.</div>`;
+
+      box.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            ${badgeHtml}
+            ${whHtml}
+          </div>
+          <span class="text-[11px] font-mono text-gray-500">CPF: ${formatCPF(clean)} • ${res?.checkedAt || ''}</span>
+        </div>
+      `;
+    });
+
+    // =========================================================================
+    // CARREGAMENTO DAS SOLICITAÇÕES + WEBHOOKS DO CLOUDFLARE D1
+    // =========================================================================
+    window.loadFacioWebhooks = async (renderModalNow = false) => {
+      const headers = await getAuthHeaders();
+      webhookLogs = [];
+
+      for (const ep of WEBHOOKS_API_ENDPOINTS) {
+        try {
+          const res = await fetch(`${ep}?t=${Date.now()}`, { cache: 'no-store', headers });
+          const ct = res.headers.get('content-type') || '';
+          if (res.ok && ct.includes('application/json')) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              webhookLogs = data;
+              break;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if ($('webhooksBadgeCount')) $('webhooksBadgeCount').textContent = webhookLogs.length;
+      if ($('kpiWebhooks')) $('kpiWebhooks').textContent = webhookLogs.length;
+      if (renderModalNow) renderWebhooksModalBody();
+    };
+
+    window.openWebhooksModal = () => {
+      $('webhooksModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      renderWebhooksModalBody();
+      loadFacioWebhooks(true);
+    };
+
+    window.closeWebhooksModal = () => {
+      $('webhooksModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+
+    function renderWebhooksModalBody() {
+      const body = $('webhooksModalBody');
+      if (!body) return;
+      if (!webhookLogs.length) {
+        body.innerHTML = `
+          <div class="text-center py-10 space-y-2">
+            <div class="text-3xl">🔔</div>
+            <p class="font-bold text-gray-700 text-sm">Nenhum evento de webhook recebido da Facio ainda.</p>
+            <p class="text-xs text-gray-500 max-w-md mx-auto">
+              Quando um cliente concluir o cadastro ou tiver um empréstimo aprovado/recusado na Facio, o webhook
+              <code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-[11px]">/api/facio-webhook</code> grava o evento automaticamente aqui no Cloudflare D1.
+            </p>
+          </div>`;
+        return;
+      }
+
+      body.innerHTML = webhookLogs.map(w => {
+        const cls = classifyWebhookEvent(w.event_type);
+        const toneClass = cls.tone === 'emerald'
+          ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+          : (cls.tone === 'red' ? 'bg-red-50 border-red-300 text-red-900' : 'bg-indigo-50 border-indigo-200 text-indigo-900');
+
+        return `
+          <div class="rounded-2xl border p-3.5 ${toneClass} space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-extrabold text-xs sm:text-sm">${esc(cls.label)}</span>
+              <span class="text-[11px] font-semibold opacity-75">#${esc(w.id)} • ${esc(formatDateBR(w.created_at))}</span>
+            </div>
+            <div class="flex flex-wrap gap-3 text-xs font-mono">
+              <span><strong>Lead/Partner ID:</strong> ${esc(w.lead_id || '-')}</span>
+              <span><strong>CPF/Ref:</strong> ${esc(w.cpf || '-')}</span>
+              <span><strong>Env:</strong> ${esc(w.env || '-')}</span>
+            </div>
+            <details class="text-[11px]">
+              <summary class="cursor-pointer font-bold opacity-80 hover:opacity-100">Ver payload JSON completo</summary>
+              <pre class="mt-1.5 p-2.5 rounded-xl bg-slate-900 text-emerald-300 overflow-x-auto text-[11px]">${esc(w.payload || '{}')}</pre>
+            </details>
+          </div>
+        `;
+      }).join('');
+    }
+
     window.loadSolicitacoes = async () => {
       const status = $('statusText');
       const icon = $('refreshIcon');
       if (icon) icon.classList.add('fa-spin');
-      if (status) status.textContent = 'Buscando últimas solicitações no Cloudflare D1...';
+      if (status) status.textContent = 'Buscando últimas solicitações e webhooks no Cloudflare D1...';
 
       const headers = await getAuthHeaders();
       let d1Err = '';
       d1Rows = [];
       supaRows = [];
+
+      // Carrega webhooks em paralelo
+      const whPromise = loadFacioWebhooks(false);
 
       // 1) Busca do Cloudflare D1
       for (const ep of LEADS_API_ENDPOINTS) {
@@ -434,7 +941,7 @@
         }
       }
 
-      // 2) Busca do Supabase (usado apenas se o usuário mudar o seletor para "D1 + Supabase")
+      // 2) Busca do Supabase
       try {
         const { data, error } = await _supabase
           .from('leads')
@@ -451,6 +958,8 @@
         }
       } catch (_) {}
 
+      await whPromise;
+
       if (icon) icon.classList.remove('fa-spin');
 
       const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -458,7 +967,7 @@
         if (d1Err && !d1Rows.length) {
           status.innerHTML = `<span class="text-red-600 font-bold">⚠️ Erro no Cloudflare D1: ${esc(d1Err)}</span> • Atualizado às ${nowStr}`;
         } else {
-          status.textContent = `Conectado ao Cloudflare D1 (${d1Rows.length} solicitações) • Última atualização às ${nowStr}`;
+          status.textContent = `Conectado ao Cloudflare D1 (${d1Rows.length} solicitações • ${webhookLogs.length} webhooks Facio) • Atualizado às ${nowStr}`;
         }
       }
 
@@ -510,8 +1019,10 @@
 
       for (const l of base) {
         const d = parseDateObj(l.created_at);
+        const c = onlyDigits(l.cpf);
+        const live = facioLiveCache[c];
         if (d && d.toISOString().slice(0, 10) === todayKey) todayCount++;
-        if (isTruthy(l.facio_elegivel)) facioCount++;
+        if (live ? live.state === 'eligible' : isTruthy(l.facio_elegivel)) facioCount++;
         if (isTruthy(l.negativado)) negCount++;
       }
 
@@ -554,10 +1065,15 @@
       const todayKey = new Date().toISOString().slice(0, 10);
 
       return list.filter(l => {
+        const cpfDigits = onlyDigits(l.cpf);
+        const live = facioLiveCache[cpfDigits];
+        const hasWh = Boolean(findWebhookForLead(l) || l.facio_webhook_event);
+
         if (currentProfileFilter === 'negativado' && !isTruthy(l.negativado)) return false;
         if (currentProfileFilter === 'aposentado' && !isTruthy(l.aposentado)) return false;
         if (currentProfileFilter === 'bolsafamilia' && !isTruthy(l.bolsafamilia)) return false;
-        if (currentProfileFilter === 'facio' && !isTruthy(l.facio_elegivel)) return false;
+        if (currentProfileFilter === 'facio' && !(live ? live.state === 'eligible' : isTruthy(l.facio_elegivel))) return false;
+        if (currentProfileFilter === 'webhook' && !hasWh) return false;
 
         if (period !== 'all') {
           const d = parseDateObj(l.created_at);
@@ -568,20 +1084,19 @@
         }
 
         if (!q) return true;
-        const hay = `${l.nome || ''} ${l.cpf || ''} ${onlyDigits(l.cpf)} ${l.whatsapp || ''} ${onlyDigits(l.whatsapp)} ${l.email || ''}`.toLowerCase();
+        const hay = `${l.nome || ''} ${l.cpf || ''} ${cpfDigits} ${l.whatsapp || ''} ${onlyDigits(l.whatsapp)} ${l.email || ''}`.toLowerCase();
         if (hay.includes(q)) return true;
-        if (qDigits && (onlyDigits(l.cpf).includes(qDigits) || onlyDigits(l.whatsapp).includes(qDigits))) return true;
+        if (qDigits && (cpfDigits.includes(qDigits) || onlyDigits(l.whatsapp).includes(qDigits))) return true;
         return false;
       });
     }
 
     function profileBadgesHTML(l) {
       const badges = [];
-      if (isTruthy(l.facio_elegivel)) badges.push('<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Facio</span>');
       if (isTruthy(l.negativado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-700 border border-red-200">🚫 Negativado</span>');
       if (isTruthy(l.aposentado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">👴 Aposentado/CLT</span>');
       if (isTruthy(l.bolsafamilia)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">🤝 Bolsa Família</span>');
-      if (!badges.length) badges.push('<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500">Padrão</span>');
+      if (!badges.length) badges.push('<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500">Perfil Padrão</span>');
       return badges.join('');
     }
 
@@ -589,6 +1104,151 @@
       if (src === 'both') return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">D1 + Supa</span>';
       if (src === 'd1') return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold">Cloudflare D1</span>';
       return '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Supabase</span>';
+    }
+
+    // Bloco visual completo de Status da API Facio dentro do Card
+    function renderFacioStatusBoxHTML(l) {
+      const cpfDigits = onlyDigits(l.cpf);
+      const live = facioLiveCache[cpfDigits];
+      const wh = findWebhookForLead(l);
+      const savedWhEvent = wh?.event_type || l.facio_webhook_event || '';
+      const regUrl = live?.registrationUrl || l.facio_registration_url || '';
+
+      // 1) Se tiver evento real de Webhook (aprovação / contratação / reprovação)
+      let webhookBanner = '';
+      if (savedWhEvent) {
+        const cls = classifyWebhookEvent(savedWhEvent);
+        const colorCls = cls.tone === 'emerald'
+          ? 'bg-emerald-600 text-white'
+          : (cls.tone === 'red' ? 'bg-red-600 text-white' : 'bg-indigo-600 text-white');
+        webhookBanner = `
+          <div class="rounded-lg px-2.5 py-1.5 text-[11px] font-extrabold ${colorCls} flex items-center justify-between gap-2">
+            <span>${esc(cls.label)}</span>
+            ${wh?.created_at ? `<span class="text-[10px] opacity-85 shrink-0">${esc(formatDateBR(wh.created_at))}</span>` : ''}
+          </div>`;
+      }
+
+      // 2) Estado da consulta em tempo real na API (/availability) ou salvo no D1
+      let apiStateHtml = '';
+      const state = live?.state || l.facio_status || (isTruthy(l.facio_elegivel) ? 'saved_eligible' : 'unchecked');
+
+      if (state === 'checking') {
+        apiStateHtml = `
+          <div class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-800 flex items-center gap-2">
+            <i class="fas fa-circle-notch fa-spin text-blue-600"></i>
+            <span>Consultando API da Facio...</span>
+          </div>`;
+      } else if (state === 'eligible' || state === 'lead_sent' || state === 'saved_eligible') {
+        const msg = live?.message || (state === 'lead_sent' ? 'Lead enviado p/ Facio (link gerado)' : 'Pré-aprovado / Elegível na Facio');
+        const linkBtnHtml = regUrl
+          ? `<div class="flex items-center gap-1.5 mt-2">
+               <button type="button" onclick="copyField('${encodeURIComponent(regUrl)}', 'Link Facio', this)"
+                       class="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold transition flex items-center justify-center gap-1">
+                 <i class="fas fa-link"></i> Copiar Link Facio
+               </button>
+               <a href="${esc(regUrl)}" target="_blank" rel="noopener noreferrer"
+                  class="py-1.5 px-2.5 rounded-lg bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-100 text-[11px] font-bold">
+                 Abrir ↗
+               </a>
+             </div>`
+          : `<button type="button" onclick="generateFacioLinkForLead('${esc(l._uid)}')" ${live?.generatingLink ? 'disabled' : ''}
+                     class="mt-2 w-full py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold transition flex items-center justify-center gap-1.5 disabled:opacity-60">
+               ${live?.generatingLink
+                 ? '<i class="fas fa-circle-notch fa-spin"></i> Gerando link na Facio...'
+                 : '<i class="fas fa-paper-plane"></i> Gerar Link Pré-Preenchido Facio'}
+             </button>`;
+
+        apiStateHtml = `
+          <div class="rounded-xl border border-emerald-300 bg-emerald-50/90 p-2.5 text-emerald-950 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-black text-emerald-800"><i class="fas fa-check-circle mr-1"></i> FACIO: PRÉ-APROVADO</span>
+              <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')" class="text-[10px] font-bold text-emerald-700 hover:underline" title="Reconsultar na API Facio agora">
+                <i class="fas fa-sync-alt"></i> Reconsultar
+              </button>
+            </div>
+            <div class="text-[11px] font-semibold text-emerald-900 leading-snug">${esc(msg)}</div>
+            ${live?.linkError ? `<div class="text-[10px] text-red-700 font-bold mt-1">⚠️ ${esc(live.linkError)}</div>` : ''}
+            ${linkBtnHtml}
+          </div>`;
+      } else if (state === 'already_registered') {
+        apiStateHtml = `
+          <div class="rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-amber-950 flex items-center justify-between gap-2">
+            <div>
+              <div class="text-[11px] font-black text-amber-900"><i class="fas fa-user-check mr-1"></i> JÁ TEM CADASTRO NA FACIO (409)</div>
+              <div class="text-[10px] text-amber-800">${esc(live?.checkedAt ? `Consultado às ${live.checkedAt}` : 'Retorno HTTP 409 da API')}</div>
+            </div>
+            <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')" class="px-2 py-1 rounded-lg bg-white border border-amber-300 text-[10px] font-bold text-amber-900 hover:bg-amber-100 shrink-0">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>`;
+      } else if (state === 'unavailable') {
+        apiStateHtml = `
+          <div class="rounded-xl border border-red-200 bg-red-50 p-2.5 text-red-900 flex items-center justify-between gap-2">
+            <div>
+              <div class="text-[11px] font-black text-red-800"><i class="fas fa-times-circle mr-1"></i> NÃO APROVADO NA FACIO</div>
+              <div class="text-[10px] text-red-700">${esc(live?.checkedAt ? `Sem oferta às ${live.checkedAt}` : 'API retornou isAvailable: false')}</div>
+            </div>
+            <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')" class="px-2 py-1 rounded-lg bg-white border border-red-200 text-[10px] font-bold text-red-700 hover:bg-red-100 shrink-0">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>`;
+      } else if (state === 'error') {
+        apiStateHtml = `
+          <div class="rounded-xl border border-red-300 bg-red-50 p-2.5 text-red-900 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-[11px] font-black text-red-800">⚠️ Erro na consulta API</div>
+              <div class="text-[10px] text-red-700 truncate">${esc(live?.message || 'Falha de conexão')}</div>
+            </div>
+            <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')" class="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold shrink-0">
+              Tentar
+            </button>
+          </div>`;
+      } else {
+        apiStateHtml = `
+          <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')"
+                  class="w-full py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-extrabold transition flex items-center justify-center gap-1.5">
+            <i class="fas fa-bolt text-amber-600"></i>
+            <span>Consultar na API Facio</span>
+          </button>`;
+      }
+
+      return `<div class="space-y-1.5">${webhookBanner}${apiStateHtml}</div>`;
+    }
+
+    function renderFacioTableCellHTML(l) {
+      const cpfDigits = onlyDigits(l.cpf);
+      const live = facioLiveCache[cpfDigits];
+      const wh = findWebhookForLead(l);
+      const savedWhEvent = wh?.event_type || l.facio_webhook_event || '';
+      const state = live?.state || l.facio_status || (isTruthy(l.facio_elegivel) ? 'saved_eligible' : 'unchecked');
+
+      let html = '';
+      if (savedWhEvent) {
+        const cls = classifyWebhookEvent(savedWhEvent);
+        html += `<div class="text-[10px] font-black mb-1 ${cls.tone === 'emerald' ? 'text-emerald-700' : (cls.tone === 'red' ? 'text-red-700' : 'text-indigo-700')}">${esc(cls.label)}</div>`;
+      }
+
+      if (state === 'checking') {
+        html += `<span class="text-xs font-bold text-blue-600"><i class="fas fa-circle-notch fa-spin mr-1"></i>Consultando...</span>`;
+      } else if (state === 'eligible' || state === 'lead_sent' || state === 'saved_eligible') {
+        html += `
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">✅ Pré-Aprovado</span>
+            <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')" class="text-[10px] text-emerald-700 hover:underline font-bold">↻</button>
+          </div>`;
+      } else if (state === 'already_registered') {
+        html += `<span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">⚠️ Já Cadastrado (409)</span>`;
+      } else if (state === 'unavailable') {
+        html += `<span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-700 border border-red-200">❌ Não Aprovado</span>`;
+      } else {
+        html += `
+          <button type="button" onclick="checkLeadInFacioAPI('${esc(cpfDigits)}')"
+                  class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-[11px] font-extrabold transition inline-flex items-center gap-1">
+            <i class="fas fa-bolt text-amber-600"></i> Consultar Facio
+          </button>`;
+      }
+
+      return html;
     }
 
     window.renderSolicitacoes = () => {
@@ -615,7 +1275,11 @@
           const wppFmt = formatPhone(l.whatsapp);
           const emailClean = String(l.email || '').trim();
           const valorFmt = formatBRL(l.valor_desejado);
-          const wppUrl = wppDigits ? `https://wa.me/55${wppDigits}?text=${encodeURIComponent(`Olá ${nomeClean.split(' ')[0]}, tudo bem? Vi sua simulação na TirraCred no valor de ${valorFmt}!`)}` : '#';
+          const regUrl = facioLiveCache[cpfDigits]?.registrationUrl || l.facio_registration_url || '';
+          const wppMsg = regUrl
+            ? `Olá ${nomeClean.split(' ')[0]}, tudo bem? Seu CPF está pré-aprovado na Facio! Finalize sua solicitação por aqui: ${regUrl}`
+            : `Olá ${nomeClean.split(' ')[0]}, tudo bem? Vi sua simulação na TirraCred no valor de ${valorFmt}!`;
+          const wppUrl = wppDigits ? `https://wa.me/55${wppDigits}?text=${encodeURIComponent(wppMsg)}` : '#';
 
           return `
             <article class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between gap-3">
@@ -636,6 +1300,9 @@
                 </div>
               </div>
 
+              <!-- BLOCO DE STATUS E CONSULTA NA API FACIO -->
+              ${renderFacioStatusBoxHTML(l)}
+
               <!-- Campos com Cópia em 1 Clique -->
               <div class="space-y-2">
                 <!-- Nome -->
@@ -648,7 +1315,7 @@
                   <i class="far fa-copy text-gray-400 group-hover:text-emerald-600 shrink-0 text-xs"></i>
                 </button>
 
-                <!-- CPF (com opção rápida de copiar só números) -->
+                <!-- CPF -->
                 <div class="grid grid-cols-12 gap-1.5">
                   <button type="button" onclick="copyField('${encodeURIComponent(cpfDigits || cpfFmt)}', 'CPF (só números)', this)"
                           class="copy-pill col-span-8 text-left px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center justify-between gap-1.5 group" title="Clique para copiar CPF sem pontos">
@@ -735,6 +1402,7 @@
                   ${sourceBadgeHTML(l._source)}
                 </div>
                 <div class="text-[11px] text-gray-500 mt-0.5">${esc(formatDateBR(l.created_at))}</div>
+                <div class="text-[11px] font-bold text-emerald-700 mt-0.5">${valorFmt} (${esc(l.parcelas || 1)}x)</div>
               </td>
               <td class="py-3 px-4">
                 <button type="button" onclick="copyField('${encodeURIComponent(nomeClean)}', 'Nome', this)"
@@ -742,6 +1410,7 @@
                   <span>${esc(nomeClean)}</span>
                   <i class="far fa-copy text-[10px] text-gray-400"></i>
                 </button>
+                <div class="flex flex-wrap gap-1 mt-1 px-2">${profileBadgesHTML(l)}</div>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
                 <button type="button" onclick="copyField('${encodeURIComponent(cpfDigits || cpfFmt)}', 'CPF', this)"
@@ -768,14 +1437,13 @@
                 </button>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
-                <div class="font-black text-emerald-700 text-sm">${valorFmt} <span class="text-xs font-semibold text-gray-400">(${esc(l.parcelas || 1)}x)</span></div>
-                <div class="flex flex-wrap gap-1 mt-1">${profileBadgesHTML(l)}</div>
+                ${renderFacioTableCellHTML(l)}
               </td>
               <td class="py-3 px-4 text-right whitespace-nowrap">
                 <div class="inline-flex items-center gap-1.5">
                   <button type="button" onclick="copyFullLead('${esc(l._uid)}', this)"
                           class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">
-                    <i class="fas fa-copy mr-1"></i> Copiar Tudo
+                    <i class="fas fa-copy mr-1"></i> Copiar
                   </button>
                   <button type="button" onclick="deleteSolicitacao(${l._d1_id || 'null'}, ${l._supa_id || 'null'})"
                           class="p-2 rounded-lg text-red-600 hover:bg-red-50 transition" title="Excluir">
@@ -805,29 +1473,36 @@
     window.exportCSV = () => {
       const list = getFilteredSolicitacoes();
       if (!list.length) return alert('Não há solicitações para exportar.');
-      const headers = ['ID', 'Fonte', 'Data', 'Nome', 'CPF', 'WhatsApp', 'Email', 'Valor', 'Parcelas', 'Negativado', 'Aposentado', 'Bolsa_Familia', 'Facio_Elegivel'];
-      const rows = list.map(l => [
-        l.id,
-        l._source,
-        `"${formatDateBR(l.created_at)}"`,
-        `"${String(l.nome || '').replace(/"/g, '""')}"`,
-        `"${onlyDigits(l.cpf)}"`,
-        `"${onlyDigits(l.whatsapp)}"`,
-        `"${String(l.email || '')}"`,
-        l.valor_desejado || 0,
-        l.parcelas || 1,
-        isTruthy(l.negativado) ? 'Sim' : 'Nao',
-        isTruthy(l.aposentado) ? 'Sim' : 'Nao',
-        isTruthy(l.bolsafamilia) ? 'Sim' : 'Nao',
-        isTruthy(l.facio_elegivel) ? 'Sim' : 'Nao'
-      ].join(','));
+      const headers = ['ID', 'Fonte', 'Data', 'Nome', 'CPF', 'WhatsApp', 'Email', 'Valor', 'Parcelas', 'Negativado', 'Aposentado', 'Bolsa_Familia', 'Facio_Elegivel', 'Facio_Status', 'Facio_Webhook'];
+      const rows = list.map(l => {
+        const cpfDigits = onlyDigits(l.cpf);
+        const live = facioLiveCache[cpfDigits];
+        const wh = findWebhookForLead(l);
+        return [
+          l.id,
+          l._source,
+          `"${formatDateBR(l.created_at)}"`,
+          `"${String(l.nome || '').replace(/"/g, '""')}"`,
+          `"${cpfDigits}"`,
+          `"${onlyDigits(l.whatsapp)}"`,
+          `"${String(l.email || '')}"`,
+          l.valor_desejado || 0,
+          l.parcelas || 1,
+          isTruthy(l.negativado) ? 'Sim' : 'Nao',
+          isTruthy(l.aposentado) ? 'Sim' : 'Nao',
+          isTruthy(l.bolsafamilia) ? 'Sim' : 'Nao',
+          isTruthy(l.facio_elegivel) ? 'Sim' : 'Nao',
+          `"${live?.state || l.facio_status || ''}"`,
+          `"${wh?.event_type || l.facio_webhook_event || ''}"`
+        ].join(',');
+      });
 
       const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `solicitacoes_d1_tirracred_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `solicitacoes_facio_tirracred_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     };
@@ -889,3 +1564,4 @@
   </script>
 </body>
 </html>
+

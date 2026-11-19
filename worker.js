@@ -218,9 +218,22 @@ async function handleFacioLeadgen(request, env) {
         });
       }
 
+      const strictMode = Boolean(body.strict);
       const result = await callFacioAPI(baseUrl, '/availability', { cpf: cleanCpf }, authHeader, facioEnv);
 
       if (result.isServerOrNetworkError) {
+        if (strictMode) {
+          return new Response(JSON.stringify({
+            isAvailable: false,
+            apiError: true,
+            upstreamStatus: result.status,
+            error: result.data?.error || 'Falha ou timeout ao consultar a API da Facio',
+            details: result.data
+          }), {
+            status: 503,
+            headers: CORS_JSON_HEADERS
+          });
+        }
         return new Response(JSON.stringify({
           isAvailable: true,
           fallbackMode: true,
@@ -233,10 +246,16 @@ async function handleFacioLeadgen(request, env) {
       }
 
       if (result.status === 409) {
+        await updateLeadFacioInD1(env, {
+          cpf: cleanCpf,
+          elegivel: false,
+          status: 'already_registered'
+        });
         return new Response(JSON.stringify({
           isAvailable: false,
           alreadyRegistered: true,
           error: 'user already registered',
+          upstreamStatus: 409,
           details: result.data
         }), {
           status: 409,
@@ -245,11 +264,20 @@ async function handleFacioLeadgen(request, env) {
       }
 
       const isAvailable = Boolean(result.data?.isAvailable);
+      if (result.status >= 200 && result.status < 300) {
+        await updateLeadFacioInD1(env, {
+          cpf: cleanCpf,
+          elegivel: isAvailable,
+          status: isAvailable ? 'eligible' : 'unavailable'
+        });
+      }
+
       return new Response(JSON.stringify({
         ...(result.data || {}),
         isAvailable,
         offer: result.data?.offer || (isAvailable ? DEFAULT_OFFER : null),
-        alreadyRegistered: false
+        alreadyRegistered: false,
+        upstreamStatus: result.status
       }), {
         status: result.status,
         headers: CORS_JSON_HEADERS
@@ -270,11 +298,28 @@ async function handleFacioLeadgen(request, env) {
         });
       }
 
+      const strictMode = Boolean(body.strict);
       const result = await callFacioAPI(baseUrl, '/lead', validation.payload, authHeader, facioEnv);
 
       if ((result.status === 200 || result.status === 201) && result.data?.registrationUrl) {
+        const facioPartnerId =
+          result.data?.partnerCustomerId ||
+          result.data?.leadId ||
+          result.data?.id ||
+          result.data?.requestId ||
+          null;
+
+        await updateLeadFacioInD1(env, {
+          cpf: validation.cleanCpf,
+          elegivel: true,
+          status: 'lead_sent',
+          partnerId: facioPartnerId ? String(facioPartnerId) : null,
+          registrationUrl: String(result.data.registrationUrl)
+        });
+
         return new Response(JSON.stringify({
           ...result.data,
+          partnerCustomerId: facioPartnerId,
           alreadyRegistered: false,
           fallbackMode: false
         }), {
@@ -284,6 +329,11 @@ async function handleFacioLeadgen(request, env) {
       }
 
       if (result.status === 409) {
+        await updateLeadFacioInD1(env, {
+          cpf: validation.cleanCpf,
+          elegivel: false,
+          status: 'already_registered'
+        });
         return new Response(JSON.stringify({
           alreadyRegistered: true,
           isAvailable: false,
@@ -296,6 +346,16 @@ async function handleFacioLeadgen(request, env) {
       }
 
       if (result.isServerOrNetworkError) {
+        if (strictMode) {
+          return new Response(JSON.stringify({
+            error: result.data?.error || 'Falha na API Facio ao enviar lead',
+            apiError: true,
+            upstreamStatus: result.status
+          }), {
+            status: 503,
+            headers: CORS_JSON_HEADERS
+          });
+        }
         return new Response(JSON.stringify({
           registrationUrl: FALLBACK_URL,
           fallbackUrl: FALLBACK_URL,
@@ -416,31 +476,39 @@ async function handleFacioWebhook(request, env) {
       `[FACIO_WEBHOOK_EVENT] env=${facioEnv} event=${eventType} partnerCustomerId=${partnerCustomerId || 'N/A'} campaign=${campaign} eventDate=${eventDate}`
     );
 
-    if (env?.DB) {
-      try {
-        await env.DB.prepare(
-          `CREATE TABLE IF NOT EXISTS facio_webhook_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            env TEXT,
-            event_type TEXT,
-            lead_id TEXT,
-            cpf TEXT,
-            payload TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )`
-        ).run();
+    const webhookCpf = onlyLeadDigits(
+      eventData?.cpf ||
+      eventData?.personalInfo?.cpf ||
+      eventData?.customer?.cpf ||
+      eventData?.data?.cpf ||
+      eventData?.data?.personalInfo?.cpf ||
+      null
+    );
 
-        await env.DB.prepare(
+    const db = getD1Database(env);
+    if (db) {
+      try {
+        await ensureFacioWebhookTable(db);
+
+        await db.prepare(
           `INSERT INTO facio_webhook_logs (env, event_type, lead_id, cpf, payload) VALUES (?, ?, ?, ?, ?)`
         )
           .bind(
             facioEnv,
             String(eventType),
             partnerCustomerId ? String(partnerCustomerId) : null,
-            campaign,
+            webhookCpf || campaign,
             JSON.stringify(eventData)
           )
           .run();
+
+        // Atualiza o lead correspondente no D1 com o evento real de aprovação/reprovação do webhook
+        await updateLeadFacioInD1(env, {
+          cpf: webhookCpf,
+          partnerId: partnerCustomerId ? String(partnerCustomerId) : null,
+          webhookEvent: String(eventType),
+          status: `webhook:${String(eventType)}`
+        });
       } catch (dbErr) {
         console.warn(`[FACIO_WEBHOOK_D1_SKIP] message=${dbErr?.message || dbErr}`);
       }
@@ -515,9 +583,91 @@ async function ensureLeadsTable(db) {
       aposentado BOOLEAN DEFAULT 0,
       bolsafamilia BOOLEAN DEFAULT 0,
       facio_elegivel BOOLEAN DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now'))
+      created_at TEXT DEFAULT (datetime('now')),
+      facio_status TEXT,
+      facio_partner_id TEXT,
+      facio_registration_url TEXT,
+      facio_webhook_event TEXT,
+      facio_checked_at TEXT
     )
   `).run();
+
+  // Garante as colunas extras da Facio em tabelas leads já existentes (ignora se já existirem)
+  const extraCols = [
+    'facio_status TEXT',
+    'facio_partner_id TEXT',
+    'facio_registration_url TEXT',
+    'facio_webhook_event TEXT',
+    'facio_checked_at TEXT'
+  ];
+  for (const colDef of extraCols) {
+    try {
+      await db.prepare(`ALTER TABLE leads ADD COLUMN ${colDef}`).run();
+    } catch (_) {}
+  }
+}
+
+async function ensureFacioWebhookTable(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS facio_webhook_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      env TEXT,
+      event_type TEXT,
+      lead_id TEXT,
+      cpf TEXT,
+      payload TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+}
+
+async function updateLeadFacioInD1(env, { cpf, elegivel, status, partnerId, registrationUrl, webhookEvent }) {
+  const db = getD1Database(env);
+  if (!db) return;
+
+  try {
+    await ensureLeadsTable(db);
+    const nowIso = new Date().toISOString();
+    const cleanCpf = onlyLeadDigits(cpf);
+
+    if (cleanCpf) {
+      await db.prepare(`
+        UPDATE leads
+        SET
+          facio_elegivel = COALESCE(?, facio_elegivel),
+          facio_status = COALESCE(?, facio_status),
+          facio_partner_id = COALESCE(?, facio_partner_id),
+          facio_registration_url = COALESCE(?, facio_registration_url),
+          facio_webhook_event = COALESCE(?, facio_webhook_event),
+          facio_checked_at = ?
+        WHERE cpf = ?
+      `).bind(
+        elegivel === undefined ? null : (elegivel ? 1 : 0),
+        status ?? null,
+        partnerId ?? null,
+        registrationUrl ?? null,
+        webhookEvent ?? null,
+        nowIso,
+        cleanCpf
+      ).run();
+    } else if (partnerId) {
+      await db.prepare(`
+        UPDATE leads
+        SET
+          facio_webhook_event = COALESCE(?, facio_webhook_event),
+          facio_status = COALESCE(?, facio_status),
+          facio_checked_at = ?
+        WHERE facio_partner_id = ?
+      `).bind(
+        webhookEvent ?? null,
+        status ?? null,
+        nowIso,
+        String(partnerId)
+      ).run();
+    }
+  } catch (err) {
+    console.warn('[D1_FACIO_SYNC_WARN]', err?.message || err);
+  }
 }
 
 async function saveLeadToD1(db, lead) {
@@ -827,6 +977,54 @@ async function handleLeadsAPI(request, env) {
   }
 }
 
+
+// Lista eventos recebidos do Webhook da Facio salvos no D1 (PROTEGIDO POR LOGIN ADMIN)
+async function handleFacioWebhooksList(request, env) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS_JSON_HEADERS });
+  }
+
+  if (request.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'Método não permitido.' }), {
+      status: 405,
+      headers: CORS_JSON_HEADERS
+    });
+  }
+
+  const auth = await verifyAdminRequest(request, env);
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.reason }), {
+      status: 401,
+      headers: CORS_JSON_HEADERS
+    });
+  }
+
+  const db = getD1Database(env);
+  if (!db) {
+    return new Response(JSON.stringify({ error: 'Binding D1 não configurado no Worker.' }), {
+      status: 500,
+      headers: CORS_JSON_HEADERS
+    });
+  }
+
+  try {
+    await ensureFacioWebhookTable(db);
+    const { results } = await db.prepare(
+      'SELECT * FROM facio_webhook_logs ORDER BY id DESC LIMIT 300'
+    ).all();
+
+    return new Response(JSON.stringify(results || []), {
+      status: 200,
+      headers: CORS_JSON_HEADERS
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: `Erro ao consultar webhooks Facio: ${err.message}` }), {
+      status: 500,
+      headers: CORS_JSON_HEADERS
+    });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -840,6 +1038,11 @@ export default {
     // 2. Rota do Webhook da Facio (/api/facio-webhook)
     if (path === '/api/facio-webhook') {
       return handleFacioWebhook(request, env);
+    }
+
+    // 2B. Lista de eventos do Webhook da Facio para o painel solicitacoes.html (protegida por Auth)
+    if (path === '/api/facio-webhooks') {
+      return handleFacioWebhooksList(request, env);
     }
 
     // 3. Rota de Leads (Cloudflare D1 "tirracred" + Supabase) — atende /api/leads e /api/capturar-lead
