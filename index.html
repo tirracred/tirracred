@@ -381,7 +381,7 @@
     <!-- [ADSENSE] -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4935884639623224" crossorigin="anonymous"></script>
 
-    <!-- [GOOGLEE TAG MANAGER] -->
+    <!-- [GOOGLE TAG MANAGER] -->
     <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TFZPNT38"></script>
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -1066,6 +1066,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+            const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
             // ===================================================
             // 1. FILTROS MOBILE (DRAWER)
             // ===================================================
@@ -1543,6 +1547,61 @@
                 };
             }
 
+            // ===================================================
+            // SALVAMENTO DO LEAD NO CLOUDFLARE D1 (+ FALLBACK SUPABASE)
+            // ===================================================
+            let lastSavedLeadSignature = '';
+
+            async function saveLeadToDatabases(validData, isFacioAvailable) {
+                const sig = `${validData.cpf}_${validData.valor}_${validData.parcelas}_${validData.whatsapp}_${validData.email}`;
+                if (lastSavedLeadSignature === sig) return;
+                lastSavedLeadSignature = sig;
+
+                const leadPayload = {
+                    nome: validData.nome,
+                    email: validData.email,
+                    cpf: validData.cpf,
+                    whatsapp: validData.whatsapp,
+                    renda: validData.renda_mensal || 0,
+                    valor: validData.valor || 300,
+                    negativado: Boolean(validData.negativado),
+                    parcelas: Number(validData.parcelas) || 1,
+                    aposentado: Boolean(validData.aposentado),
+                    bolsafamilia: Boolean(validData.bolsafamilia),
+                    facio_elegivel: Boolean(isFacioAvailable)
+                };
+
+                try {
+                    const res = await fetch('/api/leads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(leadPayload),
+                        keepalive: true
+                    });
+                    if (res.ok) return; // Já salvou no Cloudflare D1 e no Supabase pelo backend!
+                } catch (err) {
+                    console.warn('[API Leads] Falha ao chamar /api/leads, tentando fallback Supabase:', err);
+                }
+
+                // Fallback de emergência caso /api/leads não responda
+                try {
+                    await _supabase.from('leads').insert([{
+                        nome: leadPayload.nome,
+                        email: leadPayload.email,
+                        cpf: leadPayload.cpf,
+                        whatsapp: leadPayload.whatsapp,
+                        renda_mensal: String(leadPayload.renda),
+                        valor_desejado: String(leadPayload.valor),
+                        negativado: leadPayload.negativado,
+                        parcelas: leadPayload.parcelas,
+                        aposentado: leadPayload.aposentado,
+                        bolsafamilia: leadPayload.bolsafamilia
+                    }]);
+                } catch (e) {
+                    console.warn('[Supabase Fallback] Falhou:', e);
+                }
+            }
+
             function redirectToResultsPage(validData, isFacioAvailable, isFacioRejected = false) {
                 const leadContextPayload = {
                     ...validData,
@@ -1592,24 +1651,45 @@
                 }
 
                 try {
-                    const { res, data } = await callFacioBackend({
+                    // Salva o lead no Cloudflare D1 (e Supabase via backend/fallback)
+                    await saveLeadToDatabases(validData, true);
+
+                    const payload = {
                         action: 'lead',
-                        ...validData
-                    });
+                        requestId: facioState.requestId || undefined,
+                        ...validData,
+                        name: validData.nome,
+                        phone: validData.whatsapp,
+                        personalInfo: {
+                            name: validData.nome
+                        },
+                        contactInfo: {
+                            phone: validData.whatsapp,
+                            email: validData.email
+                        }
+                    };
+
+                    const { res, data } = await callFacioBackend(payload);
 
                     if (res && res.ok && data.registrationUrl) {
                         window.location.href = data.registrationUrl;
                         return;
                     }
 
+                    console.error('[Facio] Falha ao gerar registrationUrl no action=lead:', {
+                        status: res ? res.status : 'Sem resposta HTTP',
+                        response: data
+                    });
+
                     facioState.isAvailable = false;
-                    facioState.alreadyRegistered = Boolean(res && res.status === 409 || data.alreadyRegistered);
+                    facioState.alreadyRegistered = Boolean((res && res.status === 409) || data.alreadyRegistered);
                     facioOfferBox?.classList.add('hidden');
                     btnFacioDirect?.classList.add('hidden');
                     btnFacioDirect?.classList.remove('flex');
                     redirectToResultsPage(validData, false, true);
                     return;
                 } catch (err) {
+                    console.error('[Facio] Exceção no triggerFacioRegistration:', err);
                     window.location.href = FACIO_FALLBACK_URL;
                 } finally {
                     if (buttonEl) {
@@ -1624,7 +1704,7 @@
             });
 
             // ===================================================
-            // 5. SUBMISSÃO DO FORMULÁRIO -> PÁGINA DE RESULTADOS
+            // 5. SUBMISSÃO DO FORMULÁRIO -> SALVA LEAD E ABRE RESULTADOS
             // ===================================================
             leadForm?.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1642,6 +1722,7 @@
                     if (facioState.lastCheckedCpf !== validData.cpf) {
                         await checkFacioAvailability(validData.cpf);
                     }
+                    await saveLeadToDatabases(validData, facioState.isAvailable);
                     redirectToResultsPage(validData, facioState.isAvailable, !facioState.isAvailable);
                 } finally {
                     if (submitBtn) {
@@ -1802,9 +1883,7 @@
             // ===================================================
             // 8. LISTA DE PRODUTOS E PAGINAÇÃO
             // ===================================================
-            const SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
-            const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            // Cliente _supabase já inicializado no topo do DOMContentLoaded
 
             const listEl = document.getElementById('product-list');
             const pagTop = document.getElementById('pagination-top');
@@ -2251,7 +2330,7 @@
                     let supabaseProducts = [];
 
                     try {
-                        const res = await fetch(`/api/products?t=${Date.now()}`, { cache: no-store });
+                        const res = await fetch(`/api/products?t=${Date.now()}`, { cache: 'no-store' });
                         if (res.ok) {
                             const data = await res.json();
                             if (Array.isArray(data)) d1Products = data;

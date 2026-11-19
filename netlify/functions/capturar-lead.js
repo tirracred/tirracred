@@ -1,112 +1,295 @@
-// netlify/functions/capturar-lead.js
-const supabase = require('./utils/supabase');
+// functions/api/leads.js
+// Compatível com Cloudflare Pages Functions — salva simultaneamente no Cloudflare D1 e no Supabase
 
-// Cabeçaalhos CORS compartilhados para todas as respostas
-const headers = {
-  'Access-Control-Allow-Origin': '*', // Em produção, ajuste para o domínio do seu site
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+const DEFAULT_SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Content-Type': 'application/json'
 };
 
-exports.handler = async function(event) {
-  // Tratamento da preflight request (CORS)
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers,
-      body: ''
-    };
+// Detecta automaticamente o binding do banco Cloudflare D1 ("tirracred")
+function getD1Database(env) {
+  if (!env) return null;
+  if (env.DB && typeof env.DB.prepare === 'function') return env.DB;
+  if (env.tirracred && typeof env.tirracred.prepare === 'function') return env.tirracred;
+  if (env.TIRRACRED_DB && typeof env.TIRRACRED_DB.prepare === 'function') return env.TIRRACRED_DB;
+  if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
+
+  for (const val of Object.values(env)) {
+    if (val && typeof val === 'object' && typeof val.prepare === 'function') {
+      return val;
+    }
+  }
+  return null;
+}
+
+function toBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return normalized === 'true' || normalized === 'on' || normalized === '1' || normalized === 'sim';
+}
+
+function toNumberOrNull(value) {
+  if (value === undefined || value === null || String(value).trim() === '') return null;
+  const num = Number(String(value).replace(',', '.'));
+  return Number.isNaN(num) ? null : num;
+}
+
+function onlyDigits(value) {
+  const digits = String(value ?? '').replace(/\D/g, '');
+  return digits || null;
+}
+
+async function saveLeadToD1(db, lead) {
+  if (!db) {
+    throw new Error('Binding do Cloudflare D1 não encontrado em env.');
   }
 
-  // Permite apenas método POST
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Método não permitido.' })
-    };
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      email TEXT,
+      cpf TEXT NOT NULL,
+      whatsapp TEXT,
+      renda_mensal TEXT DEFAULT '0',
+      valor_desejado TEXT,
+      negativado BOOLEAN DEFAULT 0,
+      parcelas INTEGER DEFAULT 1,
+      aposentado BOOLEAN DEFAULT 0,
+      bolsafamilia BOOLEAN DEFAULT 0,
+      facio_elegivel BOOLEAN DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    )
+  `).run();
+
+  const result = await db.prepare(`
+    INSERT INTO leads (
+      nome, email, cpf, whatsapp, renda_mensal, valor_desejado,
+      negativado, parcelas, aposentado, bolsafamilia, facio_elegivel, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    lead.nome,
+    lead.email,
+    lead.cpf || '',
+    lead.whatsapp,
+    lead.renda_mensal !== null ? String(lead.renda_mensal) : '0',
+    lead.valor_desejado !== null ? String(lead.valor_desejado) : '300',
+    lead.negativado ? 1 : 0,
+    lead.parcelas ?? 1,
+    lead.aposentado ? 1 : 0,
+    lead.bolsafamilia ? 1 : 0,
+    lead.facio_elegivel ? 1 : 0,
+    lead.created_at
+  ).run();
+
+  return { id: result?.meta?.last_row_id || null };
+}
+
+async function saveLeadToSupabase(env, lead) {
+  const supaUrl = env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const supaKey = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+
+  const fullRow = {
+    nome: lead.nome,
+    email: lead.email,
+    ...(lead.cpf ? { cpf: lead.cpf } : {}),
+    ...(lead.whatsapp ? { whatsapp: lead.whatsapp } : {}),
+    ...(lead.renda_mensal !== null ? { renda_mensal: String(lead.renda_mensal) } : {}),
+    ...(lead.valor_desejado !== null ? { valor_desejado: String(lead.valor_desejado) } : {}),
+    negativado: lead.negativado,
+    aposentado: lead.aposentado,
+    bolsafamilia: lead.bolsafamilia,
+    ...(lead.parcelas !== null ? { parcelas: lead.parcelas } : {}),
+    created_at: lead.created_at
+  };
+
+  const insertSupabase = (bodyObj) => fetch(`${supaUrl}/rest/v1/leads`, {
+    method: 'POST',
+    headers: {
+      'apikey': supaKey,
+      'Authorization': `Bearer ${supaKey}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(bodyObj)
+  });
+
+  let res = await insertSupabase(fullRow);
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    if (errText.includes('created_at')) {
+      const { created_at, ...legacyRow } = fullRow;
+      res = await insertSupabase(legacyRow);
+      if (!res.ok) {
+        const retryErr = await res.text().catch(() => '');
+        throw new Error(`Supabase (${res.status}): ${retryErr}`);
+      }
+      return { ok: true, usedLegacySchema: true };
+    }
+    throw new Error(`Supabase (${res.status}): ${errText}`);
+  }
+
+  return { ok: true, usedLegacySchema: false };
+}
+
+export async function onRequest(context) {
+  const { request, env } = context;
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  const db = getD1Database(env);
+  const url = new URL(request.url);
+
+  if (request.method === 'GET') {
+    if (!db) {
+      return new Response(JSON.stringify({ error: 'Banco D1 não configurado.' }), {
+        status: 500,
+        headers: corsHeaders
+      });
+    }
+
+    try {
+      const { results } = await db.prepare(
+        'SELECT * FROM leads ORDER BY id DESC LIMIT 1000'
+      ).all();
+
+      return new Response(JSON.stringify(results || []), {
+        status: 200,
+        headers: { ...corsHeaders, 'Cache-Control': 'no-store' }
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: `Erro ao listar leads: ${error.message}` }), {
+        status: 500,
+        headers: corsHeaders
+      });
+    }
+  }
+
+  if (request.method === 'DELETE') {
+    if (!db) {
+      return new Response(JSON.stringify({ error: 'Banco D1 não configurado.' }), {
+        status: 500,
+        headers: corsHeaders
+      });
+    }
+
+    try {
+      let id = url.searchParams.get('id');
+      if (!id) {
+        const body = await request.json().catch(() => ({}));
+        id = body?.id;
+      }
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'ID do lead não informado.' }), {
+          status: 400,
+          headers: corsHeaders
+        });
+      }
+
+      await db.prepare('DELETE FROM leads WHERE id = ?').bind(Number(id)).run();
+      return new Response(JSON.stringify({ ok: true }), { status: 200, headers: corsHeaders });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: `Erro ao excluir lead: ${error.message}` }), {
+        status: 500,
+        headers: corsHeaders
+      });
+    }
+  }
+
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Método não permitido.' }), {
+      status: 405,
+      headers: corsHeaders
+    });
   }
 
   try {
-    // Parse do corpo da requisição JSON
-    const data = JSON.parse(event.body);
-    const { nome, email } = data;
-    const cpf = data.cpf || null;
-    const whatsapp = data.whatsapp || null;
-    let rendaMensal = data.renda;
-    let valorDesejado = data.valor;
-    let negativado = data.negativado;
-    let parcelas = data.parcelas;
-    let aposentado = data.aposentado; 
-    let bolsafamilia = data.bolsafamilia; // Novo campo
+    const data = await request.json().catch(() => null);
+    if (!data || typeof data !== 'object') {
+      return new Response(JSON.stringify({ error: 'Corpo JSON inválido.' }), {
+        status: 400,
+        headers: corsHeaders
+      });
+    }
 
+    const nome = String(data.nome || '').trim();
+    const email = String(data.email || '').trim().toLowerCase();
 
-    // Validação dos campos obrigatórios
     if (!nome || !email) {
-      return {
-        statusCode: 422,
-        headers,
-        body: JSON.stringify({ error: 'Os campos nome e e-mail são obrigatórios.' })
-      };
+      return new Response(
+        JSON.stringify({ error: 'Os campos nome e e-mail são obrigatórios.' }),
+        { status: 422, headers: corsHeaders }
+      );
     }
 
-    // Conversão de tipos dos campos opcionais
-    if (typeof negativado !== 'boolean') {
-
-      negativado = (negativado === true || negativado === 'true' || negativado === 'on');
-    }
-    // Adiciona a conversão para o novo campo 'aposentado'
-    if (typeof aposentado !== 'boolean') {
-      aposentado = (aposentado === true || aposentado === 'true' || aposentado === 'on');
-    }
-    if (rendaMensal !== undefined && rendaMensal !== null) {
-      rendaMensal = Number(rendaMensal);
-      if (isNaN(rendaMensal)) rendaMensal = null;
-    }
-    if (valorDesejado !== undefined && valorDesejado !== null) {
-      valorDesejado = Number(valorDesejado);
-      if (isNaN(valorDesejado)) valorDesejado = null;
-    }
-    if (parcelas !== undefined && parcelas !== null) {
-      parcelas = Number(parcelas);
-      if (isNaN(parcelas)) parcelas = null;
-    }
-    if (typeof bolsafamilia !== 'boolean') {
-    bolsafamilia = (bolsafamilia === true || bolsafamilia === 'true' || bolsafamilia === 'on');
-    }
-
-    // Monta o objeto com nomes de coluna corretos, incluindo 'aposentado'
-    const newLead = {
+    const lead = {
       nome,
       email,
-      ...(cpf ? { cpf } : {}),
-      ...(whatsapp ? { whatsapp } : {}),
-      ...(rendaMensal !== undefined ? { renda_mensal: rendaMensal } : {}),
-      ...(valorDesejado !== undefined ? { valor_desejado: valorDesejado } : {}),
-      ...(negativado !== undefined ? { negativado } : {}),
-      ...(aposentado !== undefined ? { aposentado } : {}), 
-      ...(bolsafamilia !== undefined ? { bolsafamilia } : {}), 
-      ...(parcelas !== undefined ? { parcelas } : {})
+      cpf: onlyDigits(data.cpf),
+      whatsapp: onlyDigits(data.whatsapp),
+      renda_mensal: toNumberOrNull(data.renda_mensal ?? data.renda),
+      valor_desejado: toNumberOrNull(data.valor_desejado ?? data.valor),
+      parcelas: toNumberOrNull(data.parcelas) ?? 1,
+      negativado: toBoolean(data.negativado),
+      aposentado: toBoolean(data.aposentado ?? data.aposentado_inss),
+      bolsafamilia: toBoolean(data.bolsafamilia),
+      facio_elegivel: toBoolean(data.facio_elegivel ?? data.facioAvailable),
+      created_at: new Date().toISOString()
     };
 
-    // Insere na tabela 'leads'
-    const { error } = await supabase.from('leads').insert(newLead);
-    if (error) throw error; // Lança erro para cair no catch em caso de falha
+    const [d1Result, supaResult] = await Promise.allSettled([
+      saveLeadToD1(db, lead),
+      saveLeadToSupabase(env, lead)
+    ]);
 
-    // Sucesso
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ message: 'Lead capturado com sucesso!' })
-    };
+    const d1Ok = d1Result.status === 'fulfilled';
+    const supaOk = supaResult.status === 'fulfilled';
+
+    if (!d1Ok && !supaOk) {
+      console.error('Falha total ao salvar lead:', {
+        d1Error: d1Result.reason?.message,
+        supaError: supaResult.reason?.message
+      });
+      return new Response(
+        JSON.stringify({
+          error: 'Erro interno ao salvar lead nos bancos de dados.',
+          details: {
+            d1: d1Result.reason?.message || 'Erro desconhecido',
+            supabase: supaResult.reason?.message || 'Erro desconhecido'
+          }
+        }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        message: 'Lead capturado com sucesso!',
+        created_at: lead.created_at,
+        saved: {
+          cloudflare_d1: d1Ok,
+          supabase: supaOk
+        },
+        ...(d1Ok ? { d1_id: d1Result.value.id } : { d1_warning: d1Result.reason?.message }),
+        ...(!supaOk ? { supabase_warning: supaResult.reason?.message } : {})
+      }),
+      { status: 200, headers: corsHeaders }
+    );
 
   } catch (error) {
     console.error('Erro ao capturar lead:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: `Erro interno do servidor: ${error.message}` })
-    };
+    return new Response(
+      JSON.stringify({ error: `Erro interno do servidor: ${error.message}` }),
+      { status: 500, headers: corsHeaders }
+    );
   }
-};
+}

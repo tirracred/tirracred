@@ -75,13 +75,24 @@
   <!-- ========================================================= -->
   <div id="app" class="hidden flex-1 flex flex-col">
     <header class="bg-white/95 backdrop-blur shadow-sm sticky top-0 z-40 border-b border-gray-200">
-      <div class="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <div class="container mx-auto px-4 py-2.5 sm:py-0 sm:h-16 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <img src="public/logo.png" alt="logo" class="h-8 object-contain"
                onerror="this.onerror=null;this.src='https://placehold.co/150x40/ccc/000?text=TirraCred';">
           <span class="hidden sm:inline-block text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
             Admin Studio
           </span>
+        </div>
+
+        <!-- Abas de Navegação do Admin: Produtos vs Leads -->
+        <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200">
+          <button type="button" id="tabBtnProducts" onclick="switchAdminTab('products')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-emerald-600 text-white shadow-sm transition">
+            📦 Produtos
+          </button>
+          <button type="button" id="tabBtnLeads" onclick="switchAdminTab('leads')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5">
+            <span>📋 Leads / Consultas</span>
+            <span id="leadsCountBadge" class="px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-100 text-emerald-800 font-black">0</span>
+          </button>
         </div>
 
         <div class="flex items-center gap-2">
@@ -147,6 +158,123 @@
       <!-- Grid de Cards (Arrastáveis) -->
       <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </main>
+
+    <!-- ========================================================= -->
+    <!-- ABA DE LEADS / CONSULTAS (CLOUDFLARE D1 + SUPABASE)       -->
+    <!-- ========================================================= -->
+    <section id="leadsSection" class="hidden container mx-auto px-4 py-6 max-w-7xl flex-1">
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-sm mb-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900">Leads e Consultas do Simulador</h2>
+            <p id="leadsStatus" class="text-xs sm:text-sm text-gray-500 mt-0.5">Sincronizado com Cloudflare D1 (tirracred) + Supabase</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="openAddLeadModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-user-plus"></i> Novo Lead (D1)
+            </button>
+            <button type="button" onclick="loadLeadsAdmin()" class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-1.5">
+              <i class="fas fa-sync-alt"></i> Atualizar
+            </button>
+            <button type="button" onclick="exportLeadsToCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-file-csv"></i> Baixar Planilha CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-3 border-t border-gray-100 items-stretch sm:items-center justify-between">
+          <div class="relative flex-1 max-w-md">
+            <i class="fas fa-search absolute left-3.5 top-3 text-gray-400 text-sm"></i>
+            <input id="leadsSearchInput" type="text" oninput="renderLeadsTable()" placeholder="Buscar por nome, CPF, e-mail ou WhatsApp..."
+                   class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-emerald-500 outline-none">
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="setLeadFilter('all')" data-lead-filter="all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">Todos</button>
+            <button type="button" onclick="setLeadFilter('negativado')" data-lead-filter="negativado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🚫 Negativados</button>
+            <button type="button" onclick="setLeadFilter('aposentado')" data-lead-filter="aposentado" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">👴 Aposentados/CLT</button>
+            <button type="button" onclick="setLeadFilter('bolsafamilia')" data-lead-filter="bolsafamilia" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">🤝 Bolsa Família</button>
+            <button type="button" onclick="setLeadFilter('facio')" data-lead-filter="facio" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">⚡ Facio Elegível</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-900 text-white text-xs uppercase tracking-wider">
+                <th class="py-3.5 px-4 font-extrabold">ID / Fonte</th>
+                <th class="py-3.5 px-4 font-extrabold">📅 Data da Consulta</th>
+                <th class="py-3.5 px-4 font-extrabold">Cliente / CPF</th>
+                <th class="py-3.5 px-4 font-extrabold">Contato (WhatsApp / E-mail)</th>
+                <th class="py-3.5 px-4 font-extrabold">Valor / Parcelas</th>
+                <th class="py-3.5 px-4 font-extrabold">Perfil</th>
+                <th class="py-3.5 px-4 font-extrabold text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody" class="divide-y divide-gray-100 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODAL ADICIONAR LEAD MANUALMENTE / TESTE CLOUDFLARE D1 -->
+    <div id="addLeadModal" class="hidden fixed inset-0 modal-bg z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100">
+        <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <h3 class="text-lg font-extrabold">Cadastrar Lead no Cloudflare D1</h3>
+          <button type="button" onclick="closeAddLeadModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="adminAddLeadForm" class="p-6 space-y-3.5">
+          <div>
+            <label class="text-xs font-bold uppercase text-gray-500">Nome Completo *</label>
+            <input id="leadNome" required placeholder="Nome e sobrenome" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold uppercase text-gray-500">CPF *</label>
+              <input id="leadCpf" required placeholder="000.000.000-00" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+            </div>
+            <div>
+              <label class="text-xs font-bold uppercase text-gray-500">WhatsApp</label>
+              <input id="leadWhatsapp" placeholder="11999999999" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold uppercase text-gray-500">E-mail *</label>
+            <input id="leadEmail" type="email" required placeholder="cliente@email.com" class="w-full mt-1 px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="text-xs font-bold uppercase text-gray-500">Valor (R$)</label>
+              <input id="leadValor" type="number" value="300" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+            </div>
+            <div>
+              <label class="text-xs font-bold uppercase text-gray-500">Parcelas</label>
+              <input id="leadParcelas" type="number" value="1" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+            </div>
+            <div>
+              <label class="text-xs font-bold uppercase text-gray-500">Renda (R$)</label>
+              <input id="leadRenda" type="number" value="0" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm outline-none focus:border-emerald-600">
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3 pt-1 text-xs font-semibold text-gray-700">
+            <label class="flex items-center gap-1.5 cursor-pointer"><input id="leadNegativado" type="checkbox" class="h-4 w-4 accent-emerald-600"> Negativado</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input id="leadAposentado" type="checkbox" class="h-4 w-4 accent-emerald-600"> Aposentado/CLT</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input id="leadBolsa" type="checkbox" class="h-4 w-4 accent-emerald-600"> Bolsa Família</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input id="leadFacio" type="checkbox" class="h-4 w-4 accent-emerald-600"> Facio Elegível</label>
+          </div>
+          <div class="flex justify-end gap-2 pt-3 border-t border-gray-100">
+            <button type="button" onclick="closeAddLeadModal()" class="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-50">Cancelar</button>
+            <button id="saveManualLeadBtn" type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-extrabold text-white shadow">
+              <i class="fas fa-cloud-upload-alt mr-1"></i> Salvar no Cloudflare D1
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================= -->
@@ -1905,6 +2033,7 @@
       login.classList.add('hidden');
       app.classList.remove('hidden');
       load();
+      loadLeadsAdmin();
     };
 
     (async () => {
@@ -1913,6 +2042,7 @@
         login.classList.add('hidden');
         app.classList.remove('hidden');
         load();
+        loadLeadsAdmin();
       }
     })();
 
@@ -2131,6 +2261,351 @@
       return `#${id} — ${p ? p.titulo : 'não encontrado'}`;
     }
 
+
+
+    // =========================================================================
+    // GERENCIADOR DE LEADS E CONSULTAS (CLOUDFLARE D1 + SUPABASE) COM DATA/HORA
+    // =========================================================================
+    let allLeads = [];
+    let currentLeadFilter = 'all';
+    let lastSavedLeadSignature = '';
+
+    async function saveLeadToDatabases(validData, isFacioAvailable) {
+      const sig = `${validData.cpf}_${validData.valor}_${validData.parcelas}_${validData.whatsapp}_${validData.email}`;
+      if (lastSavedLeadSignature === sig) return;
+      lastSavedLeadSignature = sig;
+
+      const leadPayload = {
+        nome: validData.nome,
+        email: validData.email,
+        cpf: validData.cpf,
+        whatsapp: validData.whatsapp,
+        renda: validData.renda_mensal || 0,
+        valor: validData.valor || 300,
+        negativado: Boolean(validData.negativado),
+        parcelas: Number(validData.parcelas) || 1,
+        aposentado: Boolean(validData.aposentado),
+        bolsafamilia: Boolean(validData.bolsafamilia),
+        facio_elegivel: Boolean(isFacioAvailable)
+      };
+
+      try {
+        const res = await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(leadPayload),
+          keepalive: true
+        });
+        if (res.ok) return; // Já salvou no Cloudflare D1 e no Supabase pelo backend!
+      } catch (err) {
+        console.warn('[API Leads] Falha ao chamar /api/leads, tentando fallback Supabase:', err);
+      }
+
+      // Fallback de emergência caso /api/leads não responda
+      try {
+        await _supabase.from('leads').insert([{
+          nome: leadPayload.nome,
+          email: leadPayload.email,
+          cpf: leadPayload.cpf,
+          whatsapp: leadPayload.whatsapp,
+          renda_mensal: String(leadPayload.renda),
+          valor_desejado: String(leadPayload.valor),
+          negativado: leadPayload.negativado,
+          parcelas: leadPayload.parcelas,
+          aposentado: leadPayload.aposentado,
+          bolsafamilia: leadPayload.bolsafamilia
+        }]);
+      } catch (e) {
+        console.warn('[Supabase Fallback] Falhou:', e);
+      }
+    }
+
+    window.openAddLeadModal = () => {
+      $('adminAddLeadForm')?.reset();
+      lastSavedLeadSignature = '';
+      $('addLeadModal')?.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeAddLeadModal = () => {
+      $('addLeadModal')?.classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+
+    $('adminAddLeadForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('saveManualLeadBtn');
+      const orig = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> Salvando...';
+      }
+      try {
+        const validData = {
+          nome: $('leadNome').value.trim(),
+          cpf: $('leadCpf').value.replace(/\D/g, ''),
+          whatsapp: $('leadWhatsapp').value.replace(/\D/g, ''),
+          email: $('leadEmail').value.trim().toLowerCase(),
+          valor: Number($('leadValor').value) || 300,
+          parcelas: Number($('leadParcelas').value) || 1,
+          renda_mensal: Number($('leadRenda').value) || 0,
+          negativado: $('leadNegativado').checked,
+          aposentado: $('leadAposentado').checked,
+          bolsafamilia: $('leadBolsa').checked
+        };
+        await saveLeadToDatabases(validData, $('leadFacio').checked);
+        closeAddLeadModal();
+        await loadLeadsAdmin();
+      } catch (err) {
+        alert('Erro ao salvar lead: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = orig;
+        }
+      }
+    });
+
+    function escLeadHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function isTruthyFlag(v) {
+      return v === true || v === 1 || v === '1' || v === 'true';
+    }
+
+    window.switchAdminTab = (tab) => {
+      const mainProducts = document.querySelector('main');
+      const leadsSec = $('leadsSection');
+      const btnProd = $('tabBtnProducts');
+      const btnLeads = $('tabBtnLeads');
+
+      if (tab === 'leads') {
+        mainProducts?.classList.add('hidden');
+        leadsSec?.classList.remove('hidden');
+        if (btnLeads) btnLeads.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-emerald-600 text-white shadow-sm transition flex items-center gap-1.5';
+        if (btnProd) btnProd.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition';
+        loadLeadsAdmin();
+      } else {
+        leadsSec?.classList.add('hidden');
+        mainProducts?.classList.remove('hidden');
+        if (btnProd) btnProd.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-emerald-600 text-white shadow-sm transition';
+        if (btnLeads) btnLeads.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 transition flex items-center gap-1.5';
+      }
+    };
+
+    function formatLeadDate(rawDate) {
+      if (!rawDate) return '<span class="text-gray-400 text-xs">Histórico (Sem data)</span>';
+      const str = String(rawDate).trim();
+      const iso = str.includes('T') ? str : str.replace(' ', 'T') + 'Z';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return escLeadHtml(str);
+      return d.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    window.loadLeadsAdmin = async () => {
+      const status = $('leadsStatus');
+      if (status) status.textContent = 'Sincronizando leads do Cloudflare D1 (tirracred) e Supabase...';
+
+      let d1Leads = [];
+      let supaLeads = [];
+
+      // 1) Busca do Cloudflare D1 (/api/leads)
+      try {
+        const res = await fetch(`/api/leads?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            d1Leads = data.map(l => ({ ...l, _source: 'd1', _d1_id: l.id }));
+          }
+        }
+      } catch (e) {
+        console.warn('D1 Leads indisponível:', e);
+      }
+
+      // 2) Busca do Supabase (public.leads)
+      try {
+        const { data, error } = await _supabase
+          .from('leads')
+          .select('*')
+          .order('id', { ascending: false })
+          .limit(1000);
+        if (!error && Array.isArray(data)) {
+          supaLeads = data.map(l => ({ ...l, _source: 'supabase', _supa_id: l.id }));
+        }
+      } catch (e) {
+        console.warn('Supabase Leads indisponível:', e);
+      }
+
+      // Mescla sem duplicar consultas idênticas
+      const map = new Map();
+      allLeads = [];
+
+      for (const l of [...d1Leads, ...supaLeads]) {
+        const cleanCpf = String(l.cpf || '').replace(/\D/g, '');
+        const dayKey = l.created_at ? String(l.created_at).slice(0, 10) : 'legacy';
+        const key = `${cleanCpf}_${String(l.valor_desejado || '')}_${String(l.nome || '').toLowerCase().trim()}_${dayKey}`;
+        if (!map.has(key)) {
+          map.set(key, l);
+          allLeads.push(l);
+        } else {
+          const existing = map.get(key);
+          existing._source = 'both';
+          if (!existing.created_at && l.created_at) existing.created_at = l.created_at;
+          if (l._d1_id) existing._d1_id = l._d1_id;
+          if (l._supa_id) existing._supa_id = l._supa_id;
+          if (isTruthyFlag(l.facio_elegivel)) existing.facio_elegivel = 1;
+        }
+      }
+
+      allLeads.sort((a, b) => {
+        const da = a.created_at ? new Date(String(a.created_at).includes('T') ? a.created_at : String(a.created_at).replace(' ', 'T') + 'Z').getTime() : 0;
+        const db = b.created_at ? new Date(String(b.created_at).includes('T') ? b.created_at : String(b.created_at).replace(' ', 'T') + 'Z').getTime() : 0;
+        if (!isNaN(db) && !isNaN(da) && db !== da) return db - da;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+      });
+
+      if ($('leadsCountBadge')) $('leadsCountBadge').textContent = allLeads.length;
+      if (status) status.textContent = `Total: ${allLeads.length} leads registrados (${d1Leads.length} no Cloudflare D1 • ${supaLeads.length} no Supabase)`;
+      renderLeadsTable();
+    };
+
+    window.setLeadFilter = (filter) => {
+      currentLeadFilter = filter;
+      document.querySelectorAll('[data-lead-filter]').forEach(btn => {
+        const active = btn.getAttribute('data-lead-filter') === filter;
+        btn.className = active
+          ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white'
+          : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200';
+      });
+      renderLeadsTable();
+    };
+
+    window.renderLeadsTable = () => {
+      const tbody = $('leadsTableBody');
+      if (!tbody) return;
+      const q = ($('leadsSearchInput')?.value || '').toLowerCase().trim();
+
+      const filtered = allLeads.filter(l => {
+        if (currentLeadFilter === 'negativado' && !isTruthyFlag(l.negativado)) return false;
+        if (currentLeadFilter === 'aposentado' && !isTruthyFlag(l.aposentado)) return false;
+        if (currentLeadFilter === 'bolsafamilia' && !isTruthyFlag(l.bolsafamilia)) return false;
+        if (currentLeadFilter === 'facio' && !isTruthyFlag(l.facio_elegivel)) return false;
+        if (!q) return true;
+        const hay = `${l.nome || ''} ${l.cpf || ''} ${l.email || ''} ${l.whatsapp || ''}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-gray-500 font-semibold">Nenhum lead encontrado para este filtro.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(l => {
+        const cleanWpp = String(l.whatsapp || '').replace(/\D/g, '');
+        const wppLink = cleanWpp ? `https://wa.me/55${cleanWpp}` : '#';
+        const valorFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(l.valor_desejado) || 0);
+
+        const srcBadge = l._source === 'both'
+          ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">D1 + Supa</span>'
+          : (l._source === 'd1'
+              ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">Cloudflare D1</span>'
+              : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Supabase</span>');
+
+        const badges = [];
+        if (isTruthyFlag(l.facio_elegivel)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Facio</span>');
+        if (isTruthyFlag(l.negativado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-700 border border-red-200">🚫 Negativado</span>');
+        if (isTruthyFlag(l.aposentado)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">👴 Aposentado/CLT</span>');
+        if (isTruthyFlag(l.bolsafamilia)) badges.push('<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">🤝 Bolsa Família</span>');
+        if (!badges.length) badges.push('<span class="text-[10px] text-gray-400">Padrão</span>');
+
+        return `
+          <tr class="hover:bg-emerald-50/40 transition">
+            <td class="py-3 px-4 whitespace-nowrap">
+              <div class="font-bold text-gray-700 text-xs">#${escLeadHtml(l.id)}</div>
+              <div class="mt-0.5">${srcBadge}</div>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap font-semibold text-gray-800 text-xs">
+              ${formatLeadDate(l.created_at)}
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-extrabold text-gray-900">${escLeadHtml(l.nome || 'Sem nome')}</div>
+              <div class="text-xs font-mono text-gray-500">CPF: ${escLeadHtml(l.cpf || '-')}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-1.5">
+                <a href="${wppLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:underline">
+                  <i class="fab fa-whatsapp text-emerald-600"></i> ${escLeadHtml(l.whatsapp || '-')}
+                </a>
+              </div>
+              <div class="text-xs text-gray-500 truncate max-w-[210px]">${escLeadHtml(l.email || '-')}</div>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <div class="font-black text-emerald-700">${valorFmt}</div>
+              <div class="text-xs text-gray-500">${escLeadHtml(l.parcelas || 1)}x</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap gap-1">${badges.join('')}</div>
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              <button type="button" onclick="deleteLeadItem(${l._d1_id || 'null'}, ${l._supa_id || 'null'})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Excluir Lead">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    window.deleteLeadItem = async (d1Id, supaId) => {
+      if (!confirm('Deseja excluir este lead permanentemente?')) return;
+      if (d1Id) {
+        await fetch(`/api/leads?id=${d1Id}`, { method: 'DELETE' }).catch(() => {});
+      }
+      if (supaId) {
+        await _supabase.from('leads').delete().eq('id', supaId);
+      }
+      await loadLeadsAdmin();
+    };
+
+    window.exportLeadsToCSV = () => {
+      if (!allLeads.length) return alert('Não há leads para exportar.');
+      const headers = ['ID', 'Data_Consulta', 'Nome', 'CPF', 'WhatsApp', 'Email', 'Valor_Desejado', 'Parcelas', 'Negativado', 'Aposentado', 'Bolsa_Familia', 'Facio_Elegivel'];
+      const rows = allLeads.map(l => [
+        l.id,
+        l.created_at || '',
+        `"${String(l.nome || '').replace(/"/g, '""')}"`,
+        `"${String(l.cpf || '')}"`,
+        `"${String(l.whatsapp || '')}"`,
+        `"${String(l.email || '')}"`,
+        l.valor_desejado || 0,
+        l.parcelas || 1,
+        isTruthyFlag(l.negativado) ? 'Sim' : 'Nao',
+        isTruthyFlag(l.aposentado) ? 'Sim' : 'Nao',
+        isTruthyFlag(l.bolsafamilia) ? 'Sim' : 'Nao',
+        isTruthyFlag(l.facio_elegivel) ? 'Sim' : 'Nao'
+      ].join(','));
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads_tirracred_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
 
   </script>
 
