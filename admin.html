@@ -2422,16 +2422,22 @@
       let supaLeads = [];
 
       // 1) Busca do Cloudflare D1 (/api/leads)
+      let d1ErrorMsg = '';
       try {
         const res = await fetch(`/api/leads?t=${Date.now()}`, { cache: 'no-store' });
-        if (res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
           const data = await res.json();
           if (Array.isArray(data)) {
             d1Leads = data.map(l => ({ ...l, _source: 'd1', _d1_id: l.id }));
           }
+        } else {
+          d1ErrorMsg = `D1 retornou HTTP ${res.status} (${contentType || 'sem JSON'}) — verifique se functions/api/leads.js existe`;
+          console.error('[Admin Leads]', d1ErrorMsg);
         }
       } catch (e) {
-        console.warn('D1 Leads indisponível:', e);
+        d1ErrorMsg = `Falha de conexão com /api/leads: ${e.message}`;
+        console.error('[Admin Leads]', d1ErrorMsg);
       }
 
       // 2) Busca do Supabase (public.leads)
@@ -2477,7 +2483,11 @@
       });
 
       if ($('leadsCountBadge')) $('leadsCountBadge').textContent = allLeads.length;
-      if (status) status.textContent = `Total: ${allLeads.length} leads registrados (${d1Leads.length} no Cloudflare D1 • ${supaLeads.length} no Supabase)`;
+      if (status) {
+      status.textContent = d1ErrorMsg
+        ? `⚠️ ${d1ErrorMsg} | Exibindo ${supaLeads.length} leads do Supabase`
+        : `Total: ${allLeads.length} leads registrados (${d1Leads.length} no Cloudflare D1 • ${supaLeads.length} no Supabase)`;
+    }
       renderLeadsTable();
     };
 

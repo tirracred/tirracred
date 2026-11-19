@@ -1552,55 +1552,90 @@
             // ===================================================
             let lastSavedLeadSignature = '';
 
-            async function saveLeadToDatabases(validData, isFacioAvailable) {
-                const sig = `${validData.cpf}_${validData.valor}_${validData.parcelas}_${validData.whatsapp}_${validData.email}`;
-                if (lastSavedLeadSignature === sig) return;
-                lastSavedLeadSignature = sig;
+async function saveLeadToDatabases(validData, isFacioAvailable) {
+    const sig = `${validData.cpf}_${validData.valor}_${validData.parcelas}_${validData.whatsapp}_${validData.email}`;
+    if (lastSavedLeadSignature === sig) return;
 
-                const leadPayload = {
-                    nome: validData.nome,
-                    email: validData.email,
-                    cpf: validData.cpf,
-                    whatsapp: validData.whatsapp,
-                    renda: validData.renda_mensal || 0,
-                    valor: validData.valor || 300,
-                    negativado: Boolean(validData.negativado),
-                    parcelas: Number(validData.parcelas) || 1,
-                    aposentado: Boolean(validData.aposentado),
-                    bolsafamilia: Boolean(validData.bolsafamilia),
-                    facio_elegivel: Boolean(isFacioAvailable)
-                };
+    const leadPayload = {
+        nome: validData.nome,
+        email: validData.email,
+        cpf: validData.cpf,
+        whatsapp: validData.whatsapp,
+        renda: validData.renda_mensal || 0,
+        valor: validData.valor || 300,
+        negativado: Boolean(validData.negativado),
+        parcelas: Number(validData.parcelas) || 1,
+        aposentado: Boolean(validData.aposentado),
+        bolsafamilia: Boolean(validData.bolsafamilia),
+        facio_elegivel: Boolean(isFacioAvailable)
+    };
 
-                try {
-                    const res = await fetch('/api/leads', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(leadPayload),
-                        keepalive: true
-                    });
-                    if (res.ok) return; // Já salvou no Cloudflare D1 e no Supabase pelo backend!
-                } catch (err) {
-                    console.warn('[API Leads] Falha ao chamar /api/leads, tentando fallback Supabase:', err);
-                }
+    let d1Saved = false;
+    let supaSaved = false;
 
-                // Fallback de emergência caso /api/leads não responda
-                try {
-                    await _supabase.from('leads').insert([{
-                        nome: leadPayload.nome,
-                        email: leadPayload.email,
-                        cpf: leadPayload.cpf,
-                        whatsapp: leadPayload.whatsapp,
-                        renda_mensal: String(leadPayload.renda),
-                        valor_desejado: String(leadPayload.valor),
-                        negativado: leadPayload.negativado,
-                        parcelas: leadPayload.parcelas,
-                        aposentado: leadPayload.aposentado,
-                        bolsafamilia: leadPayload.bolsafamilia
-                    }]);
-                } catch (e) {
-                    console.warn('[Supabase Fallback] Falhou:', e);
+    // 1) Tenta salvar via Cloudflare D1 (/api/leads)
+    try {
+        const res = await fetch('/api/leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(leadPayload),
+            keepalive: true
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+            const result = await res.json();
+            if (result && result.ok) {
+                d1Saved = Boolean(result.saved?.cloudflare_d1);
+                supaSaved = Boolean(result.saved?.supabase);
+
+                if (!d1Saved) {
+                    console.error('[D1 Leads] Backend respondeu, mas D1 falhou:', result.d1_warning || result);
                 }
             }
+        } else {
+            const rawBody = await res.text().catch(() => '');
+            console.error('[API Leads] Rota /api/leads não retornou JSON válido:', {
+                status: res.status,
+                contentType,
+                preview: rawBody.slice(0, 160)
+            });
+        }
+    } catch (err) {
+        console.error('[API Leads] Erro de rede ao chamar /api/leads:', err);
+    }
+
+    // 2) Se o backend não confirmou gravação no Supabase, tenta fallback direto
+    if (!supaSaved) {
+        try {
+            const { error } = await _supabase.from('leads').insert([{
+                nome: leadPayload.nome,
+                email: leadPayload.email,
+                cpf: leadPayload.cpf,
+                whatsapp: leadPayload.whatsapp,
+                renda_mensal: String(leadPayload.renda),
+                valor_desejado: String(leadPayload.valor),
+                negativado: leadPayload.negativado,
+                parcelas: leadPayload.parcelas,
+                aposentado: leadPayload.aposentado,
+                bolsafamilia: leadPayload.bolsafamilia
+            }]);
+
+            if (error) {
+                console.error('[Supabase Leads] Erro retornado pelo Supabase (verifique RLS/colunas):', error);
+            } else {
+                supaSaved = true;
+            }
+        } catch (e) {
+            console.error('[Supabase Leads] Exceção no fallback:', e);
+        }
+    }
+
+    // Só marca como já salvo se realmente gravou em algum lugar
+    if (d1Saved || supaSaved) {
+        lastSavedLeadSignature = sig;
+    }
+}
 
             function redirectToResultsPage(validData, isFacioAvailable, isFacioRejected = false) {
                 const leadContextPayload = {
