@@ -1,5 +1,5 @@
-// functions/api/leads.js
-// Compatível com Cloudflare Pages Functions — salva simultaneamente no Cloudflare D1 e no Supabase
+// Arquivo: capturar-lead.js (se usado no Cloudflare Pages, salvar em functions/api/capturar-lead.js)
+// Nota: o worker.js já contém esta lógica embutida em /api/leads e /api/capturar-lead
 
 const DEFAULT_SUPABASE_URL = 'https://hgravyvorwbccyufgksn.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncmF2eXZvcndiY2N5dWZna3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NzUzMTksImV4cCI6MjA2NzA1MTMxOX0.7s_nF8aRgq6gauYhIEHBrqpvO5QzNtgrZHbBaukM0LI';
@@ -11,7 +11,6 @@ const corsHeaders = {
   'Content-Type': 'application/json'
 };
 
-// Detecta automaticamente o binding do banco Cloudflare D1 ("tirracred")
 function getD1Database(env) {
   if (!env) return null;
   if (env.DB && typeof env.DB.prepare === 'function') return env.DB;
@@ -27,7 +26,6 @@ function getD1Database(env) {
   return null;
 }
 
-// Conversões seguras (mantendo a mesma lógica do seu capturar-lead.js)
 function toBoolean(value) {
   if (typeof value === 'boolean') return value;
   const normalized = String(value ?? '').trim().toLowerCase();
@@ -45,7 +43,6 @@ function onlyDigits(value) {
   return digits || null;
 }
 
-// Grava no Cloudflare D1 (tabela leads)
 async function saveLeadToD1(db, lead) {
   if (!db) {
     throw new Error('Binding do Cloudflare D1 não encontrado em env.');
@@ -92,7 +89,6 @@ async function saveLeadToD1(db, lead) {
   return { id: result?.meta?.last_row_id || null };
 }
 
-// Grava no Supabase via REST API (zero dependências npm no Cloudflare)
 async function saveLeadToSupabase(env, lead) {
   const supaUrl = env?.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const supaKey = env?.SUPABASE_SERVICE_ROLE_KEY || env?.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
@@ -124,7 +120,6 @@ async function saveLeadToSupabase(env, lead) {
 
   let res = await insertSupabase(fullRow);
 
-  // Fallback automático: se a coluna created_at ainda não existir na tabela public.leads do Supabase, reenvia sem ela
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
     if (errText.includes('created_at')) {
@@ -142,10 +137,8 @@ async function saveLeadToSupabase(env, lead) {
   return { ok: true, usedLegacySchema: false };
 }
 
-export async function onRequest(context) {
-  const { request, env } = context;
-
-  // 1) Preflight CORS
+// Função reutilizável tanto no Worker principal (fetch) quanto no Cloudflare Pages Functions (onRequest)
+export async function handleLeadsRequest(request, env) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
@@ -153,7 +146,6 @@ export async function onRequest(context) {
   const db = getD1Database(env);
   const url = new URL(request.url);
 
-  // 2) GET -> Lista os leads do Cloudflare D1 para a aba "Leads / Consultas" do admin.html
   if (request.method === 'GET') {
     if (!db) {
       return new Response(JSON.stringify({ error: 'Banco D1 não configurado.' }), {
@@ -179,7 +171,6 @@ export async function onRequest(context) {
     }
   }
 
-  // 3) DELETE -> Exclui um lead do Cloudflare D1 pelo admin.html
   if (request.method === 'DELETE') {
     if (!db) {
       return new Response(JSON.stringify({ error: 'Banco D1 não configurado.' }), {
@@ -211,7 +202,6 @@ export async function onRequest(context) {
     }
   }
 
-  // 4) POST -> Captura o lead e grava em paralelo no Cloudflare D1 + Supabase
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Método não permitido.' }), {
       status: 405,
@@ -231,7 +221,6 @@ export async function onRequest(context) {
     const nome = String(data.nome || '').trim();
     const email = String(data.email || '').trim().toLowerCase();
 
-    // Validação dos campos obrigatórios (mesma regra 422 do seu código original)
     if (!nome || !email) {
       return new Response(
         JSON.stringify({ error: 'Os campos nome e e-mail são obrigatórios.' }),
@@ -239,7 +228,6 @@ export async function onRequest(context) {
       );
     }
 
-    // Normalização compatível tanto com os campos antigos (renda/valor) quanto com os novos (renda_mensal/valor_desejado)
     const lead = {
       nome,
       email,
@@ -252,10 +240,9 @@ export async function onRequest(context) {
       aposentado: toBoolean(data.aposentado ?? data.aposentado_inss),
       bolsafamilia: toBoolean(data.bolsafamilia),
       facio_elegivel: toBoolean(data.facio_elegivel ?? data.facioAvailable),
-      created_at: new Date().toISOString() // Data e hora invisíveis geradas no servidor
+      created_at: new Date().toISOString()
     };
 
-    // Grava nos dois bancos ao mesmo tempo; se um falhar, o outro ainda garante o lead
     const [d1Result, supaResult] = await Promise.allSettled([
       saveLeadToD1(db, lead),
       saveLeadToSupabase(env, lead)
@@ -265,10 +252,6 @@ export async function onRequest(context) {
     const supaOk = supaResult.status === 'fulfilled';
 
     if (!d1Ok && !supaOk) {
-      console.error('Falha total ao salvar lead:', {
-        d1Error: d1Result.reason?.message,
-        supaError: supaResult.reason?.message
-      });
       return new Response(
         JSON.stringify({
           error: 'Erro interno ao salvar lead nos bancos de dados.',
@@ -295,12 +278,15 @@ export async function onRequest(context) {
       }),
       { status: 200, headers: corsHeaders }
     );
-
   } catch (error) {
-    console.error('Erro ao capturar lead:', error);
     return new Response(
       JSON.stringify({ error: `Erro interno do servidor: ${error.message}` }),
       { status: 500, headers: corsHeaders }
     );
   }
+}
+
+// Export padrão para Cloudflare Pages Functions (functions/api/leads.js)
+export async function onRequest(context) {
+  return handleLeadsRequest(context.request, context.env);
 }

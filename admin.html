@@ -2270,11 +2270,17 @@
     let currentLeadFilter = 'all';
     let lastSavedLeadSignature = '';
 
+    const LEADS_API_ENDPOINTS = [
+      'https://tirracred.tirradigital.workers.dev/api/leads',
+      '/api/capturar-lead',
+      '/api/leads'
+    ];
+
     async function saveLeadToDatabases(validData, isFacioAvailable) {
       const sig = `${validData.cpf}_${validData.valor}_${validData.parcelas}_${validData.whatsapp}_${validData.email}`;
-      if (lastSavedLeadSignature === sig) return;
-      lastSavedLeadSignature = sig;
+      if (lastSavedLeadSignature === sig) return { d1Saved: true, supaSaved: true };
 
+      const nowIso = new Date().toISOString();
       const leadPayload = {
         nome: validData.nome,
         email: validData.email,
@@ -2286,38 +2292,82 @@
         parcelas: Number(validData.parcelas) || 1,
         aposentado: Boolean(validData.aposentado),
         bolsafamilia: Boolean(validData.bolsafamilia),
-        facio_elegivel: Boolean(isFacioAvailable)
+        facio_elegivel: Boolean(isFacioAvailable),
+        created_at: nowIso
       };
 
-      try {
-        const res = await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(leadPayload),
-          keepalive: true
-        });
-        if (res.ok) return; // Já salvou no Cloudflare D1 e no Supabase pelo backend!
-      } catch (err) {
-        console.warn('[API Leads] Falha ao chamar /api/leads, tentando fallback Supabase:', err);
+      let d1Saved = false;
+      let supaSaved = false;
+      let lastError = '';
+
+      // 1) Salva via Worker da Cloudflare (mesmo Worker da Facio) + fallbacks
+      for (const endpoint of LEADS_API_ENDPOINTS) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(leadPayload),
+            keepalive: true
+          });
+
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            const result = await res.json();
+            if (result && result.ok) {
+              d1Saved = Boolean(result.saved?.cloudflare_d1);
+              supaSaved = Boolean(result.saved?.supabase);
+              if (!d1Saved) {
+                lastError = result.d1_warning || 'D1 falhou no Worker';
+                console.error(`[D1 Leads] ${endpoint} respondeu, mas D1 falhou:`, lastError);
+              }
+              if (d1Saved || supaSaved) break;
+            }
+          } else {
+            const rawBody = await res.text().catch(() => '');
+            lastError = `${endpoint} retornou HTTP ${res.status}: ${rawBody.slice(0, 160)}`;
+            console.warn('[API Leads]', lastError);
+          }
+        } catch (err) {
+          lastError = `Erro de rede em ${endpoint}: ${err.message}`;
+          console.warn('[API Leads]', lastError);
+        }
       }
 
-      // Fallback de emergência caso /api/leads não responda
-      try {
-        await _supabase.from('leads').insert([{
-          nome: leadPayload.nome,
-          email: leadPayload.email,
-          cpf: leadPayload.cpf,
-          whatsapp: leadPayload.whatsapp,
-          renda_mensal: String(leadPayload.renda),
-          valor_desejado: String(leadPayload.valor),
-          negativado: leadPayload.negativado,
-          parcelas: leadPayload.parcelas,
-          aposentado: leadPayload.aposentado,
-          bolsafamilia: leadPayload.bolsafamilia
-        }]);
-      } catch (e) {
-        console.warn('[Supabase Fallback] Falhou:', e);
+      // 2) Fallback direto para o Supabase
+      if (!supaSaved) {
+        try {
+          const supaRow = {
+            nome: leadPayload.nome,
+            email: leadPayload.email,
+            cpf: leadPayload.cpf,
+            whatsapp: leadPayload.whatsapp,
+            renda_mensal: String(leadPayload.renda),
+            valor_desejado: String(leadPayload.valor),
+            negativado: leadPayload.negativado,
+            parcelas: leadPayload.parcelas,
+            aposentado: leadPayload.aposentado,
+            bolsafamilia: leadPayload.bolsafamilia,
+            created_at: nowIso
+          };
+          let { error } = await _supabase.from('leads').insert([supaRow]);
+          if (error && String(error.message || '').includes('created_at')) {
+            delete supaRow.created_at;
+            ({ error } = await _supabase.from('leads').insert([supaRow]));
+          }
+          if (error) {
+            console.error('[Supabase Leads] Erro:', error);
+          } else {
+            supaSaved = true;
+          }
+        } catch (e) {
+          console.error('[Supabase Fallback] Exceção:', e);
+        }
       }
+
+      if (d1Saved || supaSaved) {
+        lastSavedLeadSignature = sig;
+      }
+      return { d1Saved, supaSaved, lastError };
     }
 
     window.openAddLeadModal = () => {
@@ -2353,7 +2403,14 @@
           aposentado: $('leadAposentado').checked,
           bolsafamilia: $('leadBolsa').checked
         };
-        await saveLeadToDatabases(validData, $('leadFacio').checked);
+        const res = await saveLeadToDatabases(validData, $('leadFacio').checked);
+        if (!res.d1Saved) {
+          alert(
+            res.supaSaved
+              ? `Salvo apenas no Supabase. O Cloudflare D1 falhou:\n${res.lastError || 'Verifique o binding DB no Worker tirracred'}`
+              : `Falha ao salvar no Cloudflare D1 e no Supabase:\n${res.lastError || 'Verifique o Console (F12)'}`
+          );
+        }
         closeAddLeadModal();
         await loadLeadsAdmin();
       } catch (err) {
@@ -2421,24 +2478,34 @@
       let d1Leads = [];
       let supaLeads = [];
 
-      // 1) Busca do Cloudflare D1 (/api/leads)
+      // 1) Busca do Cloudflare D1 (Worker principal primeiro + fallbacks)
       let d1ErrorMsg = '';
-      try {
-        const res = await fetch(`/api/leads?t=${Date.now()}`, { cache: 'no-store' });
-        const contentType = res.headers.get('content-type') || '';
-        if (res.ok && contentType.includes('application/json')) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            d1Leads = data.map(l => ({ ...l, _source: 'd1', _d1_id: l.id }));
+      let activeLeadsEndpoint = LEADS_API_ENDPOINTS[0];
+      for (const ep of LEADS_API_ENDPOINTS) {
+        try {
+          const res = await fetch(`${ep}?t=${Date.now()}`, { cache: 'no-store' });
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && contentType.includes('application/json')) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              d1Leads = data.map(l => ({ ...l, _source: 'd1', _d1_id: l.id }));
+              activeLeadsEndpoint = ep;
+              d1ErrorMsg = '';
+              break;
+            }
+          } else {
+            const bodyTxt = await res.text().catch(() => '');
+            let parsedErr = '';
+            try { parsedErr = JSON.parse(bodyTxt)?.error || ''; } catch (_) {}
+            d1ErrorMsg = parsedErr || `Worker retornou HTTP ${res.status} em ${ep}`;
+            console.warn('[Admin Leads]', d1ErrorMsg);
           }
-        } else {
-          d1ErrorMsg = `D1 retornou HTTP ${res.status} (${contentType || 'sem JSON'}) — verifique se functions/api/leads.js existe`;
-          console.error('[Admin Leads]', d1ErrorMsg);
+        } catch (e) {
+          d1ErrorMsg = `Falha de conexão com ${ep}: ${e.message}`;
+          console.warn('[Admin Leads]', d1ErrorMsg);
         }
-      } catch (e) {
-        d1ErrorMsg = `Falha de conexão com /api/leads: ${e.message}`;
-        console.error('[Admin Leads]', d1ErrorMsg);
       }
+      window._activeLeadsEndpoint = activeLeadsEndpoint;
 
       // 2) Busca do Supabase (public.leads)
       try {
@@ -2454,7 +2521,7 @@
         console.warn('Supabase Leads indisponível:', e);
       }
 
-      // Mescla semm duplicar consultas idênticas
+      // Mescla sem duplicar consultas idênticas
       const map = new Map();
       allLeads = [];
 
@@ -2581,7 +2648,7 @@
     window.deleteLeadItem = async (d1Id, supaId) => {
       if (!confirm('Deseja excluir este lead permanentemente?')) return;
       if (d1Id) {
-        await fetch(`/api/leads?id=${d1Id}`, { method: 'DELETE' }).catch(() => {});
+        await fetch(`${window._activeLeadsEndpoint || LEADS_API_ENDPOINTS[0]}?id=${d1Id}`, { method: 'DELETE' }).catch(() => {});
       }
       if (supaId) {
         await _supabase.from('leads').delete().eq('id', supaId);
